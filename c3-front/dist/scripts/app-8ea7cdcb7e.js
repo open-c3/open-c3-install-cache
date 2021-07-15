@@ -25565,7 +25565,19 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
 
         };
 
+        vm.count = function(pluginType){
+            var count = 0;
+            for(var i = 0; i < vm.allNewJob.length; i++) {
+                if (vm.allNewJob[i].plugin_type == pluginType){
+                    count = count + 1;
+                }
+            }
+            return count;
+        };
+
         vm.createScriptJob = function (idx) {
+            var count = vm.count("cmd");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/cmd.html',
                 controller: 'scriptJobController',
@@ -25576,7 +25588,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -25595,6 +25608,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         };
 
         vm.createScpJob = function (idx) {
+            var count = vm.count("scp");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/scp.html',
                 controller: 'scpJobController',
@@ -25605,7 +25620,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -25624,6 +25640,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         };
 
         vm.createApprovalJob = function (idx) {
+            var count = vm.count("approval");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/approval.html',
                 controller: 'approvalJobController',
@@ -25634,7 +25652,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             }); 
 
@@ -25665,7 +25684,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             }); 
 
@@ -25690,7 +25710,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             }); 
 
@@ -25715,7 +25736,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 bindToController: true,
                 resolve: {
                     treeId: function () {return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             });
 
@@ -25787,6 +25809,18 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
             }
         };
 
+        vm.up = function (idx){
+            if (idx>0){
+                [vm.allNewJob[idx-1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx-1]]
+            }
+        };
+
+        vm.down = function (idx){
+            if (idx<vm.allNewJob.length-1){
+                [vm.allNewJob[idx+1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx+1]]
+            }
+        };
+
         if (vm.editjobuuid && vm.editJobData){
             $scope.newjobname = vm.editjobname;
             if (vm.mon_status) {
@@ -25838,7 +25872,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         treeService.sync.then(function(){
             vm.nodeStr = treeService.selectname();
         });
-        $scope.panelcolor = { "success": "green", "fail": "red", "running": "#98b2bc", "decision": "#aaa", "ignore": "#aaa" }
+        $scope.panelcolor = { "success": "green", "fail": "red", "refuse": "orange", "running": "#98b2bc", "decision": "#aaa", "ignore": "#aaa" }
 
         vm.showEditLog = function () {
             $uibModal.open({
@@ -25877,7 +25911,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
             $http.get('/api/ci/version/' + vm.treeid + '/' + vm.projectid ).success(function(data){
                 if(data.stat == true) 
                 { 
-                    vm.activeRegionTable = new ngTableParams({count:20}, {counts:[],data:data.data.reverse()});
+                    vm.activeRegionTable = new ngTableParams({count:20}, {counts:[],data:data.data});
                     vm.loadover = true;
                 } else { 
                     toastr.error( "加载版本失败:" + data.info )
@@ -25919,6 +25953,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
                 backdrop: 'static', 
                 size: 'lg', 
                 keyboard: false,
+                windowClass:'modal-class',
                 bindToController: true,
                 resolve: {
                     nodeStr: function () { return vm.nodeStr },
@@ -26040,7 +26075,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
 
         vm.cversion = function(text) {
             var w = '';
-            var re=/version:.*/;
+            var re=/\bversion:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -26055,7 +26090,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
 
         vm.crollbackversion = function(text) {
             var w = '';
-            var re=/_rollbackVersion_:.*/;
+            var re=/\b_rollbackVersion_:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -26070,7 +26105,7 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
 
         vm.cjobtype = function(text) {
             var w = '';
-            var re=/_jobtype_:.*/;
+            var re=/\b_jobtype_:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -26238,11 +26273,8 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         {
             return 0
         }
-        return 2
+        return num
     }
-
-
-
 
 
 
@@ -26279,6 +26311,23 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
 
         vm.getVersion();
 
+        vm.lastversion = {};
+        vm.getLastVersion = function () {
+            $http.get('/api/jobx/flowline_version/' + vm.projectid ).then(
+                function successCallback(response) {
+                    if (response.data.stat) {
+                        vm.lastversion = response.data.data;
+                    }else{
+                        toastr.error( "获取作业信息失败：" + response.data.info )
+                    };
+                });
+                function errorCallback(response) {
+                    toastr.error( "获取作业信息失败：" + response.status )
+                }
+        };
+
+
+        vm.getLastVersion();
 
         vm.showVersions = function (data) {
             var data_info = JSON.stringify(data);
@@ -26375,10 +26424,13 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         vm.reload();
 
         vm.reloadimage = function(){
-            $http.get('/api/ci/docker/' + vm.treeid +'/image').success(function(data){
+            $http.get('/api/ci/images').success(function(data){
                 if( data.stat )
                 {
-                     vm.dockerimage = data.data;
+                     vm.dockerimage = [ {id: '', name: '' }, { id: 'centos:5', name: 'centos:5' }, { id: 'centos:6', name: 'centos:6' }, { id: 'centos:7', name: 'centos:7' } ];
+                     angular.forEach(data.data, function (value, key) {
+                         vm.dockerimage.push(value)
+                     });
                 }
                 else
                 {
@@ -26390,10 +26442,11 @@ return d.keepInvalid=a,l},l.datepickerInput=function(a){if(0===arguments.length)
         vm.reloadimage();
 
         vm.reloadticket = function(){
-            $http.get('/api/ci/ticket').success(function(data){
+            $http.get('/api/ci/ticket?projectid=' + vm.projectid).success(function(data){
                 if( data.stat)
                 {
                     vm.ticketinfo = data.data;
+                    vm.ticketinfo.unshift({ id: '', name: '' })
                 }
                 else
                 {
@@ -26859,6 +26912,22 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
             }
         };
         vm.seftime = genericService.seftime
+
+        vm.rollbackexpire = function( starttime )
+        {
+            var S = new Date()
+
+            var sec =   (S.getTime() - starttime * 1000)  /1000;
+            if( sec > 604800 )
+            {
+                return 1
+            }
+            else
+            {
+                return 0
+            }
+        }
+
         vm.firstload = true
         vm.changeUuid = function (uuid) {
             var endC = uuid.slice(uuid.length - 1);
@@ -26874,7 +26943,7 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
 
         vm.getVersionByV = function (text) {
             var w = '';
-            var re=/version:.*/;
+            var re=/\bversion:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(":")[1]
@@ -26885,7 +26954,7 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
  
         vm.getRollbackByV = function (text) {
             var w = '';
-            var re=/_rollbackVersion_:.*/;
+            var re=/\b_rollbackVersion_:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(":")[1]
@@ -26907,8 +26976,8 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
         vm.mainjobinfobyuuid = {}
         var toastr = toastr || $injector.get('toastr');
 
-        $scope.panelcolor = { "success": "success", "fail": "danger", "running": "info", "decision": "warning", "ignore": "danger" }
-        vm.statuszh = { null: "准备","": "等待", "init": "就绪", "success": "成功", "fail": "失败", "decision": "待定", "running": "运行中", "ignore": "忽略" }
+        $scope.panelcolor = { "success": "success", "fail": "danger", "refuse": "danger", "running": "info", "decision": "warning", "ignore": "danger" }
+        vm.statuszh = { null: "准备","": "等待", "init": "就绪", "success": "成功", "fail": "失败", "refuse": "拒绝", "decision": "待定", "running": "运行中", "ignore": "忽略" }
         vm.backid;
         vm.backidcalled = false;
 
@@ -27214,14 +27283,11 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
             resoureceService.task.stoptask([vm.treeid,taskuuid],null, null).finally(function(){});
         };
         vm.killTaskByJs = function () {
-            console.log('here kill');
             var promise =  $http.delete('/api/jobx/task/' + vm.treeid + '/' + vm.taskuuid)
             return promise.then(function (data) {
-                console.log('here is response');
                 var response = data.data;
                 return response.data
-            }
-                );
+            });
         };
         vm.runConfirm = function (subuuid) {
             resoureceService.task.confirmtask([vm.treeid,subuuid],null, null)
@@ -27294,6 +27360,8 @@ HistoryJobxDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slav
             else if (tag == "success"){
                 c = "green";
             }else if (tag == "fail"){
+                c = "red";
+            }else if (tag == "refuse"){
                 c = "red";
             }else if (tag == "init"){
                 c = "#473e3e"
@@ -27459,8 +27527,8 @@ HistoryJobDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slave
         vm.jobtype = $stateParams.jobtype;
         vm.tasklength = 0;
         vm.allRuningData = [];
-        vm.statuszh = { "": "等待执行", "success": "执行成功", "fail": "执行失败", "decision": "执行失败", "running": "执行中", "ignore": "忽略" }
-        vm.statuscolor = { "": "#aaa", "success": "green", "fail": "red", "decision": "red", "running": "orange" }
+        vm.statuszh = { "": "等待执行", "success": "执行成功", "fail": "执行失败","refuse":"审批拒绝", "decision": "执行失败", "running": "执行中", "ignore": "忽略" }
+        vm.statuscolor = { "": "#aaa", "success": "green", "fail": "red", "refuse": "orange", "decision": "red", "running": "orange" }
 
         $scope.setStatuColor = function (stat) {
             if(!stat){ stat = "" }
@@ -27957,12 +28025,12 @@ HistoryJobDetailLogController.$inject = ["$uibModalInstance", "taskuuid", "slave
 (function() {
     'use strict';
 
-scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalInstance", "$window", "$uibModal", "$timeout", "treeService", "resoureceService", "scriptId", "editData"];
+scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalInstance", "$window", "$uibModal", "$timeout", "treeService", "resoureceService", "scriptId", "editData", "seq"];
     angular
         .module('openc3')
         .controller('scpJobController', scpJobController);
 
-    function scpJobController($scope,$filter, $state, $http,$uibModalInstance,$window,$uibModal, $timeout,treeService,resoureceService, scriptId, editData) {
+    function scpJobController($scope,$filter, $state, $http,$uibModalInstance,$window,$uibModal, $timeout,treeService,resoureceService, scriptId, editData, seq) {
 
         var vm = this;
         $scope.dataready = true;
@@ -27975,6 +28043,8 @@ scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalIn
         $scope.srcShow = false;
         $scope.varShow = false;
         $scope.choiceShow = false;
+
+        vm.postdata = { deployenv: 'always', action: 'always', batches: 'always' };
 
         $scope.userShow = false;
         $scope.chownShow = false;
@@ -28003,6 +28073,7 @@ scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalIn
             'timeout':'60',
             'pause':'',
         };
+        if (!editData){$scope.dstDate.name = "文件分发_"+seq};
         $scope.copySrcdata = angular.copy($scope.srcDate);
         vm.cancel = function(){ $uibModalInstance.dismiss()};
 
@@ -28272,6 +28343,9 @@ scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalIn
             }
             $scope.dstDate.timeout = parseInt($scope.dstDate.timeout);
             var post_data = $.extend($scope.dstDate, $scope.copySrcdata);
+            post_data.deployenv = vm.postdata.deployenv;
+            post_data.action = vm.postdata.action;
+            post_data.batches = vm.postdata.batches;
             $uibModalInstance.close(
                 post_data
             );
@@ -28282,6 +28356,9 @@ scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalIn
         if (editData){
             $scope.editmode = true;
             $scope.dstDate.name = editData.name;
+
+            vm.postdata = { deployenv: editData.deployenv, action: editData.action, batches: editData.batches };
+
             if (editData.src_type == "fileserver"){
                 $scope.shareResult = [{"name":editData.sp}];
                 $scope.copySrcdata.sp = editData.sp;
@@ -28370,12 +28447,12 @@ scpJobController.$inject = ["$scope", "$filter", "$state", "$http", "$uibModalIn
 (function() {
     'use strict';
 
-scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$uibModal", "$uibModalInstance", "$timeout", "treeService", "resoureceService", "treeId", "editData"];
+scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$uibModal", "$uibModalInstance", "$timeout", "treeService", "resoureceService", "treeId", "editData", "seq"];
     angular
         .module('openc3')
         .controller('scriptJobController', scriptJobController);
 
-    function scriptJobController($scope,$filter, $state, $http,$window,$uibModal,$uibModalInstance, $timeout,treeService,resoureceService,treeId, editData) {
+    function scriptJobController($scope,$filter, $state, $http,$window,$uibModal,$uibModalInstance, $timeout,treeService,resoureceService,treeId, editData, seq) {
         var vm = this;
 
         $scope.dataready = true;
@@ -28386,6 +28463,9 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
         $scope.s_timeout = '60';
         $scope.scriptType = "shell";
         $scope.scriptUnclick = false;
+        if (!editData){$scope.s_name = "执行脚本_"+seq};
+
+        vm.postdata = { deployenv: 'always', action: 'always', batches: 'always' };
 
         vm.cancel = function(){ $uibModalInstance.dismiss()};
 
@@ -28512,6 +28592,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 sheditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
         vm.editorPy = function (data, re) {
             vm.pyEditor = ace.edit("editor");
@@ -28528,6 +28609,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 pyeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorPerl = function (data, re) {
@@ -28545,6 +28627,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 perleditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorPhp = function (data, re) {
@@ -28562,6 +28645,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 phpeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorBuildin = function (data, re) {
@@ -28579,6 +28663,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 buildineditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorAuto = function (data, re) {
@@ -28595,7 +28680,53 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             if (re){
                 autoeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
+
+        vm.showmachinelist = 1;
+
+        vm.leaveeditor = function() {
+            vm.showmachinelist = 1;
+            if($scope.scriptType == "buildin"){
+                var cont = vm.buildinEditor.getValue();
+                if( cont.search(/^#!kubectl\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!terraform\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!kubestar\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!awsecs\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!sendemail\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!sendmesg\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!flowcaller\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!cdnrefresh\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+            }
+        }
+
+        vm.buildinSet = function( name ) {
+            vm.editorBuildin( '#!' + name, false );
+        }
 
         vm.scriptTypeEditor = {
             "shell": vm.editorSh,
@@ -28676,6 +28807,11 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
                 cont = vm.phpEditor.getValue();
             }else if($scope.scriptType == "buildin"){
                 cont = vm.buildinEditor.getValue();
+                if( vm.showmachinelist == 0  )
+                {
+                    $scope.nodeType = 'builtin';
+                    vm.choiceNode = [ 'openc3skipnode' ]
+                }
             }else if($scope.scriptType == "auto"){
                 cont = vm.autoEditor.getValue();
             }
@@ -28707,12 +28843,14 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
                 'scripts_cont': cont,
                 'scripts_argv': $scope.s_argv,
                 'timeout': parseInt($scope.s_timeout),
-                'pause': $scope.pause
+                'pause': $scope.pause,
+                'deployenv' : vm.postdata.deployenv,
+                'action' : vm.postdata.action,
+                'batches' : vm.postdata.batches
             };
             $uibModalInstance.close(
                 post_data
             );
-
 
         };
 
@@ -28804,7 +28942,7 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
             $scope.s_timeout = parseInt(editData.timeout);
             $scope.pause = editData.pause;
 
-
+            vm.postdata = { deployenv: editData.deployenv, action: editData.action, batches: editData.batches };
         }
         if (vm.scriptid){
             $http.get('/api/job/scripts/' + vm.treeid + "/" + vm.scriptid).success(function(data){
@@ -28838,6 +28976,32 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
         }
         vm.getProUser();
 
+        vm.reloadticket = function(ticketid){
+            $http.get('/api/ci/ticket?type=JobBuildin&ticketid=' + ticketid ).success(function(data){
+                if( data.stat)
+                {
+                    vm.ticketinfo = data.data;
+                    vm.ticketinfo.unshift({ id: '0', name: 'null' })
+                }
+                else
+                {
+                    toastr.error( "加载票据列表失败:" + data.info )
+                }
+            });
+        };
+
+        if( editData )
+        {
+            var reg1 = new RegExp(/^[0-9]+$/);
+            if (reg1.test(editData.user)) {
+                vm.reloadticket( editData.user );
+            }
+        }
+        else
+        {
+            vm.reloadticket( 0 );
+        }
+
         $timeout(vm.editorSh, 500,true,"", false);
 
 }})();
@@ -28845,12 +29009,12 @@ scriptJobController.$inject = ["$scope", "$filter", "$state", "$http", "$window"
 (function() {
     'use strict';
 
-approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editData"];
+approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editData", "seq"];
     angular
         .module('openc3')
         .controller('approvalJobController', approvalJobController);
 
-    function approvalJobController($state, $http,$uibModalInstance, editData) {
+    function approvalJobController($state, $http,$uibModalInstance, editData, seq) {
 
         var vm = this;
 
@@ -28858,6 +29022,7 @@ approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editDa
         vm.cancel = function(){ $uibModalInstance.dismiss()};
 
         vm.postdata = { timeout: '86400', approver: '', cont: '', name: '', deployenv: 'always',action: 'always', batches: 'always', everyone: 'on', plugin_type: 'approval' };
+        if (!editData){vm.postdata.name = "审批_"+seq};
 
         if( editData )
         {
@@ -28887,6 +29052,7 @@ approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editDa
             var vm = this;
             vm.cancel = function(){ $uibModalInstance.dismiss()};
             vm.cloneNodes = cloneNodes;
+            vm.jobuuid = "";
 
             angular.forEach(vm.cloneNodes, function (node, id) {
                 vm.cloneNodes[id]["status"] = null;
@@ -28897,6 +29063,7 @@ approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editDa
                     function successCallback(response) {
                         if (response.data.stat){
                             vm.cloneNodes[id]["status"] = true;
+                            vm.jobuuid = response.data.uuid;
                         }else {
                             vm.cloneNodes[id]["status"] = false;
                             vm.cloneNodes[id]["msg"] = response.data.info;
@@ -28911,7 +29078,7 @@ approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editDa
 
             vm.closeTab = function () {
                 $uibModalInstance.close(
-                    true
+                    vm.jobuuid
                 );
             };
 
@@ -29613,6 +29780,441 @@ approvalJobController.$inject = ["$state", "$http", "$uibModalInstance", "editDa
 (function() {
     'use strict';
 
+    SmallApplicationController.$inject = ["$state", "$http", "$scope", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('SmallApplicationController', SmallApplicationController);
+
+    /** @ngInject */
+    function SmallApplicationController( $state, $http, $scope, ngTableParams ) {
+
+        var vm = this;
+
+        vm.reload = function () {
+            vm.loadover = false
+            $http.get('/api/job/smallapplication').then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.dataTable = new ngTableParams({count:100}, {counts:[],data:response.data.data});
+                        vm.loadover = true
+                    }else {
+                        swal('获取信息失败', response.data.info, 'error' );
+                    }
+                },
+                function errorCallback (response ){
+                    swal('获取信息失败', response.status, 'error' );
+                });
+        };
+
+        vm.reload()
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    SmallApplicationEditController.$inject = ["$state", "$http", "$scope", "$uibModal", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('SmallApplicationEditController', SmallApplicationEditController);
+
+    /** @ngInject */
+    function SmallApplicationEditController( $state, $http, $scope, $uibModal, ngTableParams ) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+
+        vm.reload = function () {
+            vm.loadover = false
+            $http.get('/api/job/smallapplication').then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.dataTable = new ngTableParams({count:100}, {counts:[],data:response.data.data});
+                        vm.loadover = true
+                    }else {
+                        swal('获取信息失败', response.data.info, 'error' );
+                    }
+                },
+                function errorCallback (response ){
+                    swal('获取信息失败', response.status, 'error' );
+                });
+        };
+
+        vm.reload()
+
+        vm.createSmallApplication = function () {
+            $uibModal.open({
+                templateUrl: 'app/pages/quickentry/smallapplication/create.html',
+                controller: 'SmallApplicationCreateController',
+                controllerAs: 'smallapplicationcreate',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    treeid: function () { return vm.treeid},
+                    reload : function () { return vm.reload}
+                }
+            });
+        };
+
+       vm.deleteSmallApplication = function(id) {
+          swal({
+            title: "删除轻应用",
+            text: "删除",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            cancelButtonText: "取消",
+            confirmButtonText: "确定",
+            closeOnConfirm: true
+          }, function(){
+            $http.delete('/api/job/smallapplication/' + id ).success(function(data){
+                if(data.stat == true) {
+                    swal({ title: "删除成功!", type:'success' });
+                    vm.reload();
+                } else {
+                    swal({ title: "删除失败!", text: data.info, type:'error' });
+                }
+            });
+          });
+        }
+
+    }
+
+})();
+
+(function () {
+    'use strict';
+    SmallApplicationCreateController.$inject = ["$state", "$http", "ngTableParams", "$uibModalInstance", "$scope", "resoureceService", "$injector", "treeid", "reload"];
+    angular
+        .module('openc3')
+        .controller('SmallApplicationCreateController', SmallApplicationCreateController);
+
+    function SmallApplicationCreateController( $state, $http, ngTableParams, $uibModalInstance, $scope, resoureceService, $injector, treeid, reload ) {
+
+        var vm = this;
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.postdata = { "parameter" : ""};
+
+        vm.cancel = function(){ $uibModalInstance.dismiss()};
+
+        vm.add = function(){
+            vm.postdata.jobid = $scope.choiceJob.id
+            $http.post('/api/job/smallapplication', vm.postdata ).success(function(data){
+                    if(data.stat == true) {
+                        vm.cancel();
+                        reload();
+                    } else { swal({ title: "创建失败!", text: data.info, type:'error' }); }
+
+            });
+        };
+
+
+        $scope.allJobs = [];        // 保存所有项目下的作业
+
+        vm.getAllJob = function () {
+            vm.ciinfo = {}
+
+            $http.get('/api/ci/group/' + treeid).success(function(data){
+                if(data.stat)
+                {
+                    angular.forEach(data.data, function (value, key) {
+                        vm.ciinfo['_ci_'+value.id+'_'] = value.name
+                        vm.ciinfo['_ci_test_'+value.id+'_'] = value.name + ':测试'
+                        vm.ciinfo['_ci_online_'+value.id+'_'] = value.name + ':线上'
+                    });
+
+                    $http.get('/api/job/jobs/' + treeid).then(
+                        function successCallback(response) {
+                            if (response.data.stat){
+                                $scope.allJobs = response.data.data
+                                angular.forEach($scope.allJobs, function (value, key) {
+                                    if(vm.ciinfo[value.name])
+                                    {
+                                        value.alias = '(流水线:' + vm.ciinfo[value.name] +')'
+                                    }else{
+                                        value.alias = value.name
+                                    }
+                                });
+                            }else {
+                                toastr.error( "获取项目机器信息失败："+response.data.info )
+                            }
+                        },
+                        function errorCallback (response ){
+                            toastr.error( "获取项目机器信息失败："+response.status )
+                        });
+                }
+                else
+                {
+                    toastr.error( "加载流水线名称失败:" + data.info )
+                }
+            });
+        };
+
+        vm.getAllJob();
+    }
+})();
+
+
+(function() {
+    'use strict';
+
+    SendfileController.$inject = ["$timeout", "$state", "$http", "$uibModal", "$scope", "treeService", "ngTableParams", "resoureceService", "$injector", "$filter"];
+    angular
+        .module('openc3')
+        .controller('SendfileController', SendfileController);
+
+    function SendfileController($timeout, $state, $http, $uibModal, $scope, treeService, ngTableParams, resoureceService, $injector, $filter) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+        var toastr = toastr || $injector.get('toastr');
+        $scope.selectedUser = 'root';
+
+        treeService.sync.then(function(){ 
+            vm.nodeStr = treeService.selectname(); 
+        });
+
+        if (vm.treeid){
+            $http.get('/api/job/userlist/' + vm.treeid).then(
+
+                function successCallback (response) {
+                    if (response.data.stat){
+                        $scope.allProUsers= response.data.data;
+                    }else {
+                        toastr.error( "获取执行账户列表失败："+response.data.info)
+                    }
+                },
+                function errorCallback () {
+                    toastr.error( "获取执行账户列表失败："+response.status)
+                }
+            );
+        }
+
+        vm.reloadfileserver = function(){
+            $http.get('/api/job/fileserver/' + vm.treeid ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.fileserver_Table = new ngTableParams({count:15}, {counts:[],data:response.data.data.reverse()});
+                    }else {
+                        toastr.error( "获取文件管理列表失败："+response.data.info)
+                    }
+                },
+                function errorCallback (response ){
+                    toastr.error( "获取文件管理列表失败："+response.status)
+                });
+        }
+
+        vm.reload = function () {
+            vm.loadover = false
+
+            if( vm.filepath )
+            {
+                $http.get('/api/job/sendfile/list/' + vm.treeid + '?sudo=' + $scope.selectedUser + '&path=' + vm.filepath  ).then(
+                    function successCallback(response) {
+                        if (response.data.stat){
+                            vm.dir_Table = new ngTableParams({count:200}, {counts:[],data:response.data.data});
+                            vm.loadover = true
+                        }else {
+                            toastr.error( "获取目录列表失败："+response.data.info)
+                        }
+                    },
+                    function errorCallback (response ){
+                        toastr.error( "获取目录列表失败："+response.status)
+                    });
+
+                vm.reloadfileserver();
+
+                var nowTime = $filter('date')(new Date, "yyyy-MM-dd");
+
+                $http.get('/api/job/task/' + vm.treeid + '?name=sendfile&time_start=' + nowTime ).then(
+                    function successCallback(response) {
+                        if (response.data.stat){
+                            vm.sendfiletask_Table = new ngTableParams({count:15}, {counts:[],data:response.data.data.reverse()});
+                            vm.loadover = true
+                        }else {
+                            toastr.error( "获取文件管理列表失败："+response.data.info)
+                        }
+                    },
+                    function errorCallback (response ){
+                        toastr.error( "获取文件管理列表失败："+response.status)
+                    });
+            }
+            else
+            {
+                $http.get('/api/agent/nodeinfo/' + vm.treeid).then(
+                    function successCallback(response) {
+                        if (response.data.stat){
+                            vm.machine_Table = new ngTableParams({count:10}, {counts:[],data:response.data.data.reverse()});
+                            vm.loadover = true
+                        }else {
+                            toastr.error( "获取机器列表失败："+response.data.info)
+                        }
+                    },
+                    function errorCallback (response ){
+                        toastr.error( "获取机器列表失败："+response.status)
+                    });
+            }
+        };
+
+        vm.reload();
+
+        vm.openOne = function (name) {
+            vm.filepath = name;
+            vm.reload();
+        };
+
+        vm.intodir = function (name) {
+            vm.filepath = vm.filepath + "/" + name;
+            vm.reload();
+        };
+
+        vm.backdir = function () {
+            var temppath = vm.filepath.split("/");
+            temppath.pop();
+            vm.filepath = temppath.join("/");
+            vm.reload();
+        };
+
+        vm.reset = function () {
+            vm.filepath = '';
+            vm.reload();
+        };
+
+        vm.startUoloadTask = function ( filename ) {
+            var temppath = vm.filepath.split("/");
+            var temphost = temppath.shift();
+            var filepath = temppath.join("/");
+ 
+            var post_data = { "chmod": "644", "chown" : $scope.selectedUser, "dp": "/" + filepath + "/", "dst": temphost, "dst_type" : "builtin", "name": "sendfile_upload_" + vm.filepath + "/" + filename, "sp": filename, "src": "","src_type": "fileserver", "timeout" : 300, "user": $scope.selectedUser };
+            resoureceService.work.scp(vm.treeid, post_data, null)
+                .then(function (repo) {
+                    if (repo.stat){
+                    }else{
+                        toastr.error( "提交任务失败:" + repo.info )
+                    }
+                }, function (repo) {
+                    toastr.error( "提交任务失败:" + repo )
+
+                })
+        };
+
+        vm.startDownloadTask = function ( filename ) {
+            var temppath = vm.filepath.split("/");
+            var temphost = temppath.shift();
+            var filepath = temppath.join("/");
+ 
+            var post_data = { "chmod": "644", "chown" : $scope.selectedUser, "dp": "/tmp/abc/", "dst": temphost, "dst_type" : "fileserver", "name": "sendfile_download_" + vm.filepath + "/" + filename, "sp": "/" + filepath + "/" + filename, "src": temphost,"src_type": "builtin", "timeout" : 300, "user": $scope.selectedUser };
+            resoureceService.work.scp(vm.treeid, post_data, null)
+                .then(function (repo) {
+                    if (repo.stat){
+                    }else{
+                        toastr.error( "提交任务失败:" + repo.info )
+                    }
+                }, function (repo) {
+                    toastr.error( "提交任务失败:" + repo )
+
+                })
+        };
+
+        vm.downloadfile = function (name) {
+            $http.get('/api/job/fileserver/' + vm.treeid + '/download?name=' + name).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        var downloadAddr = "http://"+window.location.host+"/api/job/download/";
+                         window.open(downloadAddr+response.data.data, '_blank')
+                    }else {
+                        toastr.error( "获取下载地址失败："+response.data.info)
+                    }
+                },
+                function errorCallback (response ){
+                    toastr.error( "获取下载地址失败："+response.status)
+                });
+ 
+        };
+
+        vm.unlinkfile = function( filename )
+        {
+            $http.post('/api/job/sendfile/unlink/' + vm.treeid + '?sudo=' + $scope.selectedUser + '&path=' + vm.filepath + '/' + filename  ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.reload()
+                    }else {
+                        toastr.error( "删除文件失败："+response.data.info)
+                    }
+                },
+                function errorCallback (response ){
+                    toastr.error( "删除文件失败："+response.status)
+                });
+         }
+
+        vm.deleteFile = function (idx) {
+            resoureceService.file.delete([vm.treeid, idx], null, null)
+                .then(function (repo) {
+                    if (repo.stat){
+                        vm.reloadfileserver();
+                    }
+                    else
+                    {
+                        toastr.error("删除失败:" + repo.info)
+                    }
+                })
+
+        };
+
+        vm.bytesToSize = function(bytes) {
+            if (bytes === 0) return '0 B';
+            var k = 1000, // or 1024
+                sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                i = Math.floor(Math.log(bytes) / Math.log(k));
+
+           return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+        }
+
+        vm.clickImport = function () {
+            document.getElementById("choicefiles").click();
+        };
+
+        $scope.upForm = function () {
+            var form = new FormData();
+            var file = document.getElementById("choicefiles").files[0];
+            form.append('file', file);
+            $http({
+                method: 'POST',
+                url: '/api/job/fileserver/'+ vm.treeid,
+                data: form,
+                headers: {'Content-Type': undefined},
+                transformRequest: angular.identity
+            }).success(function (data) {
+                if (data.stat){
+                    vm.reload()
+                }
+                else
+                {
+                    toastr.error("上传失败:" + data.info)
+                }
+            }).error(function (data) {
+                toastr.error("上传失败:" + data)
+            })
+        };
+
+        vm.openOneTab = function () {
+            var temppath = vm.filepath.split("/");
+            var name = temppath.shift();
+            var terminalAddr = "http://"+window.location.host+"/api/job/cmd/";
+            var s = vm.treeid+"?node=" + name + '&bash=1' +'&sudo=' + $scope.selectedUser;
+            window.open(terminalAddr+s, '_blank')
+        };
+    }
+})();
+
+(function() {
+    'use strict';
+
 DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$uibModal", "$timeout", "treeService", "resoureceService", "scriptId", "$injector"];
     angular
         .module('openc3')
@@ -29631,6 +30233,8 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
         vm.scriptHide = true;
         $scope.srcShow = false;
         $scope.choiceShow = false;
+
+        vm.postdata = { deployenv: 'always', action: 'always', batches: 'always' };
 
         $scope.userShow = false;
         $scope.chownShow = false;
@@ -29926,7 +30530,11 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
             }
             $scope.dstDate.timeout = parseInt($scope.dstDate.timeout);
             var post_data = $.extend($scope.dstDate, $scope.copySrcdata);
-            console.log("finally post data is :", JSON.stringify(post_data));
+
+            post_data.deployenv = vm.postdata.deployenv
+            post_data.action = vm.postdata.action
+            post_data.batches = vm.postdata.batches
+
             resoureceService.work.scp(vm.treeid, post_data, null)
                 .then(function (repo) {
                     if (repo.stat){
@@ -29992,6 +30600,8 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
         var vm = this;
         vm.treeid = $state.params.treeid;
+        vm.jobid = $state.params.jobid;
+
         var toastr = toastr || $injector.get('toastr');
 
         $scope.allJobs = [];        // 保存所有项目下的作业
@@ -30019,7 +30629,20 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
                     $http.get('/api/job/jobs/' + vm.treeid).then(
                         function successCallback(response) {
                             if (response.data.stat){
-                                $scope.allJobs = response.data.data
+                                if( vm.jobid )
+                                {
+                                    angular.forEach(response.data.data, function (value, key) {
+                                        if( value.id == vm.jobid )
+                                        {
+                                            $scope.allJobs = [ value ];
+                                            $scope.choiceJob = value
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    $scope.allJobs = response.data.data
+                                }
                                 angular.forEach($scope.allJobs, function (value, key) {
                                     if(vm.ciinfo[value.name])
                                     {
@@ -30067,14 +30690,28 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
         };
 
+        vm._rollbackVersion_ = '';
+        vm.deployversion = '';
+
+        vm.iamtask4jobx = 0;
+        vm.showjobxgroup = 0;
+
         vm.runTask = function(){
             var varDict = {};
             angular.forEach($scope.jobVar, function (data, index) {
                 varDict[data.name] = data.value;
             });
+            if( vm._rollbackVersion_ != "" )
+            {
+                varDict._rollbackVersion_ = vm._rollbackVersion_;
+            }
+            if( vm.deployversion != "" )
+            {
+                varDict.version = vm.deployversion
+            }
             $scope.taskData.variable = varDict;
 
-            if(  $scope.taskData.variable.hasOwnProperty('ip') )
+            if( vm.iamtask4jobx )
             {
                 resoureceService.task.createtask(vm.treeid, $scope.taskData, null)
                     .then(function (repo) {
@@ -30094,17 +30731,79 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
                      }, function (repo) { });
             }
         };
+
         $scope.$watch('choiceJob', function () {
             if($scope.choiceJob){
                 $scope.taskData.jobname = $scope.choiceJob.name;
-                $http.get('/api/job/variable/' + vm.treeid + '/' + $scope.choiceJob.uuid + "?empty=1").then(
+                vm._rollbackVersion_ = ''
+                vm.deployversion = ''
+                vm.iamtask4jobx = 0;
+                vm.showjobxgroup = 0;
+                $scope.taskData.group = null
+
+                $http.get('/api/job/variable/' + vm.treeid + '/' + $scope.choiceJob.uuid + "?empty=0").then(
                     function successCallback(response) {
+
                         if (response.data.stat){
-                            if (response.data.data.length == 0){
+                            vm.vartemp = [];
+                            angular.forEach(response.data.data, function (value, key) {
+
+                                if( value.value == "" )
+                                {
+                                    if( value.name == "ip" )
+                                    {
+                                        if( value.describe != "" )
+                                        {
+                                            vm.groupstr = value.describe.split(":");
+                                            
+                                            if( vm.groupstr[0] == 'group' )
+                                            {
+                                                if( value.describe == 'group' )
+                                                {
+                                                    vm.iamtask4jobx = 1;
+                                                    vm.showjobxgroup = 1;
+                                                }
+                                                else
+                                                {
+                                                    $scope.taskData.group = vm.groupstr[1];
+                                                    vm.iamtask4jobx = 1;
+                                                    vm.showjobxgroup = 0;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                vm.vartemp.push( value )
+                                            }
+                                        }
+                                        else
+                                        {
+                                            vm.vartemp.push( value )
+                                        }
+                                    }
+                                    else
+                                    {
+                                        vm.vartemp.push( value )
+                                    }
+                                }
+                                else
+                                {
+                                    if( value.name == "_rollbackVersion_" )
+                                    {
+                                        vm._rollbackVersion_ = value.value
+                                    }
+                                    if( value.name == "version" )
+                                    {
+                                        vm.deployversion = value.value
+                                    }
+                                }
+
+                            });
+
+                            if (vm.vartemp.length == 0){
                                 $scope.jobVar = [];
                                 $scope.taskData.variable = {};
                             }else {
-                                $scope.jobVar = response.data.data;
+                                $scope.jobVar = vm.vartemp;
 
                             }
                         }else {
@@ -30124,32 +30823,34 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
 
 (function () {
-    'use strict';
-     CiShowLogController.$inject = ["$uibModalInstance", "$http", "$state", "nodeStr", "ngTableParams", "reloadhome", "versionuuid", "slave", "$websocket", "$injector"];
+    // 'use strict';
+     CiShowLogController.$inject = ["$uibModalInstance", "$http", "$state", "nodeStr", "ngTableParams", "reloadhome", "versionuuid", "slave", "$websocket", "$injector", "$scope", "$sce", "$timeout"];
     angular
         .module('openc3')
         .controller('CiShowLogController', CiShowLogController);
 
-    function CiShowLogController($uibModalInstance, $http, $state, nodeStr, ngTableParams, reloadhome, versionuuid, slave, $websocket, $injector ) {
+    function CiShowLogController($uibModalInstance, $http, $state, nodeStr, ngTableParams, reloadhome, versionuuid, slave, $websocket, $injector, $scope, $sce, $timeout ) {
 
         var vm = this;
         vm.nodeStr = nodeStr;
-
+        $scope.uCanTrust = function(string){
+            return $sce.trustAsHtml(string);
+        }
         vm.cancel = function(){ $uibModalInstance.dismiss(); };
         var toastr = toastr || $injector.get('toastr');
-
         vm.treeid = $state.params.treeid;
 
         vm.openws = function()
         {
+            var ansi_up = new AnsiUp;
             var hosturl = window.location.host;
             vm.siteaddr = window.location.host;
 
             var urlMySocket = "ws://" + vm.siteaddr + "/api/ci/slave/"+ slave +"/ws?uuid="+ versionuuid;
  
              vm.ws = $websocket(urlMySocket);
-
              vm.logDetail = '';
+             
              vm.ws.onOpen(function (){
                 console.log("opening ws");
              });
@@ -30161,11 +30862,13 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
                  }
                  else
                  {
-                     vm.logDetail = vm.logDetail + message.data
+                    vm.logDetail = vm.logDetail + ansi_up.ansi_to_html(message.data)
+                    $timeout(function () {
+                        var dom = document.getElementById('logDetail')
+                        dom.scrollTop = dom.scrollHeight
+                    }, 0)
                  }
-
              });
-
              vm.ws.onError(function (message) {
                  toastr.error('打开日志失败')
              });
@@ -30200,6 +30903,8 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
             'variable':{},
             'uuid':null,
         };
+        vm.rollbacknoneeded = false
+
 
         vm.jobinfo;
         vm.getAllJob = function () {
@@ -30232,7 +30937,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
                                            }
                                            else
                                            {
-                                               $scope.taskData.variable = {version: version, '_jobtype_': jobtype, '_appname_': $scope.taskData.jobname, '_skipSameVersion_': 1 };
+                                               $scope.taskData.variable = {version: version, '_jobtype_': jobtype, '_appname_': $scope.taskData.jobname, '_skipSameVersion_': 0 };
                                            }
                                //        }
                                   }else {
@@ -30270,6 +30975,10 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
         };
 
         vm.runTask = function(){
+            if ( vm.rollbacknoneeded )
+            {
+                delete $scope.taskData.variable._rollbackVersion_;
+            }
             resoureceService.task.createtask(vm.treeid, $scope.taskData, null)
                 .then(function (repo) {
                     if (repo.stat){
@@ -30282,25 +30991,17 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
         vm.getAllGroup();
         vm.cancel = function(){ $uibModalInstance.dismiss()};
 
-        vm.versionitems = {};
-        vm.versions = [];
+        vm.setRollbackVersion = function ( version )
+        {
+            $scope.taskData.variable._rollbackVersion_ = version
+        }
 
-        vm.getVersion = function () {
-            $http.get('/api/job/vv/' + vm.treeid + '/analysis/version').then(
+        vm.lastversion = {};
+        vm.getLastVersion = function () {
+            $http.get('/api/jobx/flowline_version/' + projectid ).then(
                 function successCallback(response) {
                     if (response.data.stat) {
-                        vm.allversion = response.data.data;
-                        angular.forEach(vm.allversion, function(project){
-                            if( project.name == 'APP__ci_' + projectid  + '__VERSION')
-                            {
-                            vm.versionitems[project.name] = [];
-                                vm.versions.push(project.name);
-                                angular.forEach(project.data, function(value, key) {
-                                    vm.versionitems[project.name].push([key, parseFloat(value)]);
-                                });
-                            }
-                        });
-                        $timeout(function(){vm.showVersions(vm.versionitems)}, 0);
+                        vm.lastversion = response.data.data;
                     }else{
                         toastr.error( "获取作业信息失败：" + response.data.info )
                     };
@@ -30311,8 +31012,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
         };
 
 
-        vm.getVersion();
-
+        vm.getLastVersion();
 
         vm.showVersions = function (data) {
             var data_info = JSON.stringify(data);
@@ -30354,8 +31054,11 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
         };
 
-
-
+        vm.cleanRollbackVersion = function () {
+            if (vm.rollbacknoneeded){
+                $scope.taskData.variable._rollbackVersion_ = "";
+            }
+        };
 
     }
 })();
@@ -30380,7 +31083,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
             vm.nodeStr = treeService.selectname();
         });
 
-        $scope.panelcolor = { "success": "green", "fail": "red", "running": "#98b2bc", "decision": "#aaa", "ignore": "#aaa" }
+        $scope.panelcolor = { "success": "green", "fail": "red", "refuse": "orange",  "running": "#98b2bc", "decision": "#aaa", "ignore": "#aaa" }
 
         vm.openws = function()
         {
@@ -30435,12 +31138,14 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
             });
         };
 
+        vm.flowlinecount = 0;
         vm.reload = function(){
             vm.loadover = false;
             $http.get('/api/ci/group/' + vm.treeid ).success(function(data){
                 if(data.stat == true) 
                 { 
                     vm.activeRegionTable = new ngTableParams({count:20}, {counts:[],data:data.data.reverse()});
+                    vm.flowlinecount = data.data.length
                     vm.loadover = true;
                 } else { 
                     toastr.error( "加载版本失败:" + data.info )
@@ -30458,6 +31163,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
                 backdrop: 'static', 
                 size: 'lg', 
                 keyboard: false,
+                windowClass:'modal-class',
                 bindToController: true,
                 resolve: {
                     nodeStr: function () { return vm.nodeStr },
@@ -30670,7 +31376,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
         vm.cversion = function(text) {
             var w = '';
-            var re=/version:.*/;
+            var re=/\bversion:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -30685,7 +31391,7 @@ DistributeController.$inject = ["$scope", "$filter", "$state", "$http", "$window
 
         vm.cjobtype = function(text) {
             var w = '';
-            var re=/_jobtype_:.*/;
+            var re=/\b_jobtype_:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -30917,6 +31623,8 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
         $scope.s_timeout = '60';
         vm.s_name = "快速执行脚本-" + $filter('date')(new Date, "yyyyMMddHHmmss") + $filter('date')(new Date, "sss");
 
+        vm.postdata = { deployenv: 'always', action: 'always', batches: 'always' };
+
         treeService.sync.then(function(){      // when the tree was success.
             vm.nodeStr = treeService.selectname();  // get tree name
 
@@ -31037,6 +31745,7 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 sheditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorPy = function (data, re) {
@@ -31054,6 +31763,7 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 pyeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorPerl = function (data, re) {
@@ -31071,6 +31781,7 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 perleditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorPhp = function (data, re) {
@@ -31088,6 +31799,7 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 phpeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorBuildin = function (data, re) {
@@ -31105,6 +31817,7 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 buildineditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
 
         vm.editorAuto = function (data, re) {
@@ -31121,7 +31834,53 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             if (re){
                 autoeditor.setReadOnly(true)
             }
+            vm.leaveeditor();
         };
+
+        vm.showmachinelist = 1;
+
+        vm.leaveeditor = function() {
+            vm.showmachinelist = 1;
+            if($scope.scriptType == "buildin"){
+                var cont = vm.buildinEditor.getValue();
+                if( cont.search(/^#!kubectl\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!terraform\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!kubestar\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!awsecs\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!sendemail\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!sendmesg\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!flowcaller\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+                if( cont.search(/^#!cdnrefresh\b/) == 0 )
+                {
+                    vm.showmachinelist = 0;
+                }
+            }
+        }
+
+        vm.buildinSet = function( name ) {
+            vm.editorBuildin( '#!' + name, false );
+        }
 
         vm.scriptTypeEditor = {
             "shell": vm.editorSh,
@@ -31181,6 +31940,11 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
                 cont = vm.phpEditor.getValue();
             }else if($scope.scriptType == "buildin"){
                 cont = vm.buildinEditor.getValue();
+                if( vm.showmachinelist == 0  )
+                {
+                    $scope.nodeType = 'builtin';
+                    vm.choiceNode = [ 'openc3skipnode' ]
+                }
             }else if($scope.scriptType == "auto"){
                 cont = vm.autoEditor.getValue();
             }
@@ -31220,13 +31984,16 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
             cont = cont.replace(/\r\n/g, "\n");
             var post_data ={
                 'name': vm.s_name,
-                'user': $scope.selectedUser.username,
+                'user': $scope.selectedUser,
                 'node_type':$scope.nodeType,
                 'node_cont':vm.choiceNode.join(","),
                 'scripts_type':$scope.scriptType,
                 'scripts_cont': cont,
                 'scripts_argv': $scope.s_argv,
-                'timeout': parseInt($scope.s_timeout)
+                'timeout': parseInt($scope.s_timeout),
+                'deployenv' : vm.postdata.deployenv,
+                'action' : vm.postdata.action,
+                'batches' : vm.postdata.batches
             };
             resoureceService.work.runScript(vm.treeid, post_data, null)
                 .then(function (repo) {
@@ -31327,17 +32094,33 @@ QuickController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$
         }
         vm.getProUser();
 
+        vm.reloadticket = function(){
+            $http.get('/api/ci/ticket?type=JobBuildin').success(function(data){
+                if( data.stat)
+                {
+                    vm.ticketinfo = data.data;
+                    vm.ticketinfo.unshift({ id: '0', name: 'null' })
+                }
+                else
+                {
+                    toastr.error( "加载票据列表失败:" + data.info )
+                }
+            });
+        };
+
+        vm.reloadticket();
+
 }})();
 
 (function() {
     'use strict';
 
-QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$uibModal", "$timeout", "treeService", "resoureceService", "scriptId"];
+QuickentryApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$window", "$uibModal", "$timeout", "treeService", "resoureceService", "scriptId"];
     angular
         .module('openc3')
-        .controller('QuickApprovalController', QuickApprovalController);
+        .controller('QuickentryApprovalController', QuickentryApprovalController);
 
-    function QuickApprovalController($scope,$filter, $state, $http,$window,$uibModal, $timeout,treeService,resoureceService, scriptId) {
+    function QuickentryApprovalController($scope,$filter, $state, $http,$window,$uibModal, $timeout, treeService, resoureceService, scriptId) {
 
         var vm = this;
         vm.treeid = $state.params.treeid;
@@ -31481,7 +32264,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
         .filter('showversion', function () {
             return function (text) {
                 var w = '';
-                var re=/version:.*/;
+                var re=/\bversion:.*/;
                 if (re.test(text)){
                     var reStr = re.exec(text)[0];
                     w = reStr.split(":")[1]
@@ -31615,7 +32398,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
         vm.seftime = genericService.seftime
 
-        vm.statuszh = { "": "等待执行", "success": "执行成功", "fail": "执行失败", "decision": "执行失败", "running": "执行中", "ignore": "忽略", "waiting": "等待中" }
+        vm.statuszh = { "": "等待执行", "success": "执行成功", "fail": "执行失败", "refuse": "审批拒绝", "decision": "执行失败", "running": "执行中", "ignore": "忽略", "waiting": "等待中" }
 
         var nowTime = $filter('date')(new Date, "yyyy-MM-dd");
         vm.starttime = nowTime;
@@ -31745,6 +32528,147 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 (function() {
     'use strict';
 
+    VersionLogController.$inject = ["$state", "$http", "$scope", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('VersionLogController', VersionLogController);
+
+    /** @ngInject */
+    function VersionLogController( $state, $http, $scope, ngTableParams ) {
+
+        var vm = this;
+        vm.versionname = 'null'
+        vm.reload = function () {
+            vm.loadover = false;
+            $http.get('/api/connector/version/log').success(function(data){
+                if (data.stat){
+                    vm.versionlogTable = new ngTableParams({count:100}, {counts:[],data:data.data});
+                    vm.loadover = true;
+                }else {
+                    swal({ title:'获取数据失败', text: data.info, type:'error' });
+                }
+            });
+            $http.get('/api/connector/version/name').success(function(data){
+                if (data.stat){
+                    vm.versionname = data.data
+                }else {
+                    swal({ title:'获取数据失败', text: data.info, type:'error' });
+                }
+            });
+        };
+        vm.reload();
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    UseraddrController.$inject = ["$state", "$http", "$scope", "$uibModal", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('UseraddrController', UseraddrController);
+
+    /** @ngInject */
+    function UseraddrController( $state, $http, $scope, $uibModal, ngTableParams ) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+
+        vm.reload = function () {
+            vm.loadover = false
+            $http.get('/api/connector/useraddr').then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.dataTable = new ngTableParams({count:100}, {counts:[],data:response.data.data});
+                        vm.loadover = true
+                    }else {
+                        swal('获取信息失败', response.data.info, 'error' );
+                    }
+                },
+                function errorCallback (response ){
+                    swal('获取信息失败', response.status, 'error' );
+                });
+        };
+
+        vm.reload()
+
+        vm.createUseraddr = function () {
+            $uibModal.open({
+                templateUrl: 'app/pages/global/useraddr/create.html',
+                controller: 'UseraddrCreateController',
+                controllerAs: 'useraddrcreate',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    treeid: function () { return vm.treeid},
+                    reload : function () { return vm.reload}
+                }
+            });
+        };
+
+       vm.deleteUseraddr = function(id) {
+          swal({
+            title: "删除用户地址簿",
+            text: "删除",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            cancelButtonText: "取消",
+            confirmButtonText: "确定",
+            closeOnConfirm: true
+          }, function(){
+            $http.delete('/api/connector/useraddr/' + id ).success(function(data){
+                if(data.stat == true) {
+                    swal({ title: "删除成功!", type:'success' });
+                    vm.reload();
+                } else {
+                    swal({ title: "删除失败!", text: data.info, type:'error' });
+                }
+            });
+          });
+        }
+
+    }
+
+})();
+
+(function () {
+    'use strict';
+    UseraddrCreateController.$inject = ["$state", "$http", "ngTableParams", "$uibModalInstance", "$scope", "resoureceService", "$injector", "treeid", "reload"];
+    angular
+        .module('openc3')
+        .controller('UseraddrCreateController', UseraddrCreateController);
+
+    function UseraddrCreateController( $state, $http, ngTableParams, $uibModalInstance, $scope, resoureceService, $injector, treeid, reload ) {
+
+        var vm = this;
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.postdata = {};
+
+        vm.cancel = function(){ $uibModalInstance.dismiss()};
+
+        vm.add = function(){
+            $http.post('/api/connector/useraddr', vm.postdata ).success(function(data){
+                    if(data.stat == true) {
+                        vm.cancel();
+                        reload();
+                    } else { swal({ title: "添加失败!", text: data.info, type:'error' }); }
+
+            });
+        };
+
+    }
+})();
+
+
+(function() {
+    'use strict';
+
     TicketController.$inject = ["$state", "$http", "$uibModal", "$scope", "ngTableParams"];
     angular
         .module('openc3')
@@ -31765,6 +32689,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 resolve: {
                     ticketid: function () {},
                     homereload: function () { return vm.reload },
+                    type: function () { return 'create' },
                     title: function () { return '新建票据' },
                 }
             });
@@ -31793,6 +32718,23 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
           });
         };
 
+        vm.showTicket = function(id){
+            $uibModal.open({
+                templateUrl: 'app/pages/global/ticket/createTicket.html',
+                controller: 'CreateTicketController',
+                controllerAs: 'createticket',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    ticketid: function () { return id},
+                    homereload: function () { return vm.reload },
+                    type: function () { return 'show' },
+                    title: function () { return '查看票据' },
+                }
+            });
+        };
 
         vm.editTicket = function(id){
             $uibModal.open({
@@ -31806,6 +32748,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 resolve: {
                     ticketid: function () { return id},
                     homereload: function () { return vm.reload },
+                    type: function () { return 'edit' },
                     title: function () { return '编辑票据' },
                 }
             });
@@ -31831,21 +32774,27 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 (function() {
     'use strict';
 
-    CreateTicketController.$inject = ["$uibModalInstance", "$state", "$http", "$scope", "homereload", "ticketid", "title"];
+    CreateTicketController.$inject = ["$uibModalInstance", "$state", "$http", "$scope", "homereload", "ticketid", "title", "type"];
     angular
         .module('openc3')
         .controller('CreateTicketController', CreateTicketController);
 
-    function CreateTicketController($uibModalInstance, $state, $http, $scope, homereload, ticketid, title ) {
+    function CreateTicketController($uibModalInstance, $state, $http, $scope, homereload, ticketid, title, type ) {
 
         var vm = this;
         vm.title = title
+        vm.type = type
         vm.cancel = function(){ $uibModalInstance.dismiss()};
-        vm.postData = { type: 'SSHKey' };
+        vm.postData = { type: 'SSHKey', share: 'false' };
 
         if( ticketid )
         {
-            $http.get('/api/ci/ticket/' + ticketid ).then(
+            var detail = '';
+            if( type == 'edit' )
+            {
+                detail = '?detail=1'
+            }
+            $http.get('/api/ci/ticket/' + ticketid + detail ).then(
                 function successCallback(response) {
                     if (response.data.stat){
                         vm.postData = response.data.data
@@ -31941,11 +32890,19 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
         };
 
+        vm.emailSet = function () {
+            vm.environment.notifyTemplateEmailTitle = "作业:${name} 状态:${status}";
+            vm.environment.notifyTemplateEmailContent = "服务树:${projectname}\n作业名称:${name}\n任务编号:${uuid}\n任务状态:${status}\n\n详情：" + window.location.protocol + '//' + window.location.host + "/#/history/jobdetail/${projectid}/${uuid}";
+        };
+
         vm.emailSave = function () {
             var emailDetail = {};
             emailDetail['notifyTemplateEmailTitle'] = vm.environment.notifyTemplateEmailTitle;
             emailDetail['notifyTemplateEmailContent'] = vm.environment.notifyTemplateEmailContent;
             vm.save( emailDetail )
+        };
+        vm.smsSet = function () {
+            vm.environment.notifyTemplateSmsContent = "服务树:${projectname}\n作业名称:${name}\n任务编号:${uuid}\n任务状态:${status}\n\n详情：" + window.location.protocol + '//' + window.location.host + "/#/history/jobdetail/${projectid}/${uuid}";
         };
         vm.smsSave = function () {
             var msmDetail = {};
@@ -31953,24 +32910,41 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             vm.save( msmDetail )
         };
 
-
+        vm.emailCiSet = function () {
+            vm.environment.ciTemplateEmailTitle = "Open-C3构建消息 项目: ${projectname} 版本:${version}";
+            vm.environment.ciTemplateEmailContent = "状态: ${status}\n服务树:${treename}\n项目名称: ${projectname}\n代码仓库地址: ${addr}\n版本: ${version}\n触发测试环境发布: ${calltestenv}\n触发线上环境发布: ${callonlineenv}\n错误信息: ${errormsg}\n构建日志:\n${buildlog}\n\n详情:" + window.location.protocol + '//' + window.location.host + "/#/quickentry/flowlinedetail/${treeid}/${projectid}";
+        };
+ 
         vm.emailCiSave = function () {
             var emailDetail = {};
             emailDetail['ciTemplateEmailTitle'] = vm.environment.ciTemplateEmailTitle;
             emailDetail['ciTemplateEmailContent'] = vm.environment.ciTemplateEmailContent;
             vm.save( emailDetail )
         };
+
+        vm.smsCiSet = function () {
+            vm.environment.ciTemplateSmsContent = "Open-C3构建消息\n服务树:${treename}\n项目:${projectname}\n版本:${version}\n状态:${status}\n\n详情:" + window.location.protocol + '//' + window.location.host + "/#/quickentry/flowlinedetail/${treeid}/${projectid}";
+        };
+ 
         vm.smsCiSave = function () {
             var msmDetail = {};
             msmDetail['ciTemplateSmsContent'] = vm.environment.ciTemplateSmsContent;
             vm.save( msmDetail )
         };
  
+        vm.emailApprovalSet = function () {
+            vm.environment.approvalTemplateEmailTitle = "发布审批: ${cont}";
+            vm.environment.approvalTemplateEmailContent = "审批内容: ${cont}\n\n详情:" + window.location.protocol + '//' + window.location.host + "/#/quickapproval/${uuid}";
+        };
+
         vm.emailApprovalSave = function () {
             var emailDetail = {};
             emailDetail['approvalTemplateEmailTitle'] = vm.environment.approvalTemplateEmailTitle;
             emailDetail['approvalTemplateEmailContent'] = vm.environment.approvalTemplateEmailContent;
             vm.save( emailDetail )
+        };
+        vm.smsApprovalSet = function () {
+            vm.environment.approvalTemplateSmsContent = "审批内容: ${cont}\n\n详情:" + window.location.protocol + '//' + window.location.host + "/#/quickapproval/${uuid}";
         };
         vm.smsApprovalSave = function () {
             var msmDetail = {};
@@ -31993,6 +32967,89 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
     }
 
 })();
+
+(function() {
+    'use strict';
+
+    PrivateController.$inject = ["$state", "$http", "$scope", "$uibModal", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('PrivateController', PrivateController);
+
+    /** @ngInject */
+    function PrivateController( $state, $http, $scope, $uibModal, ngTableParams ) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+
+        vm.reload = function () {
+            vm.loadover = false
+            $http.get('/api/connector/private').then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.dataTable = new ngTableParams({count:100}, {counts:[],data:response.data.data});
+                        vm.loadover = true
+                    }else {
+                        swal('获取信息失败', response.data.info, 'error' );
+                    }
+                },
+                function errorCallback (response ){
+                    swal('获取信息失败', response.status, 'error' );
+                });
+        };
+
+        vm.reload()
+
+        vm.createPrivate = function () {
+            $uibModal.open({
+                templateUrl: 'app/pages/global/private/create.html',
+                controller: 'PrivateCreateController',
+                controllerAs: 'privatecreate',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    treeid: function () { return vm.treeid},
+                    reload : function () { return vm.reload}
+                }
+            });
+        };
+
+    }
+
+})();
+
+(function () {
+    'use strict';
+    PrivateCreateController.$inject = ["$state", "$http", "ngTableParams", "$uibModalInstance", "$scope", "resoureceService", "$injector", "treeid", "reload"];
+    angular
+        .module('openc3')
+        .controller('PrivateCreateController', PrivateCreateController);
+
+    function PrivateCreateController( $state, $http, ngTableParams, $uibModalInstance, $scope, resoureceService, $injector, treeid, reload ) {
+
+        var vm = this;
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.postdata = {};
+
+        vm.cancel = function(){ $uibModalInstance.dismiss()};
+
+        vm.add = function(){
+            $http.post('/api/connector/private', vm.postdata ).success(function(data){
+                    if(data.stat == true) {
+                        vm.cancel();
+                        reload();
+                    } else { swal({ title: "添加失败!", text: data.info, type:'error' }); }
+
+            });
+        };
+
+    }
+})();
+
 
 (function() {
     'use strict';
@@ -32085,6 +33142,355 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
         };
         vm.reload()
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    MonitorController.$inject = ["$state", "$http", "$scope", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('MonitorController', MonitorController);
+
+    /** @ngInject */
+    function MonitorController( $state, $http, $scope, ngTableParams ) {
+
+        var vm = this;
+        vm.reload = function () {
+            vm.loadover = false;
+            $http.get('/api/jobx/monitor/metrics?json=1').success(function(data){
+                if (data.stat){
+                    vm.monitorTable = new ngTableParams({count:100}, {counts:[],data:data.data});
+                    vm.loadover = true;
+                }else {
+                    swal({ title:'获取监控数据失败', text: data.info, type:'error' });
+                }
+            });
+        };
+        vm.reload();
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    ImagesController.$inject = ["$state", "$http", "$uibModal", "$scope", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('ImagesController', ImagesController);
+
+    function ImagesController($state, $http, $uibModal, $scope, ngTableParams) {
+
+        var vm = this;
+        vm.createImages = function () {
+            $uibModal.open({
+                templateUrl: 'app/pages/global/images/createImages.html',
+                controller: 'CreateImagesController',
+                controllerAs: 'createimages',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    imagesid: function () {},
+                    homereload: function () { return vm.reload },
+                    title: function () { return '新建镜像' },
+                }
+            });
+
+        };
+
+        vm.deleteImages = function(id){
+          swal({
+            title: "删除镜像",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            cancelButtonText: "取消",
+            confirmButtonText: "确定",
+            closeOnConfirm: true
+          }, function(){
+
+            $http.delete( '/api/ci/images/' + id ).success(function(data){
+                if (data.stat){
+                    vm.reload();
+                }else {
+                    swal({ title:'删除镜像列表失败', text: data.info, type:'error' });
+                }
+            });
+
+          });
+        };
+
+        vm.editImages = function(id){
+            $uibModal.open({
+                templateUrl: 'app/pages/global/images/createImages.html',
+                controller: 'CreateImagesController',
+                controllerAs: 'createimages',
+                backdrop: 'static',
+                size: 'lg',
+                keyboard: false,
+                bindToController: true,
+                resolve: {
+                    imagesid: function () { return id},
+                    homereload: function () { return vm.reload },
+                    title: function () { return '编辑镜像' },
+                }
+            });
+        };
+
+        vm.reload = function () {
+            vm.loadover = false;
+            $http.get('/api/ci/images').success(function(data){
+                if (data.stat){
+                    vm.group_Table = new ngTableParams({count:25}, {counts:[],data:data.data.reverse()});
+                    vm.loadover = true;
+                }else {
+                    swal({ title:'获取镜像列表失败', text: data.info, type:'error' });
+                }
+            });
+        };
+        vm.reload();
+
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    CreateImagesController.$inject = ["$uibModalInstance", "$state", "$http", "$scope", "homereload", "imagesid", "title", "$injector"];
+    angular
+        .module('openc3')
+        .controller('CreateImagesController', CreateImagesController);
+
+    function CreateImagesController($uibModalInstance, $state, $http, $scope, homereload, imagesid, title, $injector ) {
+
+        var vm = this;
+        vm.title = title
+        vm.cancel = function(){ $uibModalInstance.dismiss()};
+        vm.postData = { share: 'false' };
+        vm.uploadstatus = 0;
+        vm.imagesid = imagesid
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.siteaddr = window.location.host;
+
+        vm.bytesToSize = function(bytes) {
+            if (bytes === 0) return '0 B';
+            var k = 1000, // or 1024
+                sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                i = Math.floor(Math.log(bytes) / Math.log(k));
+
+           return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+        }
+
+
+        vm.loadimagesinfo = function( imagesid )
+        {
+            $http.get('/api/ci/images/' + imagesid + '/upload' ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.uploadstatus = response.data.data
+                    }else {
+                        swal({ title:'检测镜像失败', text: response.data.info, type:'error' });
+                    }
+                },
+                function errorCallback (response){
+                    swal({ title:'检查镜像失败', text: response.status, type:'error' });
+                });
+
+        }
+        if( imagesid )
+        {
+            $http.get('/api/ci/images/' + imagesid ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.postData = response.data.data
+                    }else {
+                        swal({ title:'获取镜像详情失败', text: response.data.info, type:'error' });
+                    }
+                },
+                function errorCallback (response){
+                    swal({ title:'获取镜像详情失败', text: response.status, type:'error' });
+                });
+
+                vm.loadimagesinfo( imagesid )
+        }
+
+        vm.saveImages = function(){
+            var uri = '/api/ci/images';
+            if( imagesid )
+            {
+                uri = '/api/ci/images/' + imagesid;
+            }
+            $http.post(uri, vm.postData ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        homereload();
+                        vm.cancel();
+                    }else {
+                        swal({ title:'保存镜像失败', text: response.data.info, type:'error' });
+                    }
+                }
+            );
+        };
+
+        $scope.upForm = function () {
+            $("#upload_progressBar_Module").css("display","block");
+            var file = document.getElementById("choicefilesx").files[0];
+            var name = document.getElementById("choicefilesx").files[0].name;
+            $(".newFile").parents("div.col-sm-10").find("input[name='newFileMsg']").attr("data-name",name);
+            var url = '/api/ci/images/' + imagesid + '/upload';
+
+            var piece = 1024 * 1024 * 24;
+            var len = Math.ceil(file.size/piece);
+            var start = 0;
+            var end = start + piece;
+            var start_time = new Date().getTime();
+
+            var seq = 0;
+            function upload(){
+                if (seq<len){
+                    var chunk = file.slice(start, end);
+                    var form = new FormData();
+                    var xhr = new XMLHttpRequest();
+
+                    form.append("filesize", file.size);
+                    form.append("file", chunk);
+                    form.append("len", len);
+                    form.append("seq", seq);
+                    xhr.open("post", url, true);
+                    xhr.upload.onprogress=function(e){
+                        var loaded = e.loaded+seq*piece;
+                        if (e.lengthComputable){
+                            $("#upload_progressBar").css("width",Math.round(loaded / file.size * 100) + "%");
+                            $("#upload_progressBar").html(Math.round(loaded / file.size * 100) + "%");
+                            $("#percentage").html("已上传"+ Math.round(loaded / file.size * 100) + "%");
+                        }
+                        //速度
+                        var now = new Date().getTime();
+                        var time = (now-start_time)/1000; //单位为s
+                        var speed = loaded/time;
+                        var bspeed = speed;
+                        var units = 'b/s';
+                        if(speed/1024>1){
+                            speed = speed/1024;
+                            units = 'k/s';
+                        }
+                        if(speed/1024>1){
+                            speed = speed/1024;
+                            units = 'M/s';
+                        }
+                        speed = speed.toFixed(1);
+                        //剩余时间
+                        var resttime = ((file.size-loaded)/bspeed).toFixed(1);
+                        $("#time").html('，速度：' + speed + units + '，剩余时间：' + Math.abs(resttime) + 's');
+                    };
+                    xhr.onload=function(){
+                        if (xhr.status == 200) {
+                            var res = JSON.parse(xhr.responseText);
+                            if (res.stat){
+                                if (res.data.done){
+                                    vm.loadimagesinfo( imagesid );
+                                    seq = len;
+                                    return;
+                                }
+                                //执行下一次请求
+                                start = end;
+                                end = start + piece;
+                                seq++;
+                                upload();
+                            }else{
+                                toastr.error("上传失败:" + xhr.responseText);
+                                seq = len;
+                                return;
+                            }
+                        }else{
+                            toastr.error("上传失败:" + xhr.responseText);
+                            seq = len;
+                            return;
+                        }
+                    };
+                    xhr.send(form);
+                }
+            }
+            upload();
+        };
+
+        vm.clickImport = function () {
+            document.getElementById("choicefilesx").click();
+        };
+    }
+})();
+
+(function() {
+    'use strict';
+
+    AuditLogController.$inject = ["$state", "$http", "$scope", "ngTableParams"];
+    angular
+        .module('openc3')
+        .controller('AuditLogController', AuditLogController);
+
+    /** @ngInject */
+    function AuditLogController( $state, $http, $scope, ngTableParams ) {
+
+        var vm = this;
+
+        vm.Reset = function () {
+            vm.time = "";
+            vm.user = "";
+            vm.title = "";
+            vm.content = "";
+            vm.reload()
+        };
+
+ 
+        vm.reload = function () {
+            var get_data = {};
+            if( vm.time )
+            {
+                get_data.time = vm.time
+            }
+            if( vm.user )
+            {
+                get_data.user = vm.user
+            }
+
+            if( vm.title )
+            {
+                get_data.title = vm.title
+            }
+
+            if( vm.content )
+            {
+                get_data.content = vm.content
+            }
+
+            vm.loadover = false;
+            $http({
+                method:'GET',
+                url: '/api/connector/connectorx/auditlog',
+                params:get_data
+            }).then(
+                function successCallback(response) {
+                    vm.loadover = true;
+                    if (response.data.stat){
+                        vm.auditlogTable = new ngTableParams({count:100}, {counts:[],data:response.data.data});
+                    }else {
+                        swal('获取列表失败', response.data.info, 'error');
+                    }
+                },
+                function errorCallback(response) {
+                    swal('获取列表失败', response.status, 'error');
+                }
+            );
+        };
+        vm.reload();
     }
 
 })();
@@ -32278,7 +33684,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                             if (!vm.currentNode.isParent){
                                 vm.canDelNode = true;
                             }
-                            if (vm.currentNode.level > 0){
+                            if (vm.nodeId < 4000000000 ){
                                 vm.canEditNode = true;
                             }
  
@@ -33258,12 +34664,12 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
 (function () {
     'use strict';
-    EditGroup.$inject = ["$uibModalInstance", "$uibModal", "$http", "$scope", "ngTableParams", "resoureceService", "treeId", "groupId", "homereload"];
+    EditGroup.$inject = ["$uibModalInstance", "$uibModal", "$http", "$scope", "ngTableParams", "resoureceService", "treeId", "groupId", "homereload", "$injector"];
     angular
         .module('openc3')
         .controller('EditGroup', EditGroup);
 
-    function EditGroup($uibModalInstance,$uibModal, $http, $scope, ngTableParams,resoureceService, treeId, groupId, homereload) {
+    function EditGroup($uibModalInstance,$uibModal, $http, $scope, ngTableParams,resoureceService, treeId, groupId, homereload, $injector ) {
 
         var vm = this;
         $scope.selected = [];
@@ -33927,6 +35333,18 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             }
 
         };
+        vm.deleteGroup = function(){
+            if(groupid){
+                resoureceService.group.deletegroup([vm.treeid,groupid],null, null).finally(function(){
+                    vm.cancel();
+                });
+            }
+            else
+            {
+                vm.cancel();
+            }
+        };
+
         if(groupid){
             $http.get('/api/jobx/group/' + vm.treeid+"/"+groupid).then(
                 function successCallback(response) {
@@ -34158,6 +35576,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                         if (vm.copyJobDatas){
                             $state.go('home.business.jobedit', {
                                 treeid:vm.treeid,
+                                editjobuuid:vm.jobDetail.uuid,
                                 editdata:vm.copyJobDatas,
                                 jobtypes:vm.jobTypes,
                                 copyjob:true,
@@ -34219,7 +35638,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 keyboard: false,
                 bindToController: true,
                 resolve: {
-                    reloadCron: function () {return null},
+                    reloadhome: function () {return null},
                     cronData : function () {return null},
                     edit : function () {return null},
                     jobData : function () {return jobdata},
@@ -34347,7 +35766,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 function successCallback(response) {
                     if (response.data.stat){
                         vm.loadover = true
-                        vm.dataTable = new ngTableParams({count:10}, {counts:[],data:response.data.data.reverse()});
+                        vm.dataTable = new ngTableParams({count:10}, {counts:[],data:response.data.data});
                     }else {
                         swal('获取列表失败', response.data.info, 'error');
                     }
@@ -34525,7 +35944,20 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             );
 
         };
+
+        vm.count = function(pluginType){
+            var count = 0;
+            for(var i = 0; i < vm.allNewJob.length; i++) {
+                if (vm.allNewJob[i].plugin_type == pluginType){
+                    count = count + 1;
+                }
+            }
+            return count;
+        };
+
         vm.createScriptJob = function (idx) {
+            var count = vm.count("cmd");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/cmd.html',
                 controller: 'scriptJobController',
@@ -34536,7 +35968,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -34555,6 +35988,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
         };
 
         vm.createScpJob = function (idx) {
+            var count = vm.count("scp");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/scp.html',
                 controller: 'scpJobController',
@@ -34565,7 +36000,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -34585,6 +36021,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
 
         vm.createApprovalJob = function (idx) {
+            var count = vm.count("approval");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/approval.html',
                 controller: 'approvalJobController',
@@ -34595,7 +36033,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             }); 
 
@@ -34627,7 +36066,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             }); 
 
@@ -34654,7 +36094,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             }); 
 
@@ -34680,7 +36121,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () {return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             });
 
@@ -34744,6 +36186,12 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                         openResult.result.then(
                             function (result) {
                                 if (result){
+                                    $scope.newjobname = "";
+                                    $scope.saveHide = true;
+                                    $scope.saveOK = false;
+                                    $scope.jobuuid = result;
+                                    vm.editjobuuid = result;
+                                    vm.saveVar()
                                     $state.go('home.business.job',{treeid:vm.treeid})
                                 }
 
@@ -34878,6 +36326,18 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 });
         };
 
+        vm.up = function (idx){
+            if (idx>0){
+                [vm.allNewJob[idx-1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx-1]]
+            }
+        };
+
+        vm.down = function (idx){
+            if (idx<vm.allNewJob.length-1){
+                [vm.allNewJob[idx+1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx+1]]
+            }
+        };
+
         if (vm.editjobuuid && vm.editJobData){
             $scope.newjobname = vm.editjobname;
             if (vm.mon_status) {
@@ -34953,7 +36413,19 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             vm.allVar.push(angular.copy($scope.var));
         };
 
+        vm.count = function(pluginType){
+            var count = 0;
+            for(var i = 0; i < vm.allNewJob.length; i++) {
+                if (vm.allNewJob[i].plugin_type == pluginType){
+                    count = count + 1;
+                }
+            }
+            return count;
+        };
+
         vm.createScriptJob = function (idx) {
+            var count = vm.count("cmd");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/cmd.html',
                 controller: 'scriptJobController',
@@ -34964,7 +36436,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -34982,6 +36455,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
         };
 
         vm.createApprovalJob = function (idx) {
+            var count = vm.count("approval");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/approval.html',
                 controller: 'approvalJobController',
@@ -34992,7 +36467,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -35022,7 +36498,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             });
 
@@ -35036,6 +36513,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
 
 
         vm.createScpJob = function (idx) {
+            var count = vm.count("scp");
+            var seq = count + 1;
             var openChoice = $uibModal.open({
                 templateUrl: 'app/pages/business/job/plugin/scp.html',
                 controller: 'scpJobController',
@@ -35046,7 +36525,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return ""}
+                    editData : function () {return ""},
+                    seq : function () {return seq}
                 }
             });
 
@@ -35075,7 +36555,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () { return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             });
 
@@ -35099,7 +36580,8 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 bindToController: true,
                 resolve: {
                     treeId: function () {return vm.treeid},
-                    editData : function () {return editData}
+                    editData : function () {return editData},
+                    seq : function () {return 0}
                 }
             });
 
@@ -35231,6 +36713,18 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
                 function errorCallback (response){
                     swal({ title:"检测变量失败", type:'error', text:response.message });
                 });
+        };
+
+        vm.up = function (idx){
+            if (idx>0){
+                [vm.allNewJob[idx-1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx-1]]
+            }
+        };
+
+        vm.down = function (idx){
+            if (idx<vm.allNewJob.length-1){
+                [vm.allNewJob[idx+1], vm.allNewJob[idx]] = [vm.allNewJob[idx], vm.allNewJob[idx+1]]
+            }
         };
     }
 
@@ -35407,6 +36901,16 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             vm.createEnd= result;
             $scope.$apply();
         });
+
+
+        vm.bytesToSize = function(bytes) {
+            if (bytes === 0) return '0 B';
+            var k = 1000, // or 1024
+                sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                i = Math.floor(Math.log(bytes) / Math.log(k));
+
+           return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+        }
 
         vm.reload = function(){
             vm.loadover = false
@@ -35869,6 +37373,7 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
         vm.cancel = function(){ $uibModalInstance.dismiss()};
 
         vm.treeid = $state.params.treeid;
+        vm.edit = edit
         $scope.selectedjob = "";
         $scope.mutex = '';
         vm.cronlockstr = '';   
@@ -35924,7 +37429,13 @@ QuickApprovalController.$inject = ["$scope", "$filter", "$state", "$http", "$win
             $http.get('/api/job/jobs/'  + vm.treeid).then(
                 function successCallback(response) {
                     if (response.data.stat){
-                        $scope.allJobs = response.data.data;
+                        $scope.allJobs = []
+                        angular.forEach(response.data.data, function (d, index) {
+                            if( d.hasvariable == 0 )
+                            {
+                                $scope.allJobs.push(d)
+                            }
+                        });
                     }else {
                         $scope.dataready = false;
                         toastr.error( "获取作业信息失败："+response.data.info );
@@ -36308,6 +37819,69 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 (function() {
     'use strict';
 
+    QuickApprovalController.$inject = ["$state", "$http", "$injector", "ngTableParams", "genericService"];
+    angular
+        .module('openc3')
+        .controller('QuickApprovalController', QuickApprovalController);
+
+    function QuickApprovalController($state, $http, $injector, ngTableParams, genericService ) {
+        var vm = this;
+        var toastr = toastr || $injector.get('toastr');
+        var uuid = $state.params.uuid;
+
+        vm.seftime = genericService.seftime
+        vm.show = false
+        vm.stat = {}
+        vm.reload = function () {
+            $http.get('/api/job/approval/control/' + uuid).then(
+                function successCallback(response){
+                    if (response.data.stat){
+                        vm.dataTable = new ngTableParams({count:25}, {counts:[],data:response.data.data});
+                        vm.data = response.data.data[0]
+                    }else{
+                        toastr.error("获取信息失败:"+response.data.info)
+                    }
+
+                },
+                function errorCallback (response){
+                    toastr.error("获取信息失败:"+response.status)
+
+                });
+
+            $http.get('/api/job/approval/control/status/' + uuid).then(
+                function successCallback(response){
+                    if (response.data.stat){
+                        vm.stat = response.data.data
+                    }else{
+                        toastr.error("获取信息失败:"+response.data.info)
+                    }
+
+                },
+                function errorCallback (response){
+                    toastr.error("获取信息失败:"+response.status)
+
+                });
+ 
+        };
+
+        vm.edit = function (opinion) {
+            $http.post( '/api/job/approval/control', { uuid: uuid, opinion: opinion} ).success(function(data){
+                if (data.stat){
+                    vm.reload();
+                }else {
+                    swal({ title: '操作失败', text: data.info, type:'error' });
+                }
+            });
+        };
+
+        vm.reload();
+
+    }
+})();
+
+(function() {
+    'use strict';
+
     LoginController.$inject = ["$scope", "$state", "$http", "$injector"];
     angular
         .module('openc3')
@@ -36375,6 +37949,654 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 (function() {
     'use strict';
 
+    GitreportController.$inject = ["$scope", "$state", "$http", "treeService", "ngTableParams", "$injector", "$timeout", "genericService"];
+    angular
+        .module('openc3')
+        .controller('GitreportController', GitreportController);
+
+    function GitreportController($scope, $state, $http, treeService, ngTableParams, $injector, $timeout, genericService) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+        vm.selecteduser = $state.params.user;
+        if( vm.selecteduser == undefined )
+        {
+            vm.selecteduser = ''
+        }
+
+        vm.selectedproject = $state.params.project;
+        if( vm.selectedproject == undefined )
+        {
+            vm.selectedproject = ''
+        }
+
+        vm.selecteddata = $state.params.data;
+        if( vm.selecteddata == undefined )
+        {
+            vm.selecteddata = 'current'
+        }
+
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.userlist = [];
+        vm.taskdatetime = [];
+        vm.tasksuccess = [];
+        vm.taskall = [];
+        vm.treeid = $state.params.treeid;
+        vm.state = $state;
+        vm.updatetime;
+
+        treeService.sync.then(function(){
+            vm.nodeStr = treeService.selectname();
+        });
+
+        vm.filteruser = function (username, datalist, project ) {
+            $state.go('home.gitreportfilterdata', {treeid:vm.treeid, user: username, project: project, data: datalist});
+        }
+
+
+        $scope.choiceName = vm.selecteduser;
+        $scope.choiceProject = vm.selectedproject;
+        $scope.choiceData = vm.selecteddata;
+        $scope.$watch('choiceName', function () {
+                vm.filteruser( $scope.choiceName, $scope.choiceData, $scope.choiceProject )
+        });
+
+        $scope.$watch('choiceProject', function () {
+                vm.filteruser( $scope.choiceName, $scope.choiceData, $scope.choiceProject )
+        });
+
+        $scope.$watch('choiceData', function () {
+                vm.filteruser( $scope.choiceName, $scope.choiceData, $scope.choiceProject )
+        });
+
+ 
+        vm.reload = function () {
+            $http.get('/api/ci/gitreport/' + vm.treeid + "/datalist?" ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.datalist = response.data.data; 
+                    }else {
+                        toastr.error( "获取数据失败："+response.data.info );
+                    }
+                },
+                function errorCallback (response){
+                    toastr.error( "获取数据失败: " + response.status )
+                });
+
+            $http.get('/api/ci/gitreport/' + vm.treeid + "/report?user=" + vm.selecteduser + "&data=" + vm.selecteddata + "&project=" + vm.selectedproject ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        $scope.userCount = response.data.data.usercount;
+                        $scope.codeAddCount = response.data.data.addcount;
+                        $scope.codeDelCount = response.data.data.delcount;
+                        $scope.commitCount = response.data.data.commitcount;
+                        vm.userlist = response.data.data.userlist; 
+                        vm.projectlist = response.data.data.projectlist; 
+
+                        vm.showRuntime2(response.data.data.pingtu);
+                        vm.showRuntime3(response.data.data.pingtu2);
+                        vm.showRuntime6(response.data.data.pingtu3);
+                        vm.showRuntime7(response.data.data.pingtu4);
+                        vm.data_Table = new ngTableParams({count:1000}, {counts:[],data:response.data.data.detailtable.reverse()});
+
+                        vm.taskdatetime = [];
+                        vm.taskall = [];
+                        vm.tasksuccess = [];
+
+                        vm.taskdatetime2 = [];
+                        vm.taskall2 = [];
+                        vm.tasksuccess2 = [];
+
+                        vm.taskdatetime3 = [];
+                        vm.taskall3 = [];
+                        vm.tasksuccess3 = [];
+
+                        vm.updatetime = response.data.data.updatetime;
+
+                        angular.forEach(response.data.data.change, function (oneday, index) {
+                            vm.taskdatetime.push(oneday[0]);
+                            vm.taskall.push(oneday[1]);
+                            vm.tasksuccess.push(oneday[2]);
+                        });
+
+                        angular.forEach(response.data.data.change2, function (oneday, index) {
+                            vm.taskdatetime2.push(oneday[0]);
+                            vm.taskall2.push(oneday[1]);
+                            vm.tasksuccess2.push(oneday[2]);
+                        });
+
+                        angular.forEach(response.data.data.change3, function (oneday, index) {
+                            vm.taskdatetime3.push(oneday[0]);
+                            vm.taskall3.push(oneday[1]);
+                            vm.tasksuccess3.push(oneday[2]);
+                        });
+
+                        vm.show30Task(vm.taskdatetime, vm.tasksuccess,vm.taskall)
+                        vm.show30Task2(vm.taskdatetime2, vm.tasksuccess2,vm.taskall2)
+                        vm.show30Task3(vm.taskdatetime3, vm.tasksuccess3,vm.taskall3)
+                    }else {
+                        toastr.error( "获取数据失败："+response.data.info );
+                    }
+                },
+                function errorCallback (response){
+                    toastr.error( "获取数据失败: " + response.status )
+                });
+        };
+
+        vm.reload();
+
+        vm.show30Task = function (datetimes, okcounts, allcounts) {
+            
+            var opt =  {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: '日期分布'
+                },
+                subtitle: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: datetimes
+                },
+                yAxis: {
+                    title: {
+                        text: ''
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value ;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '添加(行)',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'green',
+                    data: allcounts
+                }, {
+                    name: '删除(行)',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    color: 'red',
+                    data: okcounts
+                }]
+            };
+            Highcharts.chart('container', opt );
+        };
+
+        vm.show30Task2 = function (datetimes, okcounts, allcounts) {
+            
+            var opt =  {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: '时间点分布'
+                },
+                subtitle: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: datetimes
+                },
+                yAxis: {
+                    title: {
+                        text: ''
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value ;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '添加(行)',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'green',
+                    data: allcounts
+                }, {
+                    name: '删除(行)',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    color: 'red',
+                    data: okcounts
+                }]
+            };
+            Highcharts.chart('container4', opt );
+        };
+
+
+
+        vm.show30Task3 = function (datetimes, okcounts, allcounts) {
+            
+            var opt =  {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: '星期分布'
+                },
+                subtitle: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: datetimes
+                },
+                yAxis: {
+                    title: {
+                        text: ''
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value ;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '添加(行)',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'green',
+                    data: allcounts
+                }, {
+                    name: '删除(行)',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    color: 'red',
+                    data: okcounts
+                }]
+            };
+            Highcharts.chart('container5', opt );
+        };
+
+
+        vm.showRuntime2 = function (times) {
+            $('#container2').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: ''
+                },
+                tooltip: {
+                    headerFormat: '{series.name}<br>',
+                    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: '',
+                    data: times
+                }]
+            });
+        };
+
+        vm.showRuntime3 = function (times) {
+            $('#container3').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: ''
+                },
+                tooltip: {
+                    headerFormat: '{series.name}<br>',
+                    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: '',
+                    data: times
+                }]
+            });
+        };
+
+        vm.showRuntime6 = function (times) {
+            $('#container6').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: ''
+                },
+                tooltip: {
+                    headerFormat: '{series.name}<br>',
+                    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: '',
+                    data: times
+                }]
+            });
+        };
+        vm.showRuntime7 = function (times) {
+            $('#container7').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                title: {
+                    text: ''
+                },
+                tooltip: {
+                    headerFormat: '{series.name}<br>',
+                    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: '',
+                    data: times
+                }]
+            });
+        };
+
+
+
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    FlowreportController.$inject = ["$scope", "$state", "$http", "treeService", "ngTableParams", "$injector", "$timeout", "genericService"];
+    angular
+        .module('openc3')
+        .controller('FlowreportController', FlowreportController);
+
+    function FlowreportController($scope, $state, $http, treeService, ngTableParams, $injector, $timeout, genericService) {
+
+        var vm = this;
+        vm.treeid = $state.params.treeid;
+        vm.selecteduser = $state.params.user;
+        if( vm.selecteduser == undefined )
+        {
+            vm.selecteduser = ''
+        }
+
+        vm.selecteddata = $state.params.data;
+        if( vm.selecteddata == undefined )
+        {
+            vm.selecteddata = 'current'
+        }
+
+
+        vm.siteaddr = window.location.host;
+
+        var toastr = toastr || $injector.get('toastr');
+
+        vm.userlist = [];
+        vm.taskdatetime = [];
+        vm.rollbackcount = [];
+        vm.deploycount = [];
+        vm.cicount = [];
+        vm.testcount = [];
+        vm.treeid = $state.params.treeid;
+        vm.state = $state;
+        vm.updatetime;
+
+        treeService.sync.then(function(){
+            vm.nodeStr = treeService.selectname();
+        });
+
+        vm.filteruser = function (username, datalist ) {
+            $state.go('home.flowreportfilterdata', {treeid:vm.treeid, user: username, data: datalist});
+        }
+
+        $scope.choiceName = vm.selecteduser;
+        $scope.choiceData = vm.selecteddata;
+        $scope.$watch('choiceName', function () {
+                vm.filteruser( $scope.choiceName, $scope.choiceData )
+        });
+
+
+        $scope.$watch('choiceData', function () {
+                vm.filteruser( $scope.choiceName, $scope.choiceData )
+        });
+
+ 
+        vm.reload = function () {
+            $http.get('/api/ci/flowreport/' + vm.treeid + "/datalist?" ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        vm.datalist = response.data.data; 
+                    }else {
+                        toastr.error( "获取数据失败："+response.data.info );
+                    }
+                },
+                function errorCallback (response){
+                    toastr.error( "获取数据失败: " + response.status )
+                });
+
+            $http.get('/api/ci/flowreport/' + vm.treeid + "/report?user=" + vm.selecteduser + "&data=" + vm.selecteddata ).then(
+                function successCallback(response) {
+                    if (response.data.stat){
+                        $scope.ciCount = response.data.data.cicount;
+                        $scope.testCount = response.data.data.testcount;
+                        $scope.deployCount = response.data.data.deploycount;
+                        $scope.rollbackCount = response.data.data.rollbackcount;
+                        $scope.commitCount = response.data.data.commitcount;
+                        vm.userlist = response.data.data.userlist; 
+
+                        vm.data_Table = new ngTableParams({count:1000}, {counts:[],data:response.data.data.detailtable.reverse()});
+
+                        vm.taskdatetime = [];
+                        vm.cicount = [];
+                        vm.testcount = [];
+                        vm.deploycount = [];
+                        vm.rollbackcount = [];
+
+                        vm.updatetime = response.data.data.updatetime;
+
+                        angular.forEach(response.data.data.change, function (oneday, index) {
+                            vm.taskdatetime.push(oneday[0]);
+                            vm.cicount.push(oneday[1]);
+                            vm.testcount.push(oneday[2]);
+                            vm.deploycount.push(oneday[3]);
+                            vm.rollbackcount.push(oneday[4]);
+                        });
+
+                        vm.show30Task(vm.taskdatetime, vm.cicount, vm.testcount, vm.rollbackcount, vm.deploycount )
+                    }else {
+                        toastr.error( "获取数据失败："+response.data.info );
+                    }
+                },
+                function errorCallback (response){
+                    toastr.error( "获取数据失败: " + response.status )
+                });
+        };
+
+        vm.reload();
+
+        vm.show30Task = function (datetimes, cicounts, testcounts, rollbackcounts, deploycounts) {
+            
+            var opt =  {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: ''
+                },
+                subtitle: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: datetimes
+                },
+                yAxis: {
+                    title: {
+                        text: ''
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value ;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [ {
+                    name: '构建',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'blue',
+                    data: cicounts
+                }, {
+                    name: '测试',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'gray',
+                    data: testcounts
+                }, {
+                    name: '发布',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    color: 'green',
+                    data: deploycounts
+                }, {
+                    name: '回滚',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    color: 'red',
+                    data: rollbackcounts
+                }]
+            };
+            Highcharts.chart('container', opt );
+        };
+
+
+    }
+
+})();
+
+(function() {
+    'use strict';
+
     FavoritesController.$inject = ["$location", "$anchorScroll", "$state", "$http", "$uibModal", "treeService", "ngTableParams", "resoureceService", "$websocket", "$injector", "genericService", "$scope"];
     angular
         .module('openc3')
@@ -36425,8 +38647,8 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 
         }
 
-        vm.versiondetail = function (id) {
-            $state.go('home.quickentry.flowlinedetail', {treeid:vm.treeid, projectid: id});
+        vm.versiondetail = function (groupid,id) {
+            $state.go('home.quickentry.flowlinedetail', {treeid:groupid, projectid: id});
         };
 
         vm.treedetail = function (id) {
@@ -36635,7 +38857,7 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
  
         vm.cversion = function(text) {
             var w = '';
-            var re=/version:.*/;
+            var re=/\bversion:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -36650,7 +38872,7 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 
         vm.cjobtype = function(text) {
             var w = '';
-            var re=/_jobtype_:.*/;
+            var re=/\b_jobtype_:.*/;
             if (re.test(text)){
                 var reStr = re.exec(text)[0];
                 w = reStr.split(" ")[1]
@@ -36770,39 +38992,40 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 
         if( vm.treeid < 0 )
         {
-            var defaulttreeid = 0
-            var demotreeid = 0
+            //var defaulttreeid = 0
+            //var demotreeid = 0
             $http.get( '/api/connector/connectorx/treemap' ).then(
                 function successCallback(response) {
                     if (response.data.stat){
-                        angular.forEach(response.data.data, function (d, index) {
+                        //angular.forEach(response.data.data, function (d, index) {
+                        //
+                        //    var re=/_demo$/;
+                        //    if(re.test(d.name))
+                        //    {
+                        //        if( d.id > demotreeid )
+                        //        {
+                        //            demotreeid = d.id
+                        //        }
+                        //    }
+                        //    if( d.id > defaulttreeid )
+                        //    {
+                        //        defaulttreeid = d.id
+                        //    }
+                        //});
 
-                            var re=/_demo$/;
-                            if(re.test(d.name))
-                            {
-                                if( d.id > demotreeid )
-                                {
-                                    demotreeid = d.id
-                                }
-                            }
-                            if( d.id > defaulttreeid )
-                            {
-                                defaulttreeid = d.id
-                            }
-                        });
-
-                        if( demotreeid )
-                        {
-                            defaulttreeid = demotreeid
-                        }
-                        if( defaulttreeid )
-                        {
-                            $state.go('home.dashboard', {treeid: defaulttreeid});
-                        }
-                        else
-                        {
-                            toastr.error( "没找到默认的服务树节点" )
-                        }
+                        //if( demotreeid )
+                        //{
+                        //    defaulttreeid = demotreeid
+                        //}
+                        //if( defaulttreeid )
+                        //{
+                        //    $state.go('home.dashboard', {treeid: defaulttreeid});
+                        //}
+                        //else
+                        //{
+                        //    toastr.error( "没找到默认的服务树节点" )
+                        //}
+                        $state.go('home.dashboard', {treeid: 4000000000});
                     }else {
                         toastr.error( "获取服务树失败:" + response.data.info )
                     }
@@ -37178,7 +39401,7 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
             };
         }else {
             $scope.ciData = {
-                'ci':"$ci",
+                'ci':"default",
                 'version':"$version"
             };
         }
@@ -37656,8 +39879,16 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
             $scope.mulUrls = { };
             $scope.ciUrls = { };
             vm.logout = function(){
-                $http.get('/api/connector/connectorx/ssologout').success(function(data){
-                    $window.location.reload();
+                var siteaddr = window.location.host;
+                $http.get('/api/connector/connectorx/ssologout?siteaddr=' + siteaddr ).success(function(data){
+                    if(data.data)
+                    {
+                        $window.location.href=data.data
+                    }
+                    else
+                    {
+                        $window.location.reload();
+                    }
                 });
             };
 
@@ -37913,6 +40144,8 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                                 || sName == 'home.connector.node'
                                 || sName == 'home.connector.mail'
                                 || sName == 'home.connector.mesg'
+                                || sName == 'home.gitreport'
+                                || sName == 'home.flowreport'
                              ){
                                 $state.go(sName, {treeid:treeNode.id});
                             }else{
@@ -37922,6 +40155,15 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                             if( sName == 'home.quickentry.flowlinedetail' )
                             {
                                 $state.go('home.quickentry.flowline', {treeid:treeNode.id});
+                            }
+
+                            if( sName == 'home.gitreportfilterdata' )
+                            {
+                                $state.go('home.gitreport', {treeid:treeNode.id});
+                            }
+                            if( sName == 'home.flowreportfilterdata' )
+                            {
+                                $state.go('home.flowreport', {treeid:treeNode.id});
                             }
 
                         } else {
@@ -38826,12 +41068,46 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 controller: 'LoginController',
                 controllerAs: 'login',
             })
+            .state('quickapproval', {
+                url: '/quickapproval/:uuid',
+                templateUrl: 'app/pages/quickapproval/quickapproval.html',
+                controller: 'QuickApprovalController',
+                controllerAs: 'quickapproval',
+            })
  
             .state('home.dashboard', {
                 url: 'dashboard/:treeid',
                 templateUrl: 'app/pages/dashboard/dashboard.html',
                 controller: 'DashboardController',
                 controllerAs: 'dashboard'
+            })
+
+            .state('home.gitreport', {
+                url: 'gitreport/:treeid',
+                templateUrl: 'app/pages/gitreport/gitreport.html',
+                controller: 'GitreportController',
+                controllerAs: 'gitreport'
+            })
+
+            .state('home.gitreportfilterdata', {
+                url: 'gitreportfilterdata/:treeid/:data/:user/:project',
+                templateUrl: 'app/pages/gitreport/gitreport.html',
+                controller: 'GitreportController',
+                controllerAs: 'gitreport'
+            })
+
+            .state('home.flowreport', {
+                url: 'flowreport/:treeid',
+                templateUrl: 'app/pages/flowreport/flowreport.html',
+                controller: 'FlowreportController',
+                controllerAs: 'flowreport'
+            })
+
+            .state('home.flowreportfilterdata', {
+                url: 'flowreportfilterdata/:treeid/:data/:user',
+                templateUrl: 'app/pages/flowreport/flowreport.html',
+                controller: 'FlowreportController',
+                controllerAs: 'flowreport'
             })
 
             .state('home.favorites', {
@@ -38888,6 +41164,13 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 controllerAs: 'runtask'
             })
 
+            .state('home.quickentry.runtasksa', {
+                url: 'runtasksa/:treeid/:jobid',
+                templateUrl: 'app/pages/quickentry/runtask/runtask.html',
+                controller: 'RunTaskController',
+                controllerAs: 'runtask'
+            })
+
             .state('home.history.jobxdetail', {
                 url: 'jobxdetail/:treeid/:taskuuid',
                 templateUrl: 'app/pages/history/jobx/detail/detail.html',
@@ -38895,7 +41178,21 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 controllerAs: 'historyjobxdetail',
                 params:{"taskuuid":null, "accesspage":null}
             })
-//ci
+
+            .state('home.quickentry.smallapplication', {
+                url: 'smallapplication/:treeid',
+                templateUrl: 'app/pages/quickentry/smallapplication/smallapplication.html',
+                controller: 'SmallApplicationController',
+                controllerAs: 'smallapplication'
+            })
+ 
+            .state('home.quickentry.smallapplicationedit', {
+                url: 'smallapplicationedit/:treeid',
+                templateUrl: 'app/pages/quickentry/smallapplication/edit.html',
+                controller: 'SmallApplicationEditController',
+                controllerAs: 'smallapplicationedit'
+            })
+ 
             .state('home.quickentry.flowline', {
                 url: 'flowline/:treeid',
                 templateUrl: 'app/pages/quickentry/flowline/flowline.html',
@@ -38914,6 +41211,24 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 templateUrl: 'app/pages/global/ticket/ticket.html',
                 controller: 'TicketController',
                 controllerAs: 'ticket'
+            })
+            .state('home.global.images', {
+                url: 'images/:treeid',
+                templateUrl: 'app/pages/global/images/images.html',
+                controller: 'ImagesController',
+                controllerAs: 'images'
+            })
+            .state('home.global.useraddr', {
+                url: 'useraddr/:treeid',
+                templateUrl: 'app/pages/global/useraddr/useraddr.html',
+                controller: 'UseraddrController',
+                controllerAs: 'useraddr'
+            })
+            .state('home.global.private', {
+                url: 'private/:treeid',
+                templateUrl: 'app/pages/global/private/private.html',
+                controller: 'PrivateController',
+                controllerAs: 'private'
             })
             .state('home.config', {
                 url: 'config/:treeid',
@@ -38939,8 +41254,8 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
             .state('home.quickentry.approval', {
                 url: 'approval/:treeid',
                 templateUrl: 'app/pages/quickentry/approval/approval.html',
-                controller: 'QuickApprovalController',
-                controllerAs: 'quickapproval'
+                controller: 'QuickentryApprovalController',
+                controllerAs: 'quickentryapproval'
             })
  
             .state('home.quickentry.scp', {
@@ -39128,6 +41443,24 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 controller: 'NotifyController',
                 controllerAs: 'notify'
             })
+            .state('home.global.monitor', {
+                url: 'monitor/:treeid',
+                templateUrl: 'app/pages/global/monitor/monitor.html',
+                controller: 'MonitorController',
+                controllerAs: 'monitor'
+            })
+            .state('home.global.versionlog', {
+                url: 'versionlog/:treeid',
+                templateUrl: 'app/pages/global/versionlog/versionlog.html',
+                controller: 'VersionLogController',
+                controllerAs: 'versionlog'
+            })
+            .state('home.global.auditlog', {
+                url: 'auditlog/:treeid',
+                templateUrl: 'app/pages/global/auditlog/auditlog.html',
+                controller: 'AuditLogController',
+                controllerAs: 'auditlog'
+            })
             .state('home.global.template', {
                 url: 'template/:treeid',
                 templateUrl: 'app/pages/global/template/template.html',
@@ -39151,6 +41484,12 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
                 templateUrl: 'app/pages/quickentry/terminal/terminal.html',
                 controller: 'TerminalCmdController',
                 controllerAs: 'templatecmd',
+            })
+            .state('home.quickentry.sendfile', {
+                url: 'sendfile/:treeid',
+                templateUrl: 'app/pages/quickentry/sendfile/sendfile.html',
+                controller: 'SendfileController',
+                controllerAs: 'sendfile',
             })
             .state('home.history.terminal', {
                 url: 'terminal/:treeid',
@@ -39212,7 +41551,7 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
             });
 
 
-        $urlRouterProvider.otherwise('/dashboard/-1');
+        $urlRouterProvider.otherwise('/dashboard/4000000000');
     }
 
 })();
@@ -39269,13 +41608,13 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 (function() {
   'use strict';
 
-  genericService.$inject = ["$http", "treeService", "$q", "$state", "$filter"];
+  genericService.$inject = ["$http", "$q", "$state", "$filter"];
   angular
     .module('openc3')
     .factory('genericService', genericService);
 
 
-  function genericService($http, treeService, $q, $state, $filter) {
+  function genericService($http, $q, $state, $filter) {
 
         var fun = {};
         fun.seftime = function(starttime, finishtime ) {
@@ -39321,46 +41660,49 @@ JobDetailController.$inject = ["$uibModalInstance", "$scope", "$timeout", "$stat
 })();
 
 angular.module("openc3").run(["$templateCache", function($templateCache) {$templateCache.put("app/main/main.html","<div><cmnavbar></cmnavbar><cmmenu></cmmenu><div id=content_wrapper><div ui-view><cmindex></cmindex></div></div><cmfooter></cmfooter></div>");
+$templateCache.put("app/pages/approval/approval.html","<div class=\"row block\"><div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=approval.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!approval.loadover}\"></i></button></span><h5>我的审批</h5></div><div class=panel-body ng-init=\"ns = { \'null\': \'未发送\', \'sending\': \'发送中\', \'done\':\'完成\', \'skip\': \'忽略\', \'fail\': \'失败\'}\"><div class=panel-tabs><table ng-table=approval.dataTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ create_time: \'text\'}\" sortable>{{d.create_time}}</td><td style=\"width: 10%\" data-title=\"\'结束时间\'\" filter=\"{ finishtime: \'text\'}\" sortable>{{d.finishtime}}</td><td style=\"width: 10%\" data-title=\"\'耗时\'\">{{ approval.seftime(d.create_time,d.finishtime)}}</td><td style=\"width: 10%\" data-title=\"\'提交人\'\" filter=\"{ submitter: \'text\'}\" sortable>{{d.submitter}}</td><td style=\"width: 20%\" data-title=\"\'审批名称\'\" filter=\"{ name: \'text\'}\" sortable>{{d.name}}</td><td style=\"width: 10%\" data-title=\"\'OA单号\'\" filter=\"{ oauuid: \'text\'}\" sortable><a ng-if=\"d.oauuid==0\">尚未发送</a> <a ng-if=\"d.oauuid==1\">创建中</a> <a ng-if=\"d.oauuid!=0 && d.oauuid!=1\">{{d.oauuid}}</a></td><td style=\"width: 10%\" data-title=\"\'通知状态\'\">{{ns[d.notifystatus]}}</td><td style=\"width: 10%\" data-title=\"\'审批状态\'\" sortable><a ng-if=\"d.opinion == \'agree\'\" style=\"color: green\">同意 </a><a ng-if=\"d.opinion == \'unconfirmed\'\">未审批 </a><a ng-if=\"d.opinion == \'refuse\'\" style=\"color: red\">拒绝</a></td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button ng-if=\"d.opinion==\'unconfirmed\'\" class=\"btn btn-primary btn-sm\" ng-click=approval.edit(d.uuid,1)>审批</button> <button ng-if=\"d.opinion!=\'unconfirmed\'\" class=\"btn btn-info btn-sm\" ng-click=approval.edit(d.uuid,0)>查看</button></td></tr></table></div></div></div></div></div>");
+$templateCache.put("app/pages/business/business.html","<div class=\"row block\"><div ui-view></div></div>");
+$templateCache.put("app/pages/connector/connector.html","<div class=\"row block\"><div ui-view></div></div>");
+$templateCache.put("app/pages/favorites/addFavorites.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=addfavorites.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!addfavorites.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=addfavorites.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>我的流水线</h5></div><div class=panel-body><div class=pt20><table ng-table=addfavorites.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 5%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable><i class=\"fa fa-star-o fa-1x\" aria-hidden=true ng-if=!m.favorites ng-click=addfavorites.addToFavorites(m.id,m.name) uib-tooltip=收藏 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=addfavorites.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094\"></i> {{m.id}}</td><td style=\"width: 15%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 15%\" data-title=\"\'别名\'\" filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td style=\"width: 25%\" data-title=\"\'服务树名\'\" filter=\"{ treename: \'text\'}\" sortable>{{m.treename}}</td><td style=\"width: 30%\" data-title=\"\'代码仓库地址\'\" filter=\"{ addr: \'text\'}\" sortable>{{m.addr}}</td><td style=\"width: 5%\" data-title=\"\'编辑者\'\" filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td></tr></table></div></div></div></div><style>.modal-dialog {width: 100%;}</style>");
+$templateCache.put("app/pages/favorites/favorites.html","<cmloading ng-if=!favorites.loadover></cmloading><div class=\"row block\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=favorites.addFavorites()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 更多待收藏</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div style=\"padding: 10px\"></div><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=favorites.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!favorites.loadover}\"></i></button></span><h5>我收藏的流水线</h5></div><div class=panel-body><div class=pt20><table ng-table=favorites.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 10%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable><i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=favorites.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094\"></i> {{m.id}}</td><td style=\"width: 10%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 10%\" data-title=\"\'别名\'\" filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td style=\"width: 10%\" data-title=\"\'服务树名\'\" filter=\"{ treename: \'text\'}\" sortable><nobr>{{m.treename}} <i class=\"fa fa-chevron-circle-right fa-1x\" aria-hidden=true ng-click=favorites.treedetail(m.groupid) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i></nobr></td><td style=\"width: 10%\" data-title=\"\'构建状态\'\"><div class=\"panel panel-info\" ng-if=m.lastbuild.status style=\"cursor:pointer;background-color: {{panelcolor[m.lastbuild.status]}};margin: 0 0 0\" ng-click=\"favorites.showlog(m.lastbuild.uuid, m.lastbuild.slave)\"><i class=\"fa fa-cloud\" ng-if=\"m.lastbuild.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.lastbuild.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.lastbuild.status==\'success\'\" aria-hidden=true></i> # {{m.lastbuild.name}}<br>耗时 {{favorites.seftime(m.lastbuild.starttime,m.lastbuild.finishtime)}}<br>{{favorites.time2date(m.lastbuild.starttime)}}</div></td><td style=\"width: 15%\" data-title=\"\'测试环境状态\'\"><div class=\"panel panel-info\" ng-if=favorites.taskInfoTest[m.id] style=\"cursor:pointer;background-color: {{panelcolor[favorites.taskInfoTest[m.id].status]}};margin: 0 0 0\" ng-click=favorites.deployDetail(favorites.taskInfoTest[m.id].projectid,favorites.taskInfoTest[m.id].uuid)><i class=\"fa fa-cloud\" ng-if=\"favorites.taskInfoTest[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoTest[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"favorites.taskInfoTest[m.id].status==\'success\'\" aria-hidden=true></i> # {{favorites.taskInfoTest[m.id].version}}<br>耗时 {{favorites.seftime(favorites.taskInfoTest[m.id].starttime, favorites.taskInfoTest[m.id].finishtime)}}<br>{{favorites.time2date(favorites.taskInfoTest[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoTestRunning[m.id] && favorites.taskInfoTest[m.id].status!=\'running\' \" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 15%\" data-title=\"\'线上环境状态\'\"><div class=\"panel panel-info\" ng-if=favorites.taskInfoOnline[m.id] style=\"cursor:pointer;background-color: {{panelcolor[favorites.taskInfoOnline[m.id].status]}};margin: 0 0 0\" ng-click=favorites.deployDetail(favorites.taskInfoOnline[m.id].projectid,favorites.taskInfoOnline[m.id].uuid)>{{favorites.deployType(favorites.taskInfoOnline[m.id].uuid)}} <i class=\"fa fa-cloud\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'success\'\" aria-hidden=true></i> # {{favorites.taskInfoOnline[m.id].version}}<br>耗时 {{favorites.seftime(favorites.taskInfoOnline[m.id].starttime, favorites.taskInfoOnline[m.id].finishtime)}}<br>{{favorites.time2date(favorites.taskInfoOnline[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoOnlineRunning[m.id] && favorites.taskInfoOnline[m.id].status!=\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 10%\" data-title=\"\'编辑者\'\" filter=\"{ user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'操作\'\"><nobr><i class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ng-click=favorites.versiondetail(m.groupid,m.id) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i></nobr></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/dashboard/dashboard.html","<div class=\"row block\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 class=kb_title>业务主机数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{businessCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">常用作业数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{commonCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">本月执行任务数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center\"><span>{{monthTask}}</span></div><div style=\"font-size: 12px;font-weight: bold;text-align: left\"><p style=\"margin: 0;color: green\">成功：{{success}}</p><p style=\"margin: 0;color: red\">失败：{{fail}}</p><p style=\"margin: 0;color: #f19e01\">执行中：{{running}}</p></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">定时任务数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 82px\"><span>{{crontCount}}</span></div><div style=\"font-size: 12px;font-weight: bold;text-align: left\"><p style=\"margin: 0;color: green\">启动：{{available}}</p><p style=\"margin: 0;color: red\">暂停：{{unavailable}}</p></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">历史任务执行情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container></div></div></div></div><div class=\"col-lg-5 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">任务执行时长统计</h4></div><div class=panel-body><div id=container2 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-7 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">最近任务执行记录</h4></div><div class=panel-body><div style=\"height: 25px\"><a style=\"right: 0;position: absolute;margin-right: 20px\" ui-sref=\"home.history.job({treeid: dashboard.treeid})\" class=\"animated animated-short fadeInUp\"><span>更多</span></a></div><div class=panel-tabs><table ng-table=dashboard.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\" style=\"height: 35px\"><td data-title=\"\'执行用户\'\">{{ss.user}}</td><td data-title=\"\'耗时\'\">{{dashboard.seftime(ss.starttime, ss.finishtime)}}</td><td data-title=\"\'当前状态\'\">{{dashboard.statuszh[ss.status]}}</td><td data-title=\"\'作业名称\'\"><a ng-if=!dashboard.ciinfo[ss.name]>{{ss.name}}</a> <a ng-if=dashboard.ciinfo[ss.name]>{{dashboard.ciinfo[ss.name]}}</a></td></tr></table></div></div></div></div></div>");
+$templateCache.put("app/pages/flowreport/flowreport.html","<div class=\"row block\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 class=kb_title>打包次数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{ciCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 class=kb_title>测试环境发布</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{testCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">发版次数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{deployCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">回滚次数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{rollbackCount}}</span></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">标签</h4></div><div class=panel-body style=\"margin-top: 20px\"><a ng-if=flowreport.updatetime>数据最近更新时间:{{flowreport.updatetime}}</a><div class=row><label class=\"col-md-1 control-label fwbold\">数据:</label><select id=selecteddataval class=form-control ng-model=choiceData style=\"width: 20%\"><option ng-repeat=\"x in flowreport.datalist\" value={{x}}>{{x}}</option></select></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">近期代码行数变化情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">详情</h4></div><div class=panel-body><div class=panel-tabs><table ng-table=flowreport.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\" style=\"height: 35px\"><td data-title=\"\'时间\'\">{{ss.time}}</td><td data-title=\"\'类型\'\">{{ss.type}}</td><td data-title=\"\'编号\'\">{{ss.uuid}}</td><td data-title=\"\'服务树编号\'\">{{ss.groupid}}</td><td data-title=\"\'流水线编号\'\">{{ss.projectid}}</td><td data-title=\"\'状态\'\">{{ss.status}}</td><td data-title=\"\'版本\'\">{{ss.version}}</td><td data-title=\"\'发布地址\'\"><a ng-if=\"ss.type==\'ci\'\" target=_blank ng-href=http://{{flowreport.siteaddr}}/#/quickentry/flowlinedetail/{{ss.groupid}}/{{ss.projectid}}>http://{{flowreport.siteaddr}}/#/quickentry/flowlinedetail/{{ss.groupid}}/{{ss.projectid}}</a> <a ng-if=\"ss.type!=\'ci\'\" target=_blank ng-href=http://{{flowreport.siteaddr}}/#/history/jobxdetail/{{ss.groupid}}/{{ss.uuid}}>http://{{flowreport.siteaddr}}/#/history/jobxdetail/{{ss.groupid}}/{{ss.uuid}}</a></td></tr></table></div></div></div></div></div>");
+$templateCache.put("app/pages/gitreport/gitreport.html","<div class=\"row block\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 class=kb_title>用户数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{userCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">添加行数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{codeAddCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">删除行数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{codeDelCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">提交次数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{commitCount}}</span></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">标签</h4></div><div class=panel-body style=\"margin-top: 20px\"><a ng-if=gitreport.updatetime>数据最近更新时间:{{gitreport.updatetime}}</a><div class=row><label class=\"col-md-1 control-label fwbold\">数据:</label><select id=selecteddataval class=form-control ng-model=choiceData style=\"width: 20%\"><option ng-repeat=\"x in gitreport.datalist\" value={{x}}>{{x}}</option></select><label class=\"col-md-1 control-label fwbold\">用户:</label><select id=selectednameval class=form-control ng-model=choiceName style=\"width: 20%\"><option value=\"\">全部</option><option ng-repeat=\"x in gitreport.userlist\" value={{x}}>{{x}}</option></select><label class=\"col-md-1 control-label fwbold\">项目:</label><select id=selectedprojectval class=form-control ng-model=choiceProject style=\"width: 20%\"><option value=\"\">全部</option><option ng-repeat=\"x in gitreport.projectlist\" value={{x}}>{{x}}</option></select></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">代码行数增删情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container></div></div></div></div><div class=\"col-lg-6 col-xs-6 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">代码行数增删情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container4></div></div></div></div><div class=\"col-lg-6 col-xs-6 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">代码行数增删情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container5></div></div></div></div><div class=\"col-lg-6 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">提交次数(用户)</h4></div><div class=panel-body><div id=container2 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-6 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">提交行数(用户)</h4></div><div class=panel-body><div id=container3 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-6 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">提交次数(项目)</h4></div><div class=panel-body><div id=container6 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-6 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">提交行数(项目)</h4></div><div class=panel-body><div id=container7 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">详情</h4></div><div class=panel-body><div class=panel-tabs><table ng-table=gitreport.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\" style=\"height: 35px\"><td data-title=\"\'提交时间\'\">{{ss.time}}</td><td data-title=\"\'提交编号\'\">{{ss.uuid}}</td><td data-title=\"\'有效提交\'\">{{ss.effective}}</td><td data-title=\"\'提交人\'\">{{ss.user}}</td><td data-title=\"\'添加行数\'\">{{ss.add}}</td><td data-title=\"\'删除行数\'\">{{ss.del}}</td><td data-title=\"\'提交地址\'\"><a target=_blank ng-href={{ss.url}}>{{ss.url}}</a></td></tr></table></div></div></div></div></div>");
+$templateCache.put("app/pages/history/history.html","<div class=\"row block\"><div ui-view></div></div>");
+$templateCache.put("app/pages/global/global.html","<div class=\"row block\"><div ui-view></div></div>");
+$templateCache.put("app/pages/login/login.html","<div class=login style=\"background: #f86632;margin:0;padding:0;height:100%;width:100%;position:absolute\"><h1 class=\"h2 text-light text-center push-top-bottom animation-slideDown\"><img src=/assets/images/open-c3-logo.jpeg width=150></h1><div><div id=login><div class=logo></div><form onsubmit=\"return false\"><div class=wrapper-login><span class=input-icon><i class=\"glyphicon glyphicon-user\"></i> <span class=\"glyphicon glyphicon-alert text-danger hide\"></span> <input type=text class=user placeholder=username cmlang=login_username ng-model=login.post.user name=username> </span><span class=input-icon><i class=\"glyphicon glyphicon-lock\"></i> <input type=password placeholder=password cmlang=login_password ng-model=login.post.pass name=password></span></div><button type=submit class=login-button ng-click=login.login() cmlang=login_login>登录</button><p style=text-align:center;padding-top:5px;color:#fff ng-if=login.logining id=logining><span>登录中...</span></p></form><span><a href=https://oa.openc3.com/ cmlang=login_find_pwd></a></span></div></div></div>");
+$templateCache.put("app/pages/others/401.html","<div id=error-container class=text-center><h1>401</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
+$templateCache.put("app/pages/others/404.html","<div id=error-container class=text-center><h1>404</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
+$templateCache.put("app/pages/others/500.html","<div id=error-container class=text-center><h1>500</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
+$templateCache.put("app/pages/quickapproval/quickapproval.html","<div class=\"row block\" id=changewidth style=\"background: #fff;margin:0;padding:0;height:100%;width:100%;position:absolute\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=quickapproval.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!quickapproval.loadover}\"></i></button></span><h5>审批:{{quickapproval.data.name}}</h5></div><div class=panel-body ng-init=\"ns = { \'null\': \'未发送\', \'sending\': \'发送中\', \'done\':\'完成\', \'skip\': \'忽略\', \'fail\': \'失败\'}\"><div class=panel-tabs><table ng-table=quickapproval.dataTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'审批人\'\">{{d.user}}</td><td style=\"width: 10%\" data-title=\"\'耗时\'\">{{quickapproval.seftime(d.create_time,d.finishtime)}}</td><td style=\"width: 10%\" data-title=\"\'审批状态\'\"><a ng-if=\"d.opinion == \'agree\'\" style=\"color: green\">同意 </a><a ng-if=\"d.opinion == \'unconfirmed\'\">未审批 </a><a ng-if=\"d.opinion == \'refuse\'\" style=\"color: red\">拒绝</a></td></tr></table></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">创建时间</label><label class=\"col-md-4 control-label fwbold\">{{quickapproval.data.create_time}}</label></div><div class=row><label class=\"col-md-2 control-label fwbold\">提交人</label><label class=\"col-md-4 control-label fwbold\">{{quickapproval.data.submitter}}</label></div><div class=row><label class=\"col-md-2 control-label fwbold\">审批内容</label><label class=\"col-md-4 control-label fwbold\">{{quickapproval.data.cont}}</label></div><div class=\"panel-footer text-right\"><button class=\"btn btn-success\" ng-disabled=\"quickapproval.stat.opinion != \'unconfirmed\'\" ng-click=\"quickapproval.edit(\'agree\')\">同意</button> <button class=\"btn btn-danger\" ng-disabled=\"quickapproval.stat.opinion != \'unconfirmed\'\" ng-click=\"quickapproval.edit(\'refuse\')\">拒绝</button></div></div></div>");
 $templateCache.put("app/components/emptyvar/emptyVar.html","<div class=modal-header><h4 class=modal-title>填写空变量</h4></div><div><form name=varForm><div class=panel-tabs style=\"width: 100%\"><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">#</th><th style=\"text-align: center\">变量名</th><th style=\"text-align: center\">值</th><th style=\"text-align: center\">描述</th></tr></thead><tr ng-repeat=\"ss in emptyvars.emptyVar\"><td style=\"width: 5%\">{{$index}}</td><td><input type=text class=\"form-control input-global\" ng-model=ss.name readonly></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value required></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe readonly></td></tr></table></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=varForm.$invalid ng-click=emptyvars.inputOver()>确认</button> <button class=\"btn btn-warning\" ng-click=emptyvars.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/components/error/errorMsg.html","<div style=\"padding: 15px;color:red;font-weight:bold;font-size:14px\"><span>{{errmsg}}</span></div>");
 $templateCache.put("app/components/footer/footer.html","<div id=footer><small><span>OPEN-C3 © {{footer.year}}</span></small></div>");
 $templateCache.put("app/components/loading/loading.html","<div class=loading-container><div class=loading><div class=l1><div></div></div><div class=l2><div></div></div><div class=l3><div></div></div><div class=l4><div></div></div></div></div>");
 $templateCache.put("app/components/machine/choiceMachine.html","<div class=modal-header><h4 class=modal-title>选择服务器</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div style=\"height: 40px;border-bottom: 1px solid #ddd\"><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=formType value=ip ng-click=choice.cleanSelected()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>通过IP选择服务器</label><label ng-hide=groupHide class=\"option option-primary\"><input type=radio ng-model=formType value=group ng-click=choice.cleanSelected()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>分组选择</label><label ng-show=variableShow class=\"option option-primary\"><input type=radio ng-model=formType value=variable ng-click=choice.cleanSelected()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>选择变量</label></div></div></div></form><div ng-switch=formType><div ng-switch-when=ip><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror><div class=panel-tabs><table ng-table=choice.machine_Table show-filter=true class=\"table table-hover text-center table-condensed\"><!--<table class=\"table table-hover text-center table-condensed\">--><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td style=\"width: 20%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\"><label for={{ss.name}} style=\"font-weight: normal;height: 100%;width: 100%\">{{ss.name}}</label></td><td style=\"width: 15%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\">{{ss.type}}</td><td style=\"width: 20%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\"><label for={{ss.inip}} style=\"font-weight: normal;height: 100%;width: 100%\"><input id={{ss.inip}} ng-if=ss.inip type=checkbox name=selected ng-checked=\"isSelected(ss.id, \'inip\')\" ng-click=\"inipUpdateSelection($event, ss.id, ss.inip)\" style=\"zoom: 125%\">{{ss.inip}} <i ng-if=\"ss.inip && ! ss.inips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></label></td><td style=\"width: 20%\" data-title=\"\'外网ip\'\" filter=\"{ exip: \'text\'}\"><label for={{ss.exip}} style=\"font-weight: normal;height: 100%;width: 100%\"><input ng-if=ss.exip id={{ss.exip}} type=checkbox name=selected ng-checked=\"isSelected(ss.id, \'exip\')\" ng-click=\"exipUpdateSelection($event, ss.id, ss.exip)\" style=\"zoom: 125%\">{{ss.exip}} <i ng-if=\"ss.exip && ! ss.exips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></label></td><td style=\"width: 5%\" data-title=\"\'客户端版本\'\"><a ng-if=ss.inip>{{ss.inips.version}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.version}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端上一次检测时间\'\"><a ng-if=ss.inip>{{ss.inips.edit_time}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.edit_time}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端错误原因\'\"><a ng-if=\"ss.inip && ss.inips.status==\'fail\'\">failcount:{{ss.inips.fail}}; {{ss.inips.reason}}</a> <a ng-if=\"ss.exip && ! ss.inip && ss.exips.status==\'fail\'\">failcount:{{ss.exips.fail}}; {{ss.exips.reason}}</a></td></tr></table></div></div><!--组--><div ng-switch-when=group><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror><div class=panel-tabs><table ng-table=choice.group_Table class=\"table table-hover text-center table-condensed\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th><!--<input type=\"checkbox\" ng-click=\"selectAll($event)\" ng-checked=\"isSelectedAll()\" style=\"zoom: 125%\" />--></th><th>名称</th><th>插件</th></tr></thead><tbody><tr ng-repeat=\"ss in $data\"><td><input type=radio name=selected ng-checked=isSelected(ss.id) ng-click=\"updateRadio($event, ss.id, ss)\" style=\"zoom: 125%\"></td><td>{{ss.name}}</td><td>{{ss.plugin}}</td></tr></tbody></table></div></div><!--变量--><div ng-switch-when=variable style=\"width: 40%\"><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror><div class=panel-tabs><table ng-table=choice.group_Table class=\"table table-hover text-center table-condensed\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th>名称</th></tr></thead><tbody><tr><td><input type=text class=\"form-control input-global\" ng-model=ipVar.variable></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=choice.add()>确认</button> <button class=\"btn btn-warning\" ng-click=choice.cancel()>取消</button></div></div></div>");
-$templateCache.put("app/components/menu/menu.html","<div id=sidebar_left class=affix><div class=\"sidebar-left-content has-scrollbar\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel><div class=panel-heading><span class=panel-title>TREE</span> <span class=panel-controls><a href=javascript:void(0) ng-click=tree.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) ng-click=tree.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) ng-click=tree.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) ng-click=tree.refresh()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\"><perfect-scrollbar class=scroller style=\"margin:-15px 0 -20px -20px\"><ul class=ztree id=openc3tree></ul></perfect-scrollbar></div></div></div></div></div></div>");
-$templateCache.put("app/components/navbar/navbar.html","<header class=\"navbar navbar-fixed-top bg-danger\"><div class=navbar-branding><a class=navbar-brand ui-sref=\"home.dashboard({treeid: -1})\"><img src=/assets/images/open-c3-logo.jpeg> <span>OPEN-C3</span></a></div><ul class=\"nav navbar-nav navbar-left\"><li><form class=\"navbar-form navbar-left navbar-search\"><div style=\"width: 100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-wrap: break-word\"><input type=text class=form-control ng-model=selected placeholder=\"Search tree node name\" typeahead-on-select=\"nav.searchNode($item, $model, $label, $event)\" ng-click=nav.search_init() typeahead=\"name for name in nav.names.sort()|filter:$viewValue| limitTo:8\"></div></form></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.dashboard({treeid: nav.state.params.treeid})\"><span>仪表盘</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.favorites({treeid: nav.state.params.treeid})\"><span>我的收藏夹</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.quickentry.flowline({treeid: nav.state.params.treeid})\"><span>流水线</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>快速执行</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.quickentry.runtask({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>启动任务</span> </a><a ui-sref=\"home.quickentry.cmd({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>脚本执行</span> </a><a ui-sref=\"home.quickentry.scp({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>分发文件</span> </a><a ui-sref=\"home.quickentry.approval({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>发起审批</span> </a><a ui-sref=\"home.quickentry.terminal({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>虚拟终端</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>业务管理</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.business.job({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>作业管理</span> </a><a ui-sref=\"home.business.user({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>账户管理</span> </a><a ui-sref=\"home.business.file({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>文件管理</span> </a><a ui-sref=\"home.business.scripts({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>脚本管理</span> </a><a ui-sref=\"home.business.nodegroup({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器分组</span> </a><a ui-sref=\"home.business.nodebatch({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器分批</span> </a><a ui-sref=\"home.business.machine({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器管理</span> </a><a ui-sref=\"home.business.notify({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>报警通知</span> </a><a ui-sref=\"home.business.crontab({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>定时作业</span> </a><a ui-sref=\"home.business.agent({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>代理设置(AGENT安装)</span> </a><a ui-sref=\"home.business.variate({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>变量查看</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>执行历史</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.history.jobx({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>分组任务</span> </a><a ui-sref=\"home.history.job({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>作业任务</span> </a><a ui-sref=\"home.history.terminal({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>虚拟终端</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-right\"><!--<li class=\"menu-divider hidden-xs\">--><!--<i class=\"fa fa-circle\"></i>--><!--</li>--><li><a ui-sref=\"home.approval({treeid: nav.state.params.treeid})\"><span>我的审批</span></a></li><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>管理员</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">全局设置</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.notify({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>通知管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.template({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>模板管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.ticket({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>票据管理</span></a></li></ul></li><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>连接器</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">设置连接器</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.config({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>设置连接器</span></a></li><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">登录管理(内置)</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.userinfo({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>用户管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.userauth({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>权限管理</span></a></li><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">服务树(内置)</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.tree({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>编辑服务树节点</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.node({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>编辑服务树资源</span></a></li><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">消息出口(内置)</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.mail({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>给我的邮件</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.mesg({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>给我的短信</span></a></li></ul></li><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>{{ nav.user.name }}</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=\"dropdown-header clearfix\"><div class=\"pull-left ml10\">{{ nav.user.email }}</div></li><li class=list-group-item><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ng-click=nav.chpasswd()><span class=\"fa fa-key\"></span><span>修改密码</span> </a><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ng-click=nav.logout()><span class=\"fa fa-power-off\"></span><span>登出</span></a></li></ul></li></ul></header>");
+$templateCache.put("app/components/menu/menu.html","<div id=sidebar_left class=affix style=\"background-color: #FFF;z-index: 0\"><div class=\"sidebar-left-content has-scrollbar\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel><div class=panel-heading><span class=panel-title>TREE</span> <span class=panel-controls><a href=javascript:void(0) ng-click=tree.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) ng-click=tree.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) ng-click=tree.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) ng-click=tree.refresh()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\"><perfect-scrollbar class=scroller style=\"margin:-15px 0 -20px -20px\"><ul class=ztree id=openc3tree></ul></perfect-scrollbar></div></div></div></div></div></div>");
+$templateCache.put("app/components/navbar/navbar.html","<header ng-init=\'openc3_style_ctrl=\"openc3\"\' class=\"navbar navbar-fixed-top bg-danger\"><div ng-if=\"openc3_style_ctrl == \'openc3\'\" class=navbar-branding><a class=navbar-brand ui-sref=\"home.dashboard({treeid: 4000000000})\"><img src=/assets/images/open-c3-logo.jpeg> <span>OPEN-C3</span></a></div><div ng-if=\"openc3_style_ctrl == \'juyun\'\" class=navbar-branding><a class=navbar-brand ui-sref=\"home.dashboard({treeid: 4000000000})\"><img style=\"width: 120px\" src=/assets/images/juyun-logo.jpeg> <span style=\"font-size: 10px\">OPEN-C3</span></a></div><ul class=\"nav navbar-nav navbar-left\"><li><form class=\"navbar-form navbar-left navbar-search\"><div style=\"width: 100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-wrap: break-word\"><input type=text class=form-control ng-model=selected placeholder=\"Search tree node name\" typeahead-on-select=\"nav.searchNode($item, $model, $label, $event)\" ng-click=nav.search_init() typeahead=\"name for name in nav.names.sort()|filter:$viewValue| limitTo:8\"></div></form></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.dashboard({treeid: nav.state.params.treeid})\"><span>仪表盘</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>报告</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.gitreport({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>GIT报告</span> </a><a ui-sref=\"home.flowreport({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>流水线报告</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.quickentry.smallapplication({treeid: nav.state.params.treeid})\"><span>轻应用[CO]</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li><a ui-sref=\"home.quickentry.flowline({treeid: nav.state.params.treeid})\"><span>流水线[CI/CD]</span></a></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>快速执行</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.quickentry.runtask({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>启动任务</span> </a><a ui-sref=\"home.quickentry.cmd({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>脚本执行</span> </a><a ui-sref=\"home.quickentry.scp({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>分发文件</span> </a><a ui-sref=\"home.quickentry.approval({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>发起审批</span> </a><a ui-sref=\"home.quickentry.terminal({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>虚拟终端</span> </a><a ui-sref=\"home.quickentry.sendfile({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>文件发送</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>业务管理</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.business.job({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>作业管理</span> </a><a ui-sref=\"home.business.user({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>账户管理</span> </a><a ui-sref=\"home.business.file({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>文件管理</span> </a><a ui-sref=\"home.business.scripts({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>脚本管理</span> </a><a ui-sref=\"home.business.nodegroup({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器分组</span> </a><a ui-sref=\"home.business.nodebatch({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器分批</span> </a><a ui-sref=\"home.business.machine({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>机器管理</span> </a><a ui-sref=\"home.business.notify({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>报警通知</span> </a><a ui-sref=\"home.business.crontab({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>定时作业</span> </a><a ui-sref=\"home.business.agent({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>代理设置(AGENT安装)</span> </a><a ui-sref=\"home.business.variate({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>变量查看</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-left\"><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>执行历史</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=list-group-item><a ui-sref=\"home.history.jobx({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>分组任务</span> </a><a ui-sref=\"home.history.job({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>作业任务</span> </a><a ui-sref=\"home.history.terminal({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>虚拟终端</span></a></li></ul></li></ul><ul class=\"nav navbar-nav navbar-right\"><!--<li class=\"menu-divider hidden-xs\">--><!--<i class=\"fa fa-circle\"></i>--><!--</li>--><li ng-if=\"openc3_style_ctrl == \'juyun\'\" class=dropdown uib-dropdown><a href=https://console.polymericcloud.com class=\"dropdown-toggle fw600 p15 lh30 ripple\"><span>返回聚云立方</span></a></li><li ng-if=\"nav.user.admin==1\" class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>管理员</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">全局信息</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.notify({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>通知管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.template({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>模板管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.monitor({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>监控信息</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.auditlog({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>审计日志</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.quickentry.smallapplicationedit({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>轻应用配置</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.useraddr({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>地址簿管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.global.private({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>私有节点管理</span></a></li></ul></li><li ng-if=\"nav.user.showconnector==1 || nav.user.admin==1\" class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>连接器</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li ng-if=\"nav.user.admin==1\" class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">设置连接器</div></li><li ng-if=\"nav.user.admin==1\" class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.config({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>设置连接器</span></a></li><li ng-if=\"nav.user.admin==1\" class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">登录管理(内置)</div></li><li ng-if=\"nav.user.admin==1\" class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.userinfo({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>用户管理</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.userauth({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>权限管理</span></a></li><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">服务树(内置)</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.tree({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>编辑服务树节点</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.node({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>编辑服务树资源</span></a></li><li class=\"dropdown-header clearfix\" style=\"border: 0\"><div class=\"pull-left ml10\">消息出口(内置)</div></li><li class=list-group-item><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.mail({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>给我的邮件</span> </a><a style=\"padding: 8px 9px 8px 37px\" ui-sref=\"home.connector.mesg({treeid: nav.state.params.treeid})\" class=\"animated animated-short fadeInUp\"><span>给我的短信</span></a></li></ul></li><li class=dropdown uib-dropdown><a href=javascript:void(0) class=\"dropdown-toggle fw600 p15 lh30 ripple\" uib-dropdown-toggle><span>{{ nav.user.name }}</span> <span class=\"caret caret-tp hidden-xs\"></span></a><ul class=\"dropdown-menu list-group dropdown-persist w250\" uib-dropdown-menu><li class=\"dropdown-header clearfix\"><div class=\"pull-left ml10\">用户:{{ nav.user.email }}</div><div class=\"pull-left ml10\">组织:{{ nav.user.company }}</div></li><li class=list-group-item><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ui-sref=\"home.favorites({treeid: nav.state.params.treeid})\"><span class=\"fa fa-star\"></span><span>我的收藏夹</span> </a><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ui-sref=\"home.approval({treeid: nav.state.params.treeid})\"><span class=\"fa fa-hand-o-right\"></span><span>我的审批</span> </a><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ui-sref=\"home.global.ticket({treeid: nav.state.params.treeid})\"><span class=\"fa fa-ticket\"></span><span>我的票据</span> </a><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ui-sref=\"home.global.images({treeid: nav.state.params.treeid})\"><span class=\"fa fa-cube\"></span><span>我的镜像</span></a></li><li class=list-group-item><a href=/book/index.html target=_blank class=\"animated animated-short fadeInUp\"><span class=\"fa fa-book\"></span><span>使用手册</span></a></li><li class=list-group-item><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ui-sref=\"home.global.versionlog({treeid: nav.state.params.treeid})\"><span class=\"fa fa-diamond\"></span><span>版本信息</span></a></li><li class=list-group-item><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ng-click=nav.chpasswd()><span class=\"fa fa-key\"></span><span>修改密码</span> </a><a href=javascript:void(0) class=\"animated animated-short fadeInUp\" ng-click=nav.logout()><span class=\"fa fa-power-off\"></span><span>登出</span></a></li></ul></li></ul></header>");
 $templateCache.put("app/components/nodestr/nodeStr.html","<div><div class=pull-left><h4 style=\"font-weight: bold\">{{node.nodeStr}}</h4></div></div>");
 $templateCache.put("app/components/scripts/createButton.html","<button class=\"btn btn-primary\" ng-click=creat.creats()><i class=\"fa fa-clone fa-fw\"></i>新建脚本</button>");
-$templateCache.put("app/components/scripts/createScript.html","<div class=modal-header><h4 class=modal-title>新建脚本</h4></div><div class=modal-body><form class=form-horizontal role=form name=createForm><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本名称 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=scriptname class=form-control ng-model=scriptName ng-minlength=2 required> <span style=color:red ng-show=createForm.scriptname.$error.minlength>不少于2字符</span> {{name}}</div></div></div><div class=row ng-hide=editStatus><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><!--选择 仓库类型--><div class=admin-form ng-disabled=unClick><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=src ng-model=createS.from value=manual ng-disabled=unClick ng-click=createS.scriptManual()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=createS.from value=clone ng-disabled=unClick ng-click=createS.scriptClone()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label></div><div ng-hide=createS.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=createS.inputScript() ng-options=\"s.name for s in allScript\"></select><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><!--选择 仓库类型--><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorSh() value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPy() value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPerl() value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPhp() value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorBuildin() value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorAuto() value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div class=form-horizontal><!-- shell --><div style=height:400px class=form-group id=editor></div></div></div></div></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=createForm.$invalid ng-click=createS.save()>保存</button> <button class=\"btn btn-warning\" ng-click=createS.cancel()>取消</button></div></div></form></div>");
-$templateCache.put("app/components/variable/choiceVar.html","<div class=modal-header><h4 class=modal-title>构建文件</h4></div><div><div class=panel-tabs style=\"width: 100%\"><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">环境</th><th ng-if=!fileci style=\"text-align: center\">版本</th></tr></thead><tr><td><input type=text class=\"form-control input-global\" ng-model=ciData.ci></td><td><input type=text class=\"form-control input-global\" ng-model=ciData.version></td></tr></table></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=choicevar.chioceover()>确认</button> <button class=\"btn btn-warning\" ng-click=choicevar.cancel()>取消</button></div></div></div>");
-$templateCache.put("app/pages/approval/approval.html","<div class=\"row block\"><div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=approval.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!approval.loadover}\"></i></button></span><h5>我的审批</h5></div><div class=panel-body ng-init=\"ns = { \'null\': \'未发送\', \'sending\': \'发送中\', \'done\':\'完成\', \'skip\': \'忽略\', \'fail\': \'失败\'}\"><div class=panel-tabs><table ng-table=approval.dataTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ create_time: \'text\'}\" sortable>{{d.create_time}}</td><td style=\"width: 10%\" data-title=\"\'结束时间\'\" filter=\"{ finishtime: \'text\'}\" sortable>{{d.finishtime}}</td><td style=\"width: 10%\" data-title=\"\'耗时\'\">{{ approval.seftime(d.create_time,d.finishtime)}}</td><td style=\"width: 10%\" data-title=\"\'提交人\'\" filter=\"{ submitter: \'text\'}\" sortable>{{d.submitter}}</td><td style=\"width: 20%\" data-title=\"\'审批名称\'\" filter=\"{ name: \'text\'}\" sortable>{{d.name}}</td><td style=\"width: 10%\" data-title=\"\'OA单号\'\" filter=\"{ oauuid: \'text\'}\" sortable><a ng-if=\"d.oauuid==0\">尚未发送</a> <a ng-if=\"d.oauuid==1\">创建中</a> <a ng-if=\"d.oauuid!=0 && d.oauuid!=1\">{{d.oauuid}}</a></td><td style=\"width: 10%\" data-title=\"\'通知状态\'\">{{ns[d.notifystatus]}}</td><td style=\"width: 10%\" data-title=\"\'审批状态\'\" sortable><a ng-if=\"d.opinion == \'agree\'\" style=\"color: green\">同意 </a><a ng-if=\"d.opinion == \'unconfirmed\'\">未审批 </a><a ng-if=\"d.opinion == \'refuse\'\" style=\"color: red\">拒绝</a></td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button ng-if=\"d.opinion==\'unconfirmed\'\" class=\"btn btn-primary btn-sm\" ng-click=approval.edit(d.uuid,1)>审批</button> <button ng-if=\"d.opinion!=\'unconfirmed\'\" class=\"btn btn-info btn-sm\" ng-click=approval.edit(d.uuid,0)>查看</button></td></tr></table></div></div></div></div></div>");
-$templateCache.put("app/pages/business/business.html","<div class=\"row block\"><div ui-view></div></div>");
-$templateCache.put("app/pages/connector/connector.html","<div class=\"row block\"><div ui-view></div></div>");
-$templateCache.put("app/pages/dashboard/dashboard.html","<div class=\"row block\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 class=kb_title>业务主机数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{businessCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">常用作业数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 115px\"><span>{{commonCount}}</span></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">本月执行任务数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center\"><span>{{monthTask}}</span></div><div style=\"font-size: 12px;font-weight: bold;text-align: left\"><p style=\"margin: 0;color: green\">成功：{{success}}</p><p style=\"margin: 0;color: red\">失败：{{fail}}</p><p style=\"margin: 0;color: #f19e01\">执行中：{{running}}</p></div></div></div></div><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">定时任务数</h4></div><div class=panel-body><div style=\"font-size: 45px;font-weight: bold;text-align: center;height: 82px\"><span>{{crontCount}}</span></div><div style=\"font-size: 12px;font-weight: bold;text-align: left\"><p style=\"margin: 0;color: green\">启动：{{available}}</p><p style=\"margin: 0;color: red\">暂停：{{unavailable}}</p></div></div></div></div><div class=\"col-lg-12 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">历史任务执行情况</h4></div><div class=panel-body style=\"margin-top: 20px\"><div id=container></div></div></div></div><div class=\"col-lg-5 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">任务执行时长统计</h4></div><div class=panel-body><div id=container2 style=min-width:400px;height:400px></div></div></div></div><div class=\"col-lg-7 col-xs-12 ml0 pl0\" style=\"padding-left: 0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-heading><h4 style=\"font-weight: bold;color: #337ab7\">最近任务执行记录</h4></div><div class=panel-body><div style=\"height: 25px\"><a style=\"right: 0;position: absolute;margin-right: 20px\" ui-sref=\"home.history.job({treeid: dashboard.treeid})\" class=\"animated animated-short fadeInUp\"><span>更多</span></a></div><div class=panel-tabs><table ng-table=dashboard.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\" style=\"height: 35px\"><td data-title=\"\'执行用户\'\">{{ss.user}}</td><td data-title=\"\'耗时\'\">{{dashboard.seftime(ss.starttime, ss.finishtime)}}</td><td data-title=\"\'当前状态\'\">{{dashboard.statuszh[ss.status]}}</td><td data-title=\"\'作业名称\'\"><a ng-if=!dashboard.ciinfo[ss.name]>{{ss.name}}</a> <a ng-if=dashboard.ciinfo[ss.name]>{{dashboard.ciinfo[ss.name]}}</a></td></tr></table></div></div></div></div></div>");
-$templateCache.put("app/pages/favorites/addFavorites.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=addfavorites.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!addfavorites.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=addfavorites.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>我的流水线</h5></div><div class=panel-body><div class=pt20><table ng-table=addfavorites.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 5%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable><i class=\"fa fa-star-o fa-1x\" aria-hidden=true ng-if=!m.favorites ng-click=addfavorites.addToFavorites(m.id,m.name) uib-tooltip=收藏 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=addfavorites.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094\"></i> {{m.id}}</td><td style=\"width: 15%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 15%\" data-title=\"\'别名\'\" filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td style=\"width: 25%\" data-title=\"\'服务树名\'\" filter=\"{ treename: \'text\'}\" sortable>{{m.treename}}</td><td style=\"width: 30%\" data-title=\"\'代码仓库地址\'\" filter=\"{ addr: \'text\'}\" sortable>{{m.addr}}</td><td style=\"width: 5%\" data-title=\"\'编辑者\'\" filter=\"{ user: \'text\'}\" sortable>{{m.edit_user}}</td></tr></table></div></div></div></div><style>.modal-dialog {width: 100%;}</style>");
-$templateCache.put("app/pages/favorites/favorites.html","<div class=\"row block\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=favorites.addFavorites()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 更多待收藏</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div style=\"padding: 10px\"></div><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=favorites.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!favorites.loadover}\"></i></button></span><h5>我收藏的流水线</h5></div><div class=panel-body><div class=pt20><table ng-table=favorites.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 10%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable><i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=favorites.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094\"></i> {{m.id}}</td><td style=\"width: 10%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 10%\" data-title=\"\'别名\'\" filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td style=\"width: 10%\" data-title=\"\'服务树名\'\" filter=\"{ treename: \'text\'}\" sortable><nobr>{{m.treename}} <i class=\"fa fa-chevron-circle-right fa-1x\" aria-hidden=true ng-click=favorites.treedetail(m.groupid) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i></nobr></td><td style=\"width: 10%\" data-title=\"\'构建状态\'\"><div class=\"panel panel-info\" ng-if=m.lastbuild.status style=\"cursor:pointer;background-color: {{panelcolor[m.lastbuild.status]}};margin: 0 0 0\" ng-click=\"favorites.showlog(m.lastbuild.uuid, m.lastbuild.slave)\"><i class=\"fa fa-cloud\" ng-if=\"m.lastbuild.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.lastbuild.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.lastbuild.status==\'success\'\" aria-hidden=true></i> # {{m.lastbuild.name}}<br>耗时 {{favorites.seftime(m.lastbuild.starttime,m.lastbuild.finishtime)}}<br>{{favorites.time2date(m.lastbuild.starttime)}}</div></td><td style=\"width: 15%\" data-title=\"\'测试环境状态\'\"><div class=\"panel panel-info\" ng-if=favorites.taskInfoTest[m.id] style=\"cursor:pointer;background-color: {{panelcolor[favorites.taskInfoTest[m.id].status]}};margin: 0 0 0\" ng-click=favorites.deployDetail(favorites.taskInfoTest[m.id].projectid,favorites.taskInfoTest[m.id].uuid)><i class=\"fa fa-cloud\" ng-if=\"favorites.taskInfoTest[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoTest[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"favorites.taskInfoTest[m.id].status==\'success\'\" aria-hidden=true></i> # {{favorites.taskInfoTest[m.id].version}}<br>耗时 {{favorites.seftime(favorites.taskInfoTest[m.id].starttime, favorites.taskInfoTest[m.id].finishtime)}}<br>{{favorites.time2date(favorites.taskInfoTest[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoTestRunning[m.id] && favorites.taskInfoTest[m.id].status!=\'running\' \" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 15%\" data-title=\"\'线上环境状态\'\"><div class=\"panel panel-info\" ng-if=favorites.taskInfoOnline[m.id] style=\"cursor:pointer;background-color: {{panelcolor[favorites.taskInfoOnline[m.id].status]}};margin: 0 0 0\" ng-click=favorites.deployDetail(favorites.taskInfoOnline[m.id].projectid,favorites.taskInfoOnline[m.id].uuid)>{{favorites.deployType(favorites.taskInfoOnline[m.id].uuid)}} <i class=\"fa fa-cloud\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"favorites.taskInfoOnline[m.id].status==\'success\'\" aria-hidden=true></i> # {{favorites.taskInfoOnline[m.id].version}}<br>耗时 {{favorites.seftime(favorites.taskInfoOnline[m.id].starttime, favorites.taskInfoOnline[m.id].finishtime)}}<br>{{favorites.time2date(favorites.taskInfoOnline[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"favorites.taskInfoOnlineRunning[m.id] && favorites.taskInfoOnline[m.id].status!=\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 10%\" data-title=\"\'编辑者\'\" filter=\"{ user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'操作\'\"><nobr><i class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ng-click=favorites.versiondetail(m.id) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i></nobr></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/global/global.html","<div class=\"row block\"><div ui-view></div></div>");
-$templateCache.put("app/pages/history/history.html","<div class=\"row block\"><div ui-view></div></div>");
-$templateCache.put("app/pages/login/login.html","<div class=login style=\"background: #f86632;margin:0;padding:0;height:100%;width:100%;position:absolute\"><h1 class=\"h2 text-light text-center push-top-bottom animation-slideDown\"><img src=/assets/images/open-c3-logo.jpeg width=150></h1><div><div id=login><div class=logo></div><form onsubmit=\"return false\"><div class=wrapper-login><span class=input-icon><i class=\"glyphicon glyphicon-user\"></i> <span class=\"glyphicon glyphicon-alert text-danger hide\"></span> <input type=text class=user placeholder=username cmlang=login_username ng-model=login.post.user name=username> </span><span class=input-icon><i class=\"glyphicon glyphicon-lock\"></i> <input type=password placeholder=password cmlang=login_password ng-model=login.post.pass name=password></span></div><button type=submit class=login-button ng-click=login.login() cmlang=login_login>登录</button><p style=text-align:center;padding-top:5px;color:#fff ng-if=login.logining id=logining><span>登录中...</span></p></form><span><a href=https://oa.openc3.com/ cmlang=login_find_pwd></a></span></div></div></div>");
-$templateCache.put("app/pages/others/401.html","<div id=error-container class=text-center><h1>401</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
-$templateCache.put("app/pages/others/404.html","<div id=error-container class=text-center><h1>404</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
-$templateCache.put("app/pages/others/500.html","<div id=error-container class=text-center><h1>500</h1><button class=\"btn btn-default\" ui-sref=home><i class=\"fa fa-arrow-left\"></i> Go back</button></div>");
+$templateCache.put("app/components/scripts/createScript.html","<div class=modal-header><h4 class=modal-title>新建脚本</h4></div><div class=modal-body><form class=form-horizontal role=form name=createForm><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本名称 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=scriptname class=form-control ng-model=scriptName ng-minlength=2 required> <span style=color:red ng-show=createForm.scriptname.$error.minlength>不少于2字符</span> {{name}}</div></div></div><div class=row ng-hide=editStatus><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><!--选择 仓库类型--><div class=admin-form ng-disabled=unClick><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=src ng-model=createS.from value=manual ng-disabled=unClick ng-click=createS.scriptManual()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=createS.from value=clone ng-disabled=unClick ng-click=createS.scriptClone()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label></div><div ng-hide=createS.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=createS.inputScript() ng-options=\"s.name for s in allScript\"></select><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><!--选择 仓库类型--><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorSh() value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPy() value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPerl() value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorPhp() value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorBuildin() value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=code ng-model=scriptType ng-click=createS.editorAuto() value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div class=form-horizontal><!-- shell --><div style=height:400px class=form-group id=editor></div></div></div></div></div></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/客户端内置命令/ uib-tooltip=查看客户端内置命令帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=createForm.$invalid ng-click=createS.save()>保存</button> <button class=\"btn btn-warning\" ng-click=createS.cancel()>取消</button></div></div></form></div>");
+$templateCache.put("app/components/variable/choiceVar.html","<div class=modal-header><h4 class=modal-title>构建文件</h4></div><div><div class=panel-tabs style=\"width: 100%\"><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">构建ID(流水线ID)</th><th ng-if=!fileci style=\"text-align: center\">版本</th></tr></thead><tr><td><input type=text class=\"form-control input-global\" ng-model=ciData.ci></td><td><input type=text class=\"form-control input-global\" ng-model=ciData.version></td></tr></table></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=choicevar.chioceover()>确认</button> <button class=\"btn btn-warning\" ng-click=choicevar.cancel()>取消</button></div></div></div>");
 $templateCache.put("app/pages/quickentry/addUser.html","<div class=modal-header><h4 class=modal-title>添加用户</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">账户名</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=username ng-minlength=2 ng-model=username required> <span style=color:red ng-show=addForm.adduser.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=addUser.add()>确认</button> <button class=\"btn btn-warning\" ng-click=addUser.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/quickentry/quickentry.html","<div class=\"row block\"><div ui-view></div></div>");
 $templateCache.put("app/pages/quickentry/taskDetail.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" style=cursor:default><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!jobDetail.loadover}\"></i></button> <button class=\"btn btn-success\" ng-click=jobDetail.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=table-responsive style=\"width: 100%\"><table class=\"table table-bordered\" style=\"font-weight: bold;border: 0px\"><tbody><tr><td>任务名称</td><td>{{jobDetail.taskInfo.name}}</td><td>任务类型</td><td>{{jobDetail.pluginname[jobDetail.taskInfo.jobtype]}}</td><td>执行账户</td><td>{{jobDetail.taskInfo.user}}</td><td>耗时</td><td>{{jobDetail.seftime(jobDetail.taskInfo.starttime,jobDetail.taskInfo.finishtime)}}</td></tr><tr><td>任务状态</td><td><span ng-style=statucolor>{{jobDetail.jobState}}</span></td><td>开始时间</td><td>{{jobDetail.taskInfo.starttime}}</td><td>结束时间</td><td>{{jobDetail.taskInfo.finishtime}}</td><td></td><td></td></tr></tbody></table></div><div class=panel-body><div><h5 class=fwbold>日志详情</h5><job-subtask-log-area jobuuid=jobDetail.jobuuid loguuid=jobDetail.loguuid jobaddr=jobDetail.jobaddr class=fluid-width></job-subtask-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=jobDetail.cancel()>关闭</button></div></div></div>");
-$templateCache.put("app/pages/approval/edit/edit.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=approvaledit.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!approvaledit.loadover}\"></i></button> <button class=\"btn btn-primary\" ng-click=approvaledit.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>审批:{{approvaledit.data.name}}</h5></div><div class=panel-body ng-init=\"ns = { \'null\': \'未发送\', \'sending\': \'发送中\', \'done\':\'完成\', \'skip\': \'忽略\', \'fail\': \'失败\'}\"><div class=panel-tabs><table ng-table=approvaledit.dataTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'审批人\'\">{{d.user}}</td><td style=\"width: 10%\" data-title=\"\'耗时\'\">{{approvaledit.seftime(d.create_time,d.finishtime)}}</td><td style=\"width: 10%\" data-title=\"\'OA单号\'\">{{d.oauuid}}</td><td style=\"width: 10%\" data-title=\"\'通知状态\'\">{{ns[d.notifystatus]}}</td><td style=\"width: 10%\" data-title=\"\'审批状态\'\"><a ng-if=\"d.opinion == \'agree\'\" style=\"color: green\">同意 </a><a ng-if=\"d.opinion == \'unconfirmed\'\">未审批 </a><a ng-if=\"d.opinion == \'refuse\'\" style=\"color: red\">拒绝</a></td></tr></table></div></div><div class=table-responsive style=\"width: 100%\"><table class=\"table table-bordered\" style=\"font-weight: bold;border: 0px\"><tbody><tr><td>创建时间</td><td>{{approvaledit.data.create_time}}</td><td>审批名称</td><td>{{approvaledit.data.name}}</td><td>提交人</td><td>{{approvaledit.data.submitter}}</td></tr></tbody></table></div><a>审批内容: {{approvaledit.data.cont}}</a><div class=\"panel-footer text-right\"><button class=\"btn btn-success\" ng-disabled=!approvaledit.show ng-click=\"approvaledit.edit(\'agree\')\">同意</button> <button class=\"btn btn-danger\" ng-disabled=!approvaledit.show ng-click=\"approvaledit.edit(\'refuse\')\">拒绝</button></div></div></div>");
+$templateCache.put("app/pages/approval/edit/edit.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=approvaledit.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!approvaledit.loadover}\"></i></button> <button class=\"btn btn-primary\" ng-click=approvaledit.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>审批:{{approvaledit.data.name}}</h5></div><div class=panel-body ng-init=\"ns = { \'null\': \'未发送\', \'sending\': \'发送中\', \'done\':\'完成\', \'skip\': \'忽略\', \'fail\': \'失败\'}\"><div class=panel-tabs><table ng-table=approvaledit.dataTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'审批人\'\">{{d.user}}</td><td style=\"width: 10%\" data-title=\"\'耗时\'\">{{approvaledit.seftime(d.create_time,d.finishtime)}}</td><td style=\"width: 10%\" data-title=\"\'OA单号\'\">{{d.oauuid}}</td><td style=\"width: 10%\" data-title=\"\'通知状态\'\">{{ns[d.notifystatus]}}</td><td style=\"width: 10%\" data-title=\"\'审批状态\'\"><a ng-if=\"d.opinion == \'agree\'\" style=\"color: green\">同意 </a><a ng-if=\"d.opinion == \'unconfirmed\'\">未审批 </a><a ng-if=\"d.opinion == \'refuse\'\" style=\"color: red\">拒绝</a></td></tr></table></div></div><div class=table-responsive style=\"width: 100%\"><table class=\"table table-bordered\" style=\"font-weight: bold;border: 0px\"><tbody><tr><td>创建时间</td><td>{{approvaledit.data.create_time}}</td><td>审批名称</td><td>{{approvaledit.data.name}}</td><td>提交人</td><td>{{approvaledit.data.submitter}}</td></tr></tbody></table></div><a><pre>审批内容: {{approvaledit.data.cont}}</pre></a><div class=\"panel-footer text-right\"><button class=\"btn btn-success\" ng-disabled=!approvaledit.show ng-click=\"approvaledit.edit(\'agree\')\">同意</button> <button class=\"btn btn-danger\" ng-disabled=!approvaledit.show ng-click=\"approvaledit.edit(\'refuse\')\">拒绝</button></div></div></div>");
 $templateCache.put("app/pages/business/agent/agent.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=修改记录 ng-click=agent.showctrlLog()>修改记录</button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=agent.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!agent.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=添加 ng-click=agent.addregion()><i class=\"fa fa-plus\"></i></button></span><h5>{{ agent.nodeStr }}</h5></div><div class=\"admin-form row\"><label class=\"col-md-2 control-label fwbold\" style=\"padding-left: 27px;padding-right: 27px;padding-top: 6px\">状态自动监测更新</label><div class=col-md-1 style=\"padding: 0\"><label class=\"switch switch-system mt5\"><input type=checkbox id=check_status ng-model=agent.checknewstatus><label for=check_status data-on=ON data-off=OFF></label></label></div><div class=col-md-1 style=\"padding: 0\"><button class=\"btn btn-primary\" ng-if=\"agent.checkoldstatus!=agent.checknewstatus\" uib-tooltip=添加机器 ng-click=agent.savecheckstatus()>保存新状态</button></div></div><div class=panel-body ng-if=agent.checkstatusloadover><div style=\"padding: 10px\"><span style=\"font-size: 14px;font-weight: bold; color: #626262\">安装代理:</span> <span style=\"color: red\">curl -L http://{{agent.siteaddr}}/api/scripts/installProxy.sh |sudo OPEN_C3_ADDR={{agent.siteaddr}} bash</span></div><div style=\"padding: 10px\"><span style=\"font-size: 14px;font-weight: bold; color: #626262\">安装AGENT:</span> <span style=\"color: red\">curl -L http://{{agent.siteaddr}}/api/scripts/installAgent.sh |sudo OPEN_C3_ADDR={{agent.siteaddr}} bash</span></div><div style=\"padding-left: 93%\"><a style=\"font-size: 14px;font-weight: bold\" class=\"btn btn-primary\" href=http://{{agent.siteaddr}}/api/agent/proxy/{{agent.treeid}} target=_blank>代理接口</a></div></div><br><br><div class=panel-body><div class=pt20><table ng-table=agent.activeRegionTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'ID\'\">{{m.id}}</td><td data-title=\"\'区域\'\"><font size=5>{{m.region}}</font></td><td data-title=\"\'代理\'\"><font size=3 color=green>正常：{{m.proxy.success||0}}</font><br><font size=3 color=red>异常：{{m.proxy.fail||0}}</font><br><button class=\"btn btn-primary\" ng-if=\"m.regionprojectid == agent.treeid\" uib-tooltip=添加代理 ng-click=\"agent.addproxy( m.id, m.region )\"><i class=\"fa fa-plus\"></i></button></td><td data-title=\"\'网段\'\"><font size=3 color=green>正常：{{m.agent.success||0}}</font><br><font size=3 color=red>异常：{{m.agent.fail||0}}</font><br><button class=\"btn btn-primary\" ng-if=\"m.proxy.success || m.agent.success > 0 || m.agent.fail > 0 \" uib-tooltip=添加网段 ng-click=agent.addagent(m.id,m.region)><i class=\"fa fa-plus\"></i></button></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/business/crontab/create.html","<div class=modal-header><h4 class=modal-title>创建定时任务</h4></div><div class=modal-body><form class=form-horizontal role=form name=myForm novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">定时任务 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=cronTabname class=form-control ng-model=cronTabname ng-minlength=3 required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\" style=\"padding-top: 16px\">作业名称 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><div class=admin-form><div style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedjob ng-options=\"s.uuid as s.name for s in allJobs\" required></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">规 则 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=cronRule class=form-control ng-model=cronrule ng-minlength=3 required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">互斥锁:</label><div class=col-sm-9 style=\"margin-top: 10px\"><div class=admin-form ng-disabled=unClick><div class=\"option-group field\"><input type=checkbox name=cronlock style=\"zoom: 1.3\" ng-model=cronlock value=manual> <input ng-if=cronlock type=text name=mutex class=form-control ng-model=businesscrontabcreate.cronlockstr ng-minlength=3></div></div></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=businesscrontabcreate.createCron()>保 存</button> <button class=\"btn btn-warning\" ng-click=businesscrontabcreate.cancel()>取 消</button></div></div></form></div>");
+$templateCache.put("app/pages/business/crontab/create.html","<div class=modal-header><h4 ng-if=\"businesscrontabcreate.edit==false\" class=modal-title>创建定时任务</h4><h4 ng-if=\"businesscrontabcreate.edit==true\" class=modal-title>编辑定时任务</h4></div><div class=modal-body><form class=form-horizontal role=form name=myForm novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">定时任务 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=cronTabname class=form-control ng-model=cronTabname ng-minlength=3 required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\" style=\"padding-top: 16px\">作业名称 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><select class=form-control ng-model=selectedjob required><option ng-repeat=\"x in allJobs\" value={{x.uuid}}>{{x.name}}</option></select></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">规 则 <span style=\"color: red\">*</span> :</label><div class=col-sm-9><input type=text name=cronRule class=form-control ng-model=cronrule ng-minlength=3 required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">互斥锁:</label><div class=col-sm-9 style=\"margin-top: 10px\"><div class=admin-form ng-disabled=unClick><div class=\"option-group field\"><input type=checkbox name=cronlock style=\"zoom: 1.3\" ng-model=cronlock value=manual> <input ng-if=cronlock type=text name=mutex class=form-control ng-model=businesscrontabcreate.cronlockstr ng-minlength=3></div></div></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=businesscrontabcreate.createCron()>保 存</button> <button class=\"btn btn-warning\" ng-click=businesscrontabcreate.cancel()>取 消</button></div></div></form></div>");
 $templateCache.put("app/pages/business/crontab/crontab.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">作业名称:</label><input type=text class=form-control ng-model=businesscrontab.cronname placeholder=定时任务名称></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人:</label><input type=text class=form-control ng-model=businesscrontab.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=businesscrontab.getMe()>我</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">最后修改人:</label><input type=text class=form-control ng-model=businesscrontab.edituser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=businesscrontab.getMe()>我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=businesscrontab.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=businesscrontab.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">修改时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=editstart><input type=text class=form-control ng-model=businesscrontab.editStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=editend><input type=text class=form-control ng-model=businesscrontab.editEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=businesscrontab.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=businesscrontab.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=businesscrontab.createCron()><i class=\"glyphicon glyphicon-plus\" aria-hidden=true></i>创建定时任务</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=businesscrontab.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!businesscrontab.loadover}\"></i></button></span><h5>定时任务</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=businesscrontab.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'定时任务\'\">{{ss.name}}</td><td data-title=\"\'规则\'\">{{ss.cron}}</td><td data-title=\"\'创建用户\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'修改用户\'\">{{ss.edit_user}}</td><td data-title=\"\'最后修改时间\'\">{{ss.edit_time}}</td><td data-title=\"\'操作\'\"><button ng-if=\"ss.status == \'unavailable\'\" class=\"btn btn-primary btn-sm\" ng-click=businesscrontab.runCronJob(ss.id)>开始</button> <button ng-if=\"ss.status == \'available\'\" class=\"btn btn-primary btn-sm\" ng-click=businesscrontab.stopCronJob(ss.id)>暂停</button> <span class=mr5 style=\"border-left:2px solid #ddd;padding:0px 0 0px 0\"></span> <button class=\"btn btn-warning btn-sm\" ng-click=businesscrontab.editCronJob(ss.id)>修改</button> <button class=\"btn btn-danger btn-sm\" ng-click=businesscrontab.deleteCronJob(ss.id)>删除</button></td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/business/file/choiceFile.html","<div class=modal-header><h4 class=modal-title>服务器文件</h4></div><div><div style=\"margin: 1%\"><input type=file id=choicefiles style=\"display: none\" onchange=angular.element(this).scope().upForm() multiple> <button class=\"btn btn-primary\" ng-click=choicefile.clickImport()><span class=\"glyphicon glyphicon-upload\" style=\"padding: 0 3px\"></span>上传文件</button><div class=form-inline style=\"font-weight: bold\"><span id=upresult123>{{choicefile.up_re}}</span></div></div><div class=row><div class=\"col-sm-12 form-group\"><div style=\"padding-left: 74%\"><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=choiceType value=choice> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>选择文件</label><label class=\"option option-primary\"><input type=radio ng-model=choiceType value=input> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手动输入</label></div></div></div></div></div><div class=row ng-switch=choiceType><div class=\"panel-tabs col-sm-10\" ng-switch-when=input style=\"padding-left: 10%;padding-bottom: 5%\"><label style=\"float: left; line-height: 34px;min-width: 90px;text-align: right\" for=jobName>文件名称：</label><input ng-model=choicefile.inputFileName class=form-control style=\"width: 80%\"></div></div><div ng-switch=choiceType><div class=panel-tabs ng-switch-when=choice><table ng-table=choicefile.files_Table class=\"table table-hover text-center table-condensed\"><thead><tr><th></th><th>文件名</th><th>大小</th><th>创建用户</th><th>创建时间</th><th>修改用户</th><th>修改时间</th><th>操作</th></tr></thead><tbody><tr ng-repeat=\"ss in $data\"><td><input type=radio name=selected ng-checked=isSelected(ss.id) ng-click=\"updateSelectFile($event, ss.id, ss)\" style=\"zoom: 125%\"></td><td>{{ss.name}}</td><td>{{ss.size / 1000}}kb</td><td>{{ss.create_user}}</td><td>{{ss.create_time}}</td><td>{{ss.edit_user}}</td><td>{{ss.edit_time}}</td><td><button class=\"btn btn-danger btn-sm\" ng-click=choicefile.deleteFile(ss.id)>删除</button></td></tr></tbody></table></div></div><div style=\"margin: 1%\"><button ng-click=choicefile.manageToken()>token管理</button></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=choicefile.chioceover()>确认</button> <button class=\"btn btn-warning\" ng-click=choicefile.cancel()>取消</button></div></div></div>");
-$templateCache.put("app/pages/business/file/file.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">文件名称：</label><input type=text class=form-control ng-model=file.filename placeholder=文件关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=file.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=file.getMe()>我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=file.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=file.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 55px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=file.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=file.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div></div><div><div style=\"float: right\"><input type=file id=choicefiles style=\"display: none\" onchange=angular.element(this).scope().upForm() multiple> <button class=\"btn btn-primary\" ng-click=file.clickImport()><span class=\"glyphicon glyphicon-upload\" style=\"padding: 0 3px\"></span>上传文件</button> <button class=\"btn btn-primary\" ng-click=file.manageToken()><i class=\"fa fa-key fa-lg\" aria-hidden=true></i>token管理</button></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=file.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!file.loadover}\"></i></button></span><h5>文件列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=file.file_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'文件名\'\">{{ss.name}}</td><td data-title=\"\'创建人\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'大小\'\">{{ss.size/1000}}kb</td><td data-title=\"\'修改用户\'\">{{ss.edit_user}}</td><td data-title=\"\'修改时间\'\">{{ss.edit_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=file.deleteFile(ss.id)>删除</button></td></tr></table></div></div></div>");
+$templateCache.put("app/pages/business/file/file.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">文件名称：</label><input type=text class=form-control ng-model=file.filename placeholder=文件关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=file.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=file.getMe()>我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=file.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=file.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 55px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=file.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=file.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div></div><div><div style=\"float: right\"><input type=file id=choicefiles style=\"display: none\" onchange=angular.element(this).scope().upForm() multiple> <button class=\"btn btn-primary\" ng-click=file.clickImport()><span class=\"glyphicon glyphicon-upload\" style=\"padding: 0 3px\"></span>上传文件</button> <button class=\"btn btn-primary\" ng-click=file.manageToken()><i class=\"fa fa-key fa-lg\" aria-hidden=true></i>token管理</button></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=file.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!file.loadover}\"></i></button></span><h5>文件列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=file.file_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'文件名\'\">{{ss.name}}</td><td data-title=\"\'创建人\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'大小\'\">{{file.bytesToSize(ss.size)}}</td><td data-title=\"\'修改用户\'\">{{ss.edit_user}}</td><td data-title=\"\'修改时间\'\">{{ss.edit_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=file.deleteFile(ss.id)>删除</button></td></tr></table></div></div></div>");
 $templateCache.put("app/pages/business/file/token.html","<div style=\"width: 100%\"><div class=panel-heading><span class=panel-title>token管理</span> <span class=panel-controls><a href=javascript:void(0) ng-click=token.cancel()><i class=\"fa fa-close\"></i></a></span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">token</th><th style=\"text-align: center\">创建用户</th><th style=\"text-align: center\">创建时间</th><th style=\"text-align: center\">描述</th><th style=\"text-align: center\">成功后调用作业</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr ng-repeat=\"t in token.allToken \"><td>{{t.token}}</td><td>{{t.create_user}}</td><td>{{t.create_time}}</td><td>{{t.describe}}</td><td>{{token.showJob(t.isjob, t.jobname)}}</td><td><button class=\"btn btn-danger btn-sm\" ng-click=token.delToken(t.id)>删除</button></td></tr></tbody></table></div></div><div class=panel-heading><span class=panel-title>token添加：</span> <span class=panel-controls></span></div><div style=\"margin: 1%\" class=row><div class=col-md-4 style=\"padding: 0 5px\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=token.newToken style=\"padding-top: 4px;padding-bottom: 4px;height: 30px\" placeholder=token></div></div><div class=col-md-6 style=\"padding: 0 5px\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=token.tokenDis style=\"padding-top: 4px;padding-bottom: 4px;height: 30px\" placeholder=描述></div></div><button class=\"btn btn-primary btn-sm\" ng-click=token.addToken()>添加token</button></div><div class=row style=\"margin: 1%\"><div class=\"form-group col-sm-2\" style=\"padding:0 5px\"><label class=\"control-label fwbold\">上传文件后调用job:</label></div><div class=\"form-group admin-form col-sm-2\" style=\"padding: 0 5px\"><label class=\"switch switch-system mt5\"><input type=checkbox id=check_job ng-model=token.isjob><label for=check_job data-on=ON data-off=OFF></label></label></div><div class=\"form-group col-sm-2\" style=\"padding: 0 5px\"><label ng-if=token.isjob class=\"control-label fwbold\" style=\"padding-right: 2%\">常用作业:</label></div><div class=\"form-group col-sm-4\" style=\"padding: 0 5px\"><select ng-if=token.isjob class=form-control ng-model=token.jobname ng-options=\"jobname for jobname in token.allJobs\"></select></div></div><div style=\"margin: 2%\"><span><span style=\"color: red;font-weight: bold\">添加token命令:</span> curl -X POST http://<span>{{token.hosturl}}</span>/api/job/fileserver/<span>{{token.treeid}}</span>/upload -F \"filename=@/tmp/xxx.txt\" -H \'token: <span>{{token.newToken}}</span>\'</span></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-warning btn-sm\" ng-click=token.cancel()>取消</button></div></div></div>");
-$templateCache.put("app/pages/business/job/create.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=panel ng-hide=saveHide><div class=panel-heading><h5>创建作业</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-10\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\" for=jobName>作业名称：</label><input type=text id=jobName class=form-control style=\"width: 50%\" ng-model=newjobname> <button class=\"btn btn-default\" style=\"font-size: 14px;margin-left: 20%\" ng-click=businessjobcreate.hideGlobalVar()>全局变量设置</button></div></div></div></form></div></div></div><div class=\"panel panel-default\" ng-hide=globalVar><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in businessjobcreate.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=businessjobcreate.delVar($index)>删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=businessjobcreate.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=businessjobcreate.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobcreate.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobcreate.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in businessjobcreate.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center; max-width:60%\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.dst}}</td><td>{{item.dp}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>插件</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center; max-width:60%\">审批内容</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td>{{item.cont}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div></div><hr class=\"mv10 clear\"><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button class=\"btn btn-warning\" ng-hide=saveHide ng-click=businessjobcreate.saveCreateData()>保存作业</button> <button class=\"btn btn-danger\" ng-click=businessjobcreate.runJob() ng-disabled=saveOK>立即执行</button></div></div></div>");
-$templateCache.put("app/pages/business/job/edit.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=panel ng-hide=saveHide><div class=panel-heading><h5 ng-if=!businessjobedit.copyjob>编辑作业</h5><h5 ng-if=businessjobedit.copyjob>克隆作业</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-10\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\" for=jobName>作业名称：</label><input type=text id=jobName class=form-control style=\"width: 50%\" ng-model=newjobname> <button class=\"btn btn-default\" style=\"margin-left: 20%; font-size: 14px\" ng-click=businessjobedit.hideGlobalVar()>全局变量设置</button> <button ng-show=businessjobedit.copyjob class=\"btn btn-default\" style=\"font-size: 14px;margin-right: 3px\" ng-click=businessjobedit.cloneToNode()>克隆至目标节点</button></div></div><div class=row ng-show=businessjobedit.hashCloneNodes style=\"padding-top: 10px\"><div class=\"form-group col-sm-10\" style=\"padding: 0\"><div class=panel-tabs><label style=\"float: left;line-height: 29px;min-width: 90px;text-align: right\" for=jobName>克隆节点：</label><table class=\"table-hover text-center table-condensed\"><tbody><tr style=\"font-weight: bold;font-size: 14px;color: red\"><td ng-repeat=\"(n, node) in businessjobedit.hashCloneNodes\">{{node.name}}</td></tr></tbody></table></div></div></div></div></form></div></div></div><div class=\"panel panel-default\" ng-hide=globalVar><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in businessjobedit.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name ng-readonly=ss.id></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=\"businessjobedit.delVar($index, ss)\">删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=businessjobedit.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=businessjobedit.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobedit.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobedit.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in businessjobedit.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center;max-width:600px\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td style=max-width:600px>{{item.dst}}</td><td>{{item.dp}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center;max-width:600px\">审批内容</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td style=max-width:600px>{{item.cont}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div></div><hr class=\"mv10 clear\"><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button ng-if=businessjobedit.copyjob class=\"btn btn-warning\" ng-click=businessjobedit.saveCloneData()>克隆作业</button> <button ng-if=!businessjobedit.copyjob class=\"btn btn-warning\" ng-hide=saveHide ng-click=businessjobedit.saveCreateData()>保存作业</button> <button ng-if=!businessjobedit.copyjob class=\"btn btn-danger\" ng-click=businessjobedit.runJob() ng-disabled=saveOK>立即执行</button></div></div></div>");
-$templateCache.put("app/pages/business/job/job.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><input type=text class=form-control ng-model=businessjob.jobname placeholder=作业名称关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=businessjob.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=\"businessjob.getMe(\'create\')\">我</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">最后修改人：</label><input type=text class=form-control ng-model=businessjob.edituser placeholder=修改人全称> <button type=submit class=\"btn btn-default\" ng-click=\"businessjob.getMe(\'edit\')\">我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=businessjob.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=businessjob.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">修改时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=editstart><input type=text class=form-control ng-model=businessjob.editStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=editend><input type=text class=form-control ng-model=businessjob.editEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=businessjob.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=businessjob.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=\"businessjob.addJob(username,\'创建\')\"><i class=\"fa fa-cube fa-lg\" aria-hidden=true></i>新建作业</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=businessjob.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!businessjob.loadover}\"></i></button></span><h5>作业列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=businessjob.dataTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'作业名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{businessjob.ciinfo[ss.name]}}</td><td data-title=\"\'步骤\'\">{{ss.stepcount}}</td><td data-title=\"\'创建用户\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'修改用户\'\">{{ss.edit_user}}</td><td data-title=\"\'最后修改时间\'\">{{ss.edit_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=businessjob.runJob(ss.uuid)>执行</button> <button class=\"btn btn-primary btn-sm\" ng-click=businessjob.saveCron(ss)>定时启动</button> <span class=mr5 style=\"border-left:1px solid #ddd;padding:0px 0 0px 0\"></span> <button class=\"btn btn-warning btn-sm\" ng-click=businessjob.editJob(ss.uuid)>编辑</button> <button class=\"btn btn-warning btn-sm\" ng-click=businessjob.copyJob(ss.uuid)>克隆</button> <button class=\"btn btn-danger btn-sm\" ng-click=businessjob.deleteJob(ss.uuid)>删除</button></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/business/job/create.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=panel ng-hide=saveHide><div class=panel-heading><h5>创建作业</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-10\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\" for=jobName>作业名称：</label><input type=text id=jobName class=form-control style=\"width: 50%\" ng-model=newjobname> <button class=\"btn btn-default\" style=\"font-size: 14px;margin-left: 20%\" ng-click=businessjobcreate.hideGlobalVar()>全局变量设置</button></div></div></div></form></div></div></div><div class=\"panel panel-default\" ng-hide=globalVar><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in businessjobcreate.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=businessjobcreate.delVar($index)>删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=businessjobcreate.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=businessjobcreate.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobcreate.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobcreate.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in businessjobcreate.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center; max-width:60%\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.dst}}</td><td>{{item.dp}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobcreate.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobcreate.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center; max-width:60%\">审批内容</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td>{{item.cont}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobcreate.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div></div><hr class=\"mv10 clear\"><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button class=\"btn btn-warning\" ng-hide=saveHide ng-click=businessjobcreate.saveCreateData()>保存作业</button> <button class=\"btn btn-danger\" ng-click=businessjobcreate.runJob() ng-disabled=saveOK>立即执行</button></div></div></div>");
+$templateCache.put("app/pages/business/job/edit.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=panel ng-hide=saveHide><div class=panel-heading><h5 ng-if=!businessjobedit.copyjob>编辑作业</h5><h5 ng-if=businessjobedit.copyjob>克隆作业</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-10\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\" for=jobName>作业名称：</label><input type=text id=jobName class=form-control style=\"width: 50%\" ng-model=newjobname> <button class=\"btn btn-default\" style=\"margin-left: 20%; font-size: 14px\" ng-click=businessjobedit.hideGlobalVar()>全局变量设置</button> <button ng-show=businessjobedit.copyjob class=\"btn btn-default\" style=\"font-size: 14px;margin-right: 3px\" ng-click=businessjobedit.cloneToNode()>克隆至目标节点</button></div></div><div class=row ng-show=businessjobedit.hashCloneNodes style=\"padding-top: 10px\"><div class=\"form-group col-sm-10\" style=\"padding: 0\"><div class=panel-tabs><label style=\"float: left;line-height: 29px;min-width: 90px;text-align: right\" for=jobName>克隆节点：</label><table class=\"table-hover text-center table-condensed\"><tbody><tr style=\"font-weight: bold;font-size: 14px;color: red\"><td ng-repeat=\"(n, node) in businessjobedit.hashCloneNodes\">{{node.name}}</td></tr></tbody></table></div></div></div></div></form></div></div></div><div class=\"panel panel-default\" ng-hide=globalVar><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in businessjobedit.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name ng-readonly=ss.id></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=\"businessjobedit.delVar($index, ss)\">删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=businessjobedit.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=businessjobedit.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobedit.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=businessjobedit.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in businessjobedit.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><!--<table class=\"table table-hover text-center table-condensed\">--><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center;max-width:600px\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td style=max-width:600px>{{item.dst}}</td><td>{{item.dp}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=businessjobedit.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=businessjobedit.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center;max-width:600px\">审批内容</th><th style=\"text-align: center;width: 20%\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td style=max-width:600px>{{item.cont}}</td><td style=\"width: 20%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=businessjobedit.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=businessjobedit.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div></div><hr class=\"mv10 clear\"><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button ng-if=businessjobedit.copyjob class=\"btn btn-warning\" ng-click=businessjobedit.saveCloneData()>克隆作业</button> <button ng-if=!businessjobedit.copyjob class=\"btn btn-warning\" ng-hide=saveHide ng-click=businessjobedit.saveCreateData()>保存作业</button> <button ng-if=!businessjobedit.copyjob class=\"btn btn-danger\" ng-click=businessjobedit.runJob() ng-disabled=saveOK>立即执行</button></div></div></div>");
+$templateCache.put("app/pages/business/job/job.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><input type=text class=form-control ng-model=businessjob.jobname placeholder=作业名称关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=businessjob.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=\"businessjob.getMe(\'create\')\">我</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">最后修改人：</label><input type=text class=form-control ng-model=businessjob.edituser placeholder=修改人全称> <button type=submit class=\"btn btn-default\" ng-click=\"businessjob.getMe(\'edit\')\">我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=businessjob.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=businessjob.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">修改时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=editstart><input type=text class=form-control ng-model=businessjob.editStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=editend><input type=text class=form-control ng-model=businessjob.editEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=businessjob.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=businessjob.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=\"businessjob.addJob(username,\'创建\')\"><i class=\"fa fa-cube fa-lg\" aria-hidden=true></i>新建作业</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=businessjob.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!businessjob.loadover}\"></i></button></span><h5>作业列表</h5></div><div class=panel-body><div class=panel-tabs ng-init=\'hasvariable = { \"0\":\"无\", \"1\":\"有\" }\'><table ng-table=businessjob.dataTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'作业名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{businessjob.ciinfo[ss.name]}}</td><td data-title=\"\'步骤\'\">{{ss.stepcount}}</td><td data-title=\"\'变量\'\">{{hasvariable[ss.hasvariable]}}</td><td data-title=\"\'创建用户\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'修改用户\'\">{{ss.edit_user}}</td><td data-title=\"\'最后修改时间\'\">{{ss.edit_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=businessjob.runJob(ss.uuid)>执行</button><!-- <button class=\"btn btn-primary btn-sm\" ng-click=\"businessjob.saveCron(ss)\">定时启动</button> --> <button class=\"btn btn-warning btn-sm\" ng-click=businessjob.editJob(ss.uuid)>编辑</button> <button class=\"btn btn-warning btn-sm\" ng-click=businessjob.copyJob(ss.uuid)>克隆</button> <button class=\"btn btn-danger btn-sm\" ng-click=businessjob.deleteJob(ss.uuid)>删除</button></td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/business/machine/machine.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><form class=form-inline name=searchForm novalidate><div class=row><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=machine.name placeholder=机器名称包含的字符></div></div><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=machine.createuser placeholder=创建人全称> <span class=input-group-btn><button type=submit class=\"btn btn-default fluid-width\" ng-click=machine.getMe()>我</button></span></div></div><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=machine.inip placeholder=内网IP></div></div><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width\"><input type=text class=form-control ng-model=machine.exip placeholder=外网IP></div></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width date\" id=createstart><input type=text class=form-control ng-model=machine.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div><div class=\"form-group col-md-3\"><div class=\"input-group fluid-width date\" id=createend><input type=text class=form-control ng-model=machine.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></form><div class=col-md-10 style=\"padding-top: 20px\"><button class=\"btn btn-primary\" ng-click=machine.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=machine.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><div class=form-group ng-init=\"newMachine=\'\'\"><input type=text class=form-control ng-model=newMachine placeholder=机器ip required></div><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=machine.createMachine()><i class=\"fa fa-desktop fa-lg\" aria-hidden=true></i>添加机器</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=machine.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!machine.loadover}\"></i></button></span><h5>机器列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=machine.user_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'机器名\'\">{{ss.name}}</td><td data-title=\"\'创建人\'\">{{ss.create_user}}</td><td data-title=\"\'内网IP\'\">{{ss.inip}}</td><td data-title=\"\'外网IP\'\">{{ss.exip}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-danger btn-sm\" ng-click=machine.delete(ss.id)>删除</button></td></tr></table></div></div></div>");
-$templateCache.put("app/pages/business/nodebatch/create.html","<div class=modal-header><h4 class=modal-title>选择服务器</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row ng-if=!createjobgroup.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createjobgroup.postData.name required></div></div></div><div class=row ng-if=!createjobgroup.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">备注</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createjobgroup.postData.note required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=machineType value=list> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>机器列表</label><label class=\"option option-primary\"><input type=radio ng-model=machineType value=percent> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>百分比</label></div></div></div></div></div><div ng-switch=machineType class=row><div ng-switch-when=list><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">选择机器</label><div class=col-sm-7><div class=admin-form><div class=\"option-group field\"><button class=\"btn btn-primary ng-binding\" ng-click=createjobgroup.choiceServer()>选择第{{choiceServerNum}}批服务器</button> <span>（可以选择，也可以手动输入）</span></div></div></div></div></div><div ng-switch=machineType class=row><div ng-switch-when=list><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">输入机器IP</label><div class=col-sm-9><textarea name=ips id=ips ng-model=createjobgroup.machineList style=\"width: 100%; height: 110px\"></textarea><span>机器列表,用逗号分隔，不同的分批用分号分隔 (如: 1.1.1.1,2.2.2.2;3.3.3.3)</span></div></div></div><div ng-switch-when=percent><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">比例输入</label><div class=col-sm-9><textarea name=ips id=ippercent ng-model=createjobgroup.machinePercent style=\"width: 100%; height: 110px\"></textarea><!--<span>百分比:用冒号分割数字或者百分比( 如: 1:2 or 10%:5% )</span>--><p>1.本节点的百分比用冒号分割数字或者百分比( 如: 1:2 or 10%:5% )</p><p>2.扩展的百分比.每一行是一个大分组；每一行由3段信息组成，用分号分隔（子树名［如：abc 、 foo.bar 、空字符］，用英文逗号分隔; 机器编号范围［用逗号分隔，用～号标示范围］；百分比，和第一组类型一样）</p><p>如: abc,efg,hij;1~100;1:2<br>;1~10,13;2<br>foo.bar;1,3,5;1:10%</p></div></div></div><div ng-switch-when=percent><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">服务器信息</label><div class=col-sm-9><div class=panel-tabs><table ng-table=createjobgroup.macheinInfoTable class=\"table table-hover text-center table-condensed table-bordered\"><thead><tr><th>名称</th><th>类型</th></tr></thead><tbody><tr ng-repeat=\"ss in $data\"><td>{{ss.name}}</td><td>{{ss.type}}</td></tr></tbody></table></div></div></div></div></div></div></form><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=createjobgroup.saveGroup()>确认</button> <button class=\"btn btn-warning\" ng-click=createjobgroup.cancel()>取消</button></div></div></div>");
+$templateCache.put("app/pages/business/nodebatch/create.html","<div class=modal-header><h4 class=modal-title>选择服务器</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row ng-if=!createjobgroup.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createjobgroup.postData.name required></div></div></div><div class=row ng-if=!createjobgroup.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">备注</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createjobgroup.postData.note required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=machineType value=list> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>机器列表</label><label class=\"option option-primary\"><input type=radio ng-model=machineType value=percent> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>百分比</label></div></div></div></div></div><div ng-switch=machineType class=row><div ng-switch-when=list><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">选择机器</label><div class=col-sm-7><div class=admin-form><div class=\"option-group field\"><button class=\"btn btn-primary ng-binding\" ng-click=createjobgroup.choiceServer()>选择第{{choiceServerNum}}批服务器</button> <span>（可以选择，也可以手动输入）</span></div></div></div></div></div><div ng-switch=machineType class=row><div ng-switch-when=list><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">输入机器IP</label><div class=col-sm-9><textarea name=ips id=ips ng-model=createjobgroup.machineList style=\"width: 100%; height: 110px\"></textarea><span>机器列表,用逗号分隔，不同的分批用分号分隔 (如: 1.1.1.1,2.2.2.2;3.3.3.3)</span></div></div></div><div ng-switch-when=percent><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">比例输入</label><div class=col-sm-9><textarea name=ips id=ippercent ng-model=createjobgroup.machinePercent style=\"width: 100%; height: 110px\"></textarea><!--<span>百分比:用冒号分割数字或者百分比( 如: 1:2 or 10%:5% )</span>--><p>1.本节点的百分比用冒号分割数字或者百分比( 如: 1:2 or 10%:5% )</p><p>2.扩展的百分比.每一行是一个大分组；每一行由3段信息组成，用分号分隔（子树id［如：123 、 234 、空字符］，用英文逗号分隔; 机器编号范围［用逗号分隔，用～号标示范围］；百分比，和第一组类型一样）</p><p>如: 123,234;1~100;1:2<br>;1~10,13;2<br>1234;1,3,5;1:10%</p></div></div></div><div ng-switch-when=percent><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">服务器信息</label><div class=col-sm-9><div class=panel-tabs><table ng-table=createjobgroup.macheinInfoTable class=\"table table-hover text-center table-condensed table-bordered\"><thead><tr><th>名称</th><th>类型</th></tr></thead><tbody><tr ng-repeat=\"ss in $data\"><td>{{ss.name}}</td><td>{{ss.type}}</td></tr></tbody></table></div></div></div></div></div></div></form><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-danger\" ng-click=createjobgroup.deleteGroup()>删除并退出</button> <button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=createjobgroup.saveGroup()>保存</button> <button class=\"btn btn-warning\" ng-click=createjobgroup.cancel()>取消</button></div></div></div>");
 $templateCache.put("app/pages/business/nodebatch/log.html","<div><div class=\"panel panel-dark\"><div class=panel-heading><h5>分批编辑日志</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=operation.log_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'时间\'\">{{ss.create_time}}</td><td data-title=\"\'操作\'\">{{ss.info}}</td><td data-title=\"\'用户\'\">{{ss.user}}</td></tr></table></div></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=operation.cancel()>取消</button></div></div>");
-$templateCache.put("app/pages/business/nodebatch/nodebatch.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" ng-click=groupindex.createJobGroup()><i class=\"fa fa-object-ungroup fa-lg\" aria-hidden=true></i>新建分组</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><!--<button type=\"submit\" class=\"btn btn-dark\" ng-click=\"groupindex.showEditLog()\">日志</button>--> <button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=groupindex.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!groupindex.loadover}\"></i></button></span><h5>分批列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=groupindex.group_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'分组名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{groupindex.ciinfo[ss.name]}}</td><td data-title=\"\'创建时间\'\">{{ss.edit_time}}</td><td data-title=\"\'分组类型\'\">{{ss.group_type}}</td><td data-title=\"\'备注\'\">{{ss.note}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-system btn-sm\" ng-click=groupindex.showIPlist(ss.id)>机器列表</button> <button class=\"btn btn-primary btn-sm\" ng-click=groupindex.editGroup(ss.id)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-click=groupindex.deleteGroup(ss.id)>删除</button></td></tr></table></div></div></div>");
+$templateCache.put("app/pages/business/nodebatch/nodebatch.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" ng-click=groupindex.createJobGroup()><i class=\"fa fa-object-ungroup fa-lg\" aria-hidden=true></i>新建分批</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><!--<button type=\"submit\" class=\"btn btn-dark\" ng-click=\"groupindex.showEditLog()\">日志</button>--> <button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=groupindex.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!groupindex.loadover}\"></i></button></span><h5>分批列表</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=groupindex.group_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'分组名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{groupindex.ciinfo[ss.name]}}</td><td data-title=\"\'创建时间\'\">{{ss.edit_time}}</td><td data-title=\"\'分组类型\'\">{{ss.group_type}}</td><td data-title=\"\'备注\'\">{{ss.note}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-system btn-sm\" ng-click=groupindex.showIPlist(ss.id)>机器列表</button> <button class=\"btn btn-primary btn-sm\" ng-click=groupindex.editGroup(ss.id)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-click=groupindex.deleteGroup(ss.id)>删除</button></td></tr></table></div></div></div>");
 $templateCache.put("app/pages/business/nodebatch/shownode.html","<div class=modal-header><h4 class=modal-title>分组机器列表</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row ng-repeat=\"group in showIPstr\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-2 control-label\">分组{{$index+1}}({{group.num}}台机器):</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div></form><div class=row><div class=\"col-sm-2 form-group pull-right\"><button class=\"btn btn-warning\" ng-click=showip.cancel()>取消</button></div></div></div>");
 $templateCache.put("app/pages/business/nodegroup/createGroup.html","<div class=modal-header><h4 class=modal-title>添加分组</h4></div><div class=modal-body><form class=form-horizontal name=createForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup placeholder=不少于2字符 ng-minlength=2 ng-model=groupName required> <span style=color:red ng-show=createForm.addGroup.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=selectedType value=machineName ng-click=createGroup.groupInfo()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>根据机器名分组</label><label class=\"option option-primary\"><input type=radio name=src ng-model=selectedType value=machineType ng-click=createGroup.groupInfo()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>根据机器类型分组</label></div><table class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">#</th><th style=\"text-align: left\">Name</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td>{{ss}}</td><td><button ng-click=createGroup.delChoice($index)>删除</button></td></tr></tbody></table></div></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=\"createForm.$invalid || !choiceShow\" ng-click=createGroup.save()>创建</button> <button class=\"btn btn-warning\" ng-click=createGroup.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/business/nodegroup/editGroup.html","<div class=modal-header><h4 class=modal-title>编辑分组</h4></div><div class=modal-body><form class=form-horizontal name=createForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup placeholder=不少于2字符 ng-minlength=2 ng-model=groupName required> <span style=color:red ng-show=createForm.addGroup.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=selectedType value=machineName ng-click=edit.choiceInfo()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>根据机器名分组</label><label class=\"option option-primary\"><input type=radio name=src ng-model=selectedType value=machineType ng-click=edit.choiceInfo()> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>根据机器类型分组</label></div><table ng-table=edit.editTable class=\"table table-hover\" style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">#</th><th style=\"text-align: left\">Name</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in editTable\"><td>{{$index + 1}}</td><td>{{ss}}</td><td><button ng-click=edit.delChoice($index)>删除</button></td></tr></tbody></table></div></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=\"createForm.$invalid || editTable.length == 0\" ng-click=edit.save()>确认修改</button> <button class=\"btn btn-warning\" ng-click=edit.cancel()>取消</button></div></div></form></div>");
@@ -39370,59 +41712,72 @@ $templateCache.put("app/pages/business/scripts/script.html","<div><div class=\"p
 $templateCache.put("app/pages/business/user/user.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">账户名称：</label><input type=text class=form-control ng-model=user.username placeholder=账户关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=user.createuser placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=user.getMe()>我</button></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=user.createStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=user.createEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 55px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=user.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=user.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div></div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><div class=form-group ng-init=\"newUser=\'\'\"><input type=text class=form-control ng-model=newUser placeholder=新建账户名 required> <span></span></div><button type=submit class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=user.createUser()><i class=\"fa fa-user-circle-o fa-lg\" aria-hidden=true></i>新建账户</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=user.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!user.loadover}\"></i></button></span><h5>账户信息</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=user.user_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'账户名\'\">{{ss.username}}</td><td data-title=\"\'创建人\'\">{{ss.create_user}}</td><td data-title=\"\'创建时间\'\">{{ss.create_time}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=user.delete(ss.id)>删除</button></td></tr></table></div></div></div>");
 $templateCache.put("app/pages/business/variate/variate.html","<!--<cmloading ng-if=\"variate.isLoading\"></cmloading>--><!--<div ng-if=\"!variate.isLoading\">--><div style=\"background-color: #fff\"><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-dark\"><div class=panel-heading><h5>变量信息</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=variate.data_Table class=\"table table-hover text-center table-condensed\"><thead><th ng-repeat=\"item in heads\">{{item}}</th><th>删除</th></thead><tr ng-repeat=\"ss in $data\"><td ng-repeat=\"item in ss track by $index\">{{item}}</td><td><a class=\"fa fa-close fa-fw\" ng-click=variate.delete(ss) style=\"color: red\"></a></td></tr></table></div></div><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div>");
 $templateCache.put("app/pages/connector/chpasswd/chpasswd.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><h5>修改个人密码</h5></div></div><div><form name=myForm novalidate><div class=row><div class=\"col-sm-12 form-group\"><label class=\"col-sm-1 control-label\">原密码</label><div class=col-sm-3><input type=password class=form-control ng-model=connectorchpasswd.chpasswd.old required></div></div></div><div class=row><div class=\"col-sm-12 form-group\"><label class=\"col-sm-1 control-label\">新密码</label><div class=col-sm-3><input type=password class=form-control ng-model=connectorchpasswd.chpasswd.new1 ng-change=connectorchpasswd.change() required></div></div></div><div class=row><div class=\"col-sm-12 form-group\"><label class=\"col-sm-1 control-label\">重复新密码</label><div class=col-sm-3><input type=password class=form-control ng-model=connectorchpasswd.chpasswd.new2 ng-change=connectorchpasswd.change() required></div><label class=\"col-sm-1 control-label\" ng-if=connectorchpasswd.new2err style=\"color: red\">两个新密码不一致</label></div></div><div class=row><div class=\"col-sm-12 form-group\"><div class=col-sm-3><button type=submit ng-disabled=\"myForm.$invalid || connectorchpasswd.new2err\" class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=connectorchpasswd.changepasswd()><i class=\"fa fa-key fa-lg\" aria-hidden=true></i>修改密码</button></div></div></div><div id=createerr style=\"padding: 10px;color: red;font-weight: bold\" class=form-inline>{{errmsg}}</div><div id=createok style=\"padding: 10px;color: green;font-weight: bold\" class=form-inline>{{okmsg}}</div><div style=\"clear: both\">&nbsp;</div></form></div></div>");
-$templateCache.put("app/pages/connector/config/config.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=connectorconfig.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectorconfig.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectorconfig.loadover}\"></i></button></span><h5>连接器配置管理</h5></div><div class=panel-body><div class=form-horizontal><div class=container-fluid><h4>历史连接器</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-md-2 control-label fwbold\">连接器切换(重新保存后生效)</label><div class=\"col-md-9 form-inline\"><select class=form-control ng-model=connectorconfig.name ng-change=connectorconfig.reload()><option ng-repeat=\"x in connectorconfig.configlist\" value={{x}}>{{x}}</option></select></div></div></div><hr><h4>登录</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">获取用户信息</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssousername required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">用户登出</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssologoutapi required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">回调</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssocallback required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">cookie名</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.cookiekey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">修改密码</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssochpasswd required></div></div></div><h4>服务树</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">用户服务树</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usertree required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">全量服务树</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.treemap required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.treemapenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.treemapenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">服务树资源</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.nodeinfo required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.nodeinfoenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.nodeinfoenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">权限控制</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.pmspoint required></div></div></div><h4>消息出口</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usermail required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.usermailenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.usermailenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usermesg required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.usermesgenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.usermesgenv.appkey required></div></div></div></div></div></div></div></div>");
+$templateCache.put("app/pages/connector/config/config.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=connectorconfig.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectorconfig.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectorconfig.loadover}\"></i></button></span><h5>连接器配置管理</h5></div><div class=panel-body><div class=form-horizontal><div class=container-fluid><h4>历史连接器</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-md-2 control-label fwbold\">连接器切换(重新保存后生效)</label><div class=\"col-md-9 form-inline\"><select class=form-control ng-model=connectorconfig.name ng-change=connectorconfig.reload()><option ng-repeat=\"x in connectorconfig.configlist\" value={{x}}>{{x}}</option></select></div></div></div><hr><h4>登录</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">获取用户信息</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssousername required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">用户登出</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssologoutapi required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">回调</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssocallback required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">cookie名</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.cookiekey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">修改密码</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.ssochpasswd required></div></div></div><h4>服务树</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">用户服务树</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usertree required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">全量服务树</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.treemap required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.treemapenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.treemapenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">服务树资源</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.nodeinfo required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.nodeinfoenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.nodeinfoenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">权限控制</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.pmspoint required></div></div></div><h4>消息出口</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usermail required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.usermailenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.usermailenv.appkey required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.usermesg required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.usermesgenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.usermesgenv.appkey required></div></div></div><h4>外部辅助审批</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">审批接口</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.approver required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\"></label><label class=\"col-sm-2 control-label\">appname</label><div class=col-sm-2><input type=text class=form-control ng-model=connectorconfig.config.approverenv.appname required></div><label class=\"col-sm-2 control-label\">appkey</label><div class=col-sm-3><input type=text class=form-control ng-model=connectorconfig.config.approverenv.appkey required></div></div></div><h4>前端风格</h4><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">选择前端风格</label><div class=col-sm-9><input type=text class=form-control ng-model=connectorconfig.config.frontendstyle required></div></div></div></div></div></div></div></div>");
 $templateCache.put("app/pages/connector/mail/mail.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectormail.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectormail.loadover}\"></i></button></span><h5>给我的邮件</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=connectormail.mailTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'时间\'\" filter=\"{ time: \'text\'}\" sortable>{{d.time}}</td><td style=\"width: 10%\" data-title=\"\'标题\'\" filter=\"{ title: \'text\'}\" sortable>{{d.title}}</td><td style=\"width: 70%\" data-title=\"\'内容\'\" filter=\"{ content: \'text\'}\" sortable>{{d.content}}</td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/connector/mesg/mesg.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectormesg.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectormesg.loadover}\"></i></button></span><h5>给我的短信</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=connectormesg.mesgTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'时间\'\" filter=\"{ time: \'text\'}\" sortable>{{d.time}}</td><td style=\"width: 70%\" data-title=\"\'内容\'\" filter=\"{ mesg: \'text\'}\" sortable>{{d.mesg}}</td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/connector/node/node.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><div class=form-group ng-init=\"username=\'\'\"><input type=text class=form-control ng-model=nodename placeholder=机器ip required></div><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=connectornode.addNode()><i class=\"fa fa-desktop fa-lg\" aria-hidden=true></i>添加机器</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectornode.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectornode.loadover}\"></i></button></span><h5>服务器资源</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=connectornode.nodeTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 10%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 10%\" data-title=\"\'创建人\'\" filter=\"{ create_user: \'text\'}\" sortable>{{m.create_user}}</td><td style=\"width: 10%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\" sortable>{{m.inip}}</td><td style=\"width: 10%\" data-title=\"\'外网IP\'\" filter=\"{ exip: \'text\'}\" sortable>{{m.exip}}</td><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ create_time: \'text\'}\" sortable>{{m.create_time}}</td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-md\" ng-click=connectornode.delete(m.id)>删除</button></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/connector/tree/tree.html","<div style=\"width: 100%\"><div id=sidebar_left style=\"width: 100%\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel style=\"margin: 0\"><div class=panel-heading style=\"background-color: #4a89dc;color: #fff\"><span class=panel-title>服务树编辑</span> <span class=panel-controls><a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.reload()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\" style=\";padding: 0\"><perfect-scrollbar class=scroller><ul class=ztree id=openc3treeclone></ul></perfect-scrollbar></div><!-- start: right click menu --><div class=clickMenu ng-class=\"{open: !connectortree.hideMenu}\"><ul class=\"dropdown-menu tree-menu text-left\"><li class=dropdown-header><strong>{{ connectortree.menuTags }}</strong></li><li class=divider></li><li ng-show=connectortree.canAddNode><a href=javascript:void(0) ng-click=connectortree.addNode()><i class=\"fa fa-plus pull-right\"></i> 添加节点</a></li><li ng-show=connectortree.canDelNode><a href=javascript:void(0) ng-click=connectortree.delNode()><i class=\"fa fa-trash pull-right\"></i> 删除节点</a></li><!--\n                               <li ng-show=\"connectortree.canEditNode\">\n                                   <a href=\"javascript:void(0)\" ng-click=\"connectortree.renameNode()\">\n                                       <i class=\"fa fa-pencil-square-o pull-right\"></i>\n                                       重命名\n                                   </a>\n                              </li>\n--></ul></div><!-- end: right click menu --></div></div></div></div></div>");
+$templateCache.put("app/pages/connector/tree/tree.html","<div style=\"width: 100%\"><div id=sidebar_left style=\"width: 100%\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel style=\"margin: 0\"><div class=panel-heading style=\"background-color: #4a89dc;color: #fff\"><span class=panel-title>服务树编辑</span> <span class=panel-controls><a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) style=\"color: #fff\" ng-click=connectortree.reload()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\" style=\";padding: 0\"><perfect-scrollbar class=scroller><ul class=ztree id=openc3treeclone></ul></perfect-scrollbar></div><!-- start: right click menu --><div class=clickMenu ng-class=\"{open: !connectortree.hideMenu}\"><ul class=\"dropdown-menu tree-menu text-left\"><li class=dropdown-header><strong>{{ connectortree.menuTags }}</strong></li><li class=divider></li><li ng-show=\"connectortree.canAddNode && connectortree.canEditNode\"><a href=javascript:void(0) ng-click=connectortree.addNode()><i class=\"fa fa-plus pull-right\"></i> 添加节点</a></li><li ng-show=\"connectortree.canDelNode && connectortree.canEditNode\"><a href=javascript:void(0) ng-click=connectortree.delNode()><i class=\"fa fa-trash pull-right\"></i> 删除节点</a></li><li ng-show=!connectortree.canEditNode><a href=javascript:void(0)>私有节点不能在服务树中编辑</a></li></ul></div><!-- end: right click menu --></div></div></div></div></div>");
 $templateCache.put("app/pages/connector/userauth/userauth.html","<div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><div class=form-group ng-init=\"username=\'\'\"><input type=text class=form-control ng-model=username placeholder=用户登录名 required></div><div class=form-group ng-init=\"role= [ { id: 1, name: \'研发角色\'} , { id: 2, name: \'运维角色\'} , { id: 3, name: \'管理员\'} ]\"><select class=form-control ng-model=connectoruserauth.role ng-options=\"o.id as o.name for o in role\"></select></div><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=connectoruserauth.addAuth()><i class=\"fa fa-user-secret fa-lg\" aria-hidden=true></i>添加权限</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectoruserauth.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectoruserauth.loadover}\"></i></button></span><h5>用户权限</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=connectoruserauth.userTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"user in $data\"><td style=\"width: 10%\" data-title=\"\'用户\'\" filter=\"{ name: \'text\'}\" sortable>{{user.name}}</td><td style=\"width: 10%\" data-title=\"\'级别\'\" sortable><a ng-if=\"user.level==1\">研发 </a><a ng-if=\"user.level==2\" style=\"color: #e52\">运维 </a><a ng-if=\"user.level==3\" style=\"color: red\">管理员</a></td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-md\" ng-click=connectoruserauth.delete(user.name)>删除</button></td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/connector/userinfo/userinfo.html","<div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><div class=form-group ng-init=\"username=\'\'\"><input type=text class=form-control ng-model=username placeholder=用户登录名 required></div><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=\"connectoruserinfo.addUser(username,\'创建\')\"><i class=\"fa fa-user-circle-o fa-lg\" aria-hidden=true></i>添加用户</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=connectoruserinfo.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!connectoruserinfo.loadover}\"></i></button></span><h5>可登录用户</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=connectoruserinfo.userTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"user in $data\"><td style=\"width: 10%\" data-title=\"\'用户\'\" filter=\"{ name: \'text\'}\" sortable>{{user.name}}</td><td style=\"width: 10%\" data-title=\"\'密码未修改\'\" sortable><a ng-if=user.pass style=\"color: red\">是(危险) </a><a ng-if=!user.pass>否</a></td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-md\" ng-click=\"connectoruserinfo.addUser(user.name, \'重置密码\')\">重置密码</button> <button class=\"btn btn-primary btn-md\" ng-click=connectoruserinfo.delete(user.name)>删除</button></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/global/notify/notify.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=notify.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=notify.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!notify.loadover}\"></i></button></span><h5>通知出口开关设置</h5></div><div class=panel-body><div class=form-horizontal><!-- tag 匹配规则 --><div class=container-fluid><div class=row><table class=\"table table-bordered\" style=\"text-align: center\"><thead><tr class=notice-bg><th colspan=2 class=right-bor style=\"text-align: center\">分类</th><th class=right-bor style=\"text-align: center\"><label for=email class=\"notice-top allmes\">邮件<input type=checkbox ng-model=emailall id=email ng-click=notify.checkAllEmail()></label></th><th class=right-bor style=\"text-align: center\"><label for=sms class=\"notice-top allout\" style=\"text-align: center\">短信<input type=checkbox ng-model=smsall id=sms ng-click=notify.checkAllSms()></label></th></tr></thead><tbody><tr><td rowspan=3 class=\"right-bor line\">页面执行作业</td><td class=right-bor>执行成功</td><td class=right-bor><input type=checkbox check-class=email ng-model=isPageSuccessEmail name=isPageSuccessEmail></td><td class=right-bor><input type=checkbox check-class=sms ng-model=isPageSuccessSms name=isPageSuccessSms></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isPageFailEmail name=isPageFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isPageFailSms name=isPageFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isPageWaitingEmail name=isPageWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isPageWaitingSms name=isPageWaitingSms></label></td></tr><tr><td rowspan=3 class=\"right-bor line\">接口启动作业</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiSuccessEmail name=isApiSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiSuccessSms name=isApiSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiFailEmail name=isApiFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiFailSms name=isApiFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiWaitingEmail name=isApiWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiWaitingSms name=isApiWaitingSms></label></td></tr><tr><td rowspan=3 class=\"right-bor line\">定时启动作业</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabSuccessEmail name=isCrontabSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabSuccessSms name=isCrontabSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabFailEmail name=isCrontabFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabFailSms name=isCrontabFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabWaitingEmail name=isCrontabWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabWaitingSms name=isCrontabWaitingSms></label></td></tr><tr><td rowspan=2 class=\"right-bor line\">构建任务</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCiSuccessEmail name=isCiSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCiSuccessSms name=isCiSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCiFailEmail name=isCiFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCiFailSms name=isCiFailSms></label></td></tr><tr><td rowspan=1 class=\"right-bor line\">审批</td><td class=right-bor>审批事件</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApprovalSuccessEmail name=isApprovalSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApprovalSuccessSms name=isApprovalSuccessSms></label></td></tr></tbody></table></div></div></div></div></div></div>");
-$templateCache.put("app/pages/global/template/template.html","<div><uib-tabset><uib-tab><uib-tab-heading>作业任务通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.notifyTemplateEmailTitle required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.notifyTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.notifyTemplateSmsContent></textarea></div></div></div></form></div></div></uib-tab><uib-tab><uib-tab-heading>构建通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailCiSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.ciTemplateEmailTitle required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.ciTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsCiSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.ciTemplateSmsContent></textarea></div></div></div><div class=col-md-10><button class=\"btn btn-primary\" ng-click=template.smsCiSave()><i class=\"fa fa-save fa-fw\"></i>保存</button></div></form></div></div></uib-tab><uib-tab><uib-tab-heading>审批通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailApprovalSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.approvalTemplateEmailTitle required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.approvalTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsApprovalSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.approvalTemplateSmsContent></textarea></div></div></div></form></div></div></uib-tab></uib-tabset></div>");
-$templateCache.put("app/pages/global/ticket/createTicket.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=createticket.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{createticket.title}}</h5></div><div class=panel-body><div class=pt20><div><div class=\"form-group admin-form\"><form class=form-horizontal name=myForm novalidate><div class=row ng-if=!createticket.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createticket.postData.name required></div></div></div><div class=row ng-if=!createticket.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">描述</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createticket.postData.describe required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.type value=SSHKey> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>SSH Key</label><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.type value=UsernamePassword> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>用户名密码</label></div></div></div></div></div><div ng-switch=createticket.postData.type class=row><div ng-switch-when=SSHKey><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">SSH Key</label><div class=col-sm-9><textarea ng-model=createticket.postData.ticket.SSHKey style=\"width: 100%; height: 110px\"></textarea><span>SSH Key 适用于git</span></div></div></div><div ng-switch-when=UsernamePassword><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">用户名</label><div class=col-sm-3><input ng-model=createticket.postData.ticket.Username></div><label class=\"col-sm-3 control-label\">密码</label><div class=col-sm-3><input ng-model=createticket.postData.ticket.Password></div></div></div></div></form></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=createticket.saveTicket()>保存票据</button></div></div></div></div></div></div></div>");
-$templateCache.put("app/pages/global/ticket/ticket.html","<div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=ticket.createTicket()><i class=\"fa fa-key fa-lg\" aria-hidden=true></i>新建票据</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=ticket.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!ticket.loadover}\"></i></button></span><h5>票据</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=ticket.group_Table class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'票据名称\'\" filter=\"{ name: \'text\'}\" sortable>{{d.name}}</td><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ edit_time: \'text\'}\" sortable>{{d.edit_time}}</td><td style=\"width: 10%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\" sortable>{{d.type}}</td><td style=\"width: 10%\" data-title=\"\'最后编辑人\'\" filter=\"{ edit_user: \'text\'}\" sortable>{{d.edit_user}}</td><td style=\"width: 10%\" data-title=\"\'备注\'\" filter=\"{ describe: \'text\'}\" sortable>{{d.describe}}</td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-click=ticket.editTicket(d.id)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-click=ticket.deleteTicket(d.id)>删除</button></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/history/job/job.html","<div style=\"background-color: #fff\"><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><input type=text class=form-control ng-model=historyjob.taskname placeholder=任务名称></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">启动人：</label><input type=text class=form-control ng-model=historyjob.startuser placeholder=启动人> <button type=submit class=\"btn btn-default\" ng-click=historyjob.getMe()>我</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">任务状态：</label><select class=form-control ng-init=\'statusType= [ {\"status\":null, \"name\":\"全部\"}, {\"status\":\"fail\", \"name\":\"失败\"}, {\"status\":\"success\", \"name\":\"成功\"}, {\"status\":\"running\", \"name\":\"执行中\"}, {\"status\":\"waiting\", \"name\":\"等待\"} ]\' ng-model=historyjob.searchStatus ng-options=\"o.status as o.name for o in statusType\"></select></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=starttime><input type=text class=form-control ng-model=historyjob.starttime placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=finishtime><input type=text class=form-control ng-model=historyjob.finishtime placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=historyjob.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=historyjob.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyjob.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjob.loadover}\"></i></button></span><h5>执行历史</h5></div><div class=panel-body><div class=panel-tabs ng-init=\'calltype = { \"page\":\"页面\", \"api\":\"API\", \"crontab\":\"计划任务\" }\'><table ng-table=historyjob.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'任务名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{historyjob.ciinfo[ss.name]}}</td><td data-title=\"\'启动人\'\">{{ss.user}}</td><td data-title=\"\'任务状态\'\">{{historyjob.statuszh[ss.status]}}</td><td data-title=\"\'开始时间\'\">{{ss.starttime}}</td><td data-title=\"\'结束时间\'\">{{ss.finishtime}}</td><td data-title=\"\'启动方式\'\">{{calltype[ss.calltype]}}</td><td data-title=\"\'耗时\'\">{{historyjob.seftime(ss.starttime,ss.finishtime)}}</td><td data-title=\"\'version\'\">{{ss.variable| showversion}}</td><td data-title=\"\'操作\'\"><button ng-if=\"ss.jobtype ==\'jobs\'\" class=\"btn btn-warning btn-sm\" ng-click=historyjob.taskDetail(ss.uuid)>执行详情</button> <button ng-if=\"ss.jobtype ==\'plugin_scp\' || ss.jobtype ==\'plugin_cmd\' || ss.jobtype ==\'plugin_approval\'\" class=\"btn btn-warning btn-sm\" ng-click=\"historyjob.quickTaskDetail(ss.jobuuid,ss.uuid, ss.jobtype)\">执行详情</button> <button class=\"btn btn-danger btn-sm\" ng-click=historyjob.redo(ss.uuid)>重做</button></td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/history/jobx/jobx.html","<div><nodestr></nodestr><hr class=\"mv20 clear\"><div class=\"panel panel-system\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">任务名称：</label><input type=text class=form-control ng-model=searchData.name placeholder=任务名称关键字></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建人：</label><input type=text class=form-control ng-model=searchData.user placeholder=创建人全称> <button type=submit class=\"btn btn-default\" ng-click=historyjobx.getMe()>我</button></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">任务状态：</label><select class=form-control ng-init=\'statusType= [ {\"status\":null, \"name\":\"全部\"}, {\"status\":\"fail\", \"name\":\"执行失败\"}, {\"status\":\"success\", \"name\":\"执行成功\"}, {\"status\":\"running\", \"name\":\"执行中\"}, {\"status\":\"waiting\", \"name\":\"等待\"} ]\' ng-model=searchData.status ng-options=\"o.status as o.name for o in statusType\"></select></div></div><div class=row style=\"margin-top: 20px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">创建时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=createstart><input type=text class=form-control ng-model=searchData.time_start placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=createend><input type=text class=form-control ng-model=searchData.time_end placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">任务uuid：</label><input type=text class=form-control ng-model=searchData.taskuuid placeholder=任务uuid></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=historyjobx.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=historyjobx.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyjobx.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobx.loadover}\"></i></button></span><h5>执行历史</h5></div><div class=panel-body><div class=panel-tabs ng-init=\'calltype = { \"page\":\"页面\", \"api\":\"API\", \"crontab\":\"计划任务\" }\'><table ng-table=historyjobx.task_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'任务名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{historyjobx.ciinfo[ss.name]}}</td><td data-title=\"\'是回滚流程\'\">{{historyjobx.showRollback(ss)}}</td><td data-title=\"\'创建人\'\">{{ss.user}}</td><td data-title=\"\'任务状态\'\">{{historyjobx.statuszh[ss.status]}}</td><td data-title=\"\'开始时间\'\">{{ss.starttime}}</td><td data-title=\"\'结束时间\'\">{{ss.finishtime}}</td><td data-title=\"\'耗间\'\">{{historyjobx.seftime(ss.starttime,ss.finishtime)}}</td><td data-title=\"\'启动方式\'\">{{calltype[ss.calltype]}}</td><td data-title=\"\'uuid\'\">{{ss.uuid}}</td><td data-title=\"\'version\'\">{{ss.variable | showversion}}</td><td data-title=\"\'操作\'\"><button class=\"btn btn-info btn-sm\" ng-click=historyjobx.taskDetail(ss.uuid)>执行详情</button></td></tr></table></div></div></div>");
+$templateCache.put("app/pages/history/job/job.html","<div style=\"background-color: #fff\"><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><input type=text class=form-control ng-model=historyjob.taskname placeholder=任务名称></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">启动人：</label><input type=text class=form-control ng-model=historyjob.startuser placeholder=启动人> <button type=submit class=\"btn btn-default\" ng-click=historyjob.getMe()>我</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">任务状态：</label><select class=form-control ng-init=\'statusType= [ {\"status\":null, \"name\":\"全部\"}, {\"status\":\"fail\", \"name\":\"失败\"}, {\"status\":\"success\", \"name\":\"成功\"}, { \"status\": \"refuse\", \"name\":\"审批拒绝\"},{\"status\":\"running\", \"name\":\"执行中\"}, {\"status\":\"waiting\", \"name\":\"等待\"} ]\' ng-model=historyjob.searchStatus ng-options=\"o.status as o.name for o in statusType\"></select></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=starttime><input type=text class=form-control ng-model=historyjob.starttime placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=finishtime><input type=text class=form-control ng-model=historyjob.finishtime placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=historyjob.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=historyjob.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyjob.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjob.loadover}\"></i></button></span><h5>执行历史</h5></div><div class=panel-body><div class=panel-tabs ng-init=\'calltype = { \"page\":\"页面\", \"api\":\"API\", \"crontab\":\"计划任务\" }\'><table ng-table=historyjob.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'任务名称\'\">{{ss.name}}</td><td data-title=\"\'关联流水线\'\">{{historyjob.ciinfo[ss.name]}}</td><td data-title=\"\'启动人\'\">{{ss.user}}</td><td data-title=\"\'任务状态\'\">{{historyjob.statuszh[ss.status]}}</td><td data-title=\"\'开始时间\'\">{{ss.starttime}}</td><td data-title=\"\'结束时间\'\">{{ss.finishtime}}</td><td data-title=\"\'启动方式\'\">{{calltype[ss.calltype]}}</td><td data-title=\"\'耗时\'\">{{historyjob.seftime(ss.starttime,ss.finishtime)}}</td><td data-title=\"\'version\'\">{{ss.variable| showversion}}</td><td data-title=\"\'操作\'\"><button ng-if=\"ss.jobtype ==\'jobs\'\" class=\"btn btn-warning btn-sm\" ng-click=historyjob.taskDetail(ss.uuid)>执行详情</button> <button ng-if=\"ss.jobtype ==\'plugin_scp\' || ss.jobtype ==\'plugin_cmd\' || ss.jobtype ==\'plugin_approval\'\" class=\"btn btn-warning btn-sm\" ng-click=\"historyjob.quickTaskDetail(ss.jobuuid,ss.uuid, ss.jobtype)\">执行详情</button> <button class=\"btn btn-danger btn-sm\" ng-click=historyjob.redo(ss.uuid)>重做</button></td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/history/terminal/terminal.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-info\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">启动人：</label><input type=text class=form-control ng-model=historyterminal.startuser placeholder=启动人> <button type=submit class=\"btn btn-default\" ng-click=historyterminal.getMe()>我</button></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行节点：</label><input type=text class=form-control ng-model=historyterminal.runnode placeholder=执行节点></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行账户：</label><input type=text class=form-control ng-model=historyterminal.runusr placeholder=执行账户></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行命令：</label><input type=text class=form-control ng-model=historyterminal.runcmd placeholder=执行命令></div></div><div class=row style=\"margin-top: 23px\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">执行时间：</label><div style=\"width: 30%\" class=\"input-group date\" id=time_start><input type=text class=form-control ng-model=historyterminal.timeStart placeholder=开始时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div><span style=\"margin: 0 5px\">-</span><div style=\"width: 30%\" class=\"input-group date\" id=time_end><input type=text class=form-control ng-model=historyterminal.timeEnd placeholder=结束时间> <span class=input-group-addon><span class=\"glyphicon glyphicon-calendar\"></span></span></div></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=historyterminal.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=historyterminal.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyterminal.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyterminal.loadover}\"></i></button></span><h5>命令执行日志</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=historyterminal.data_Table class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\"><td data-title=\"\'时间\'\">{{ss.time}}</td><td data-title=\"\'执行命令\'\">{{ss.cmd}}</td><td data-title=\"\'用户\'\">{{ss.usr}}</td><td data-title=\"\'执行节点\'\">{{ss.node}}</td><td data-title=\"\'启动人\'\">{{ss.user}}</td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/approval/approval.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=myForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=quickapproval.postdata.name ng-model=quickapproval.postdata.name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=myForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批内容<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=quickapproval.postdata.cont required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批人<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=quickapproval.postdata.approver required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=quickapproval.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quickapproval.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quickapproval.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=quickapproval.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quickapproval.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quickapproval.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=quickapproval.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=quickapproval.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">所有审批人都要审批<span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=quickapproval.postdata.everyone value=on> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>是</label><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=quickapproval.postdata.everyone value=off> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>只要一个人审批</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=quickapproval.postdata.timeout required></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=quickapproval.runapproval()>执行</button></div></div></form></div></div></div>");
-$templateCache.put("app/pages/quickentry/cmd/cmd.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=scriptForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=quick.s_name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=scriptForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=selectedUser ng-options=\"s.username for s in allProUsers\" required></select></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=quick.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=quick.choiceServer() required>选择服务器</button><table ng-table=choice.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"nodeType==\'group\'\">{{ss.name}}</td><td ng-if=\"nodeType==\'builtin\'\">{{ss}}</td><td>{{choiceType}}</td><td><button ng-if=\"nodeType==\'group\'\" ng-click=\"quick.delChoice($index, ss.name)\">删除</button> <button ng-if=\"nodeType==\'builtin\'\" ng-click=\"quick.delChoice($index, ss)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=quick.from value=manual ng-click=quick.scriptManual() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=quick.from value=clone ng-click=quick.scriptClone() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label><label class=\"option option-primary\"><input type=radio name=src ng-model=quick.from value=local ng-click=quick.scriptLocal() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>本地脚本</label></div><div ng-hide=quick.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=quick.inputScript() ng-options=\"s.name for s in allScript\"></select></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorSh() ng-disabled=unClick value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPy() ng-disabled=unClick value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPerl() ng-disabled=unClick value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPhp() ng-disabled=unClick value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorBuildin() ng-disabled=unClick value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorAuto() ng-disabled=unClick value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div class=form-horizontal><!-- shell --><div style=height:400px class=form-group id=editor></div><!-- python --><!--<div style=\"height:400px;\" class=\"form-group\" ng-switch-when=\"python\" id=\"editorPython\"></div>--></div></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本参数</label><div class=col-sm-9><input type=text class=form-control ng-model=s_argv></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=s_timeout></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=scriptForm.$invalid ng-click=quick.run(scriptForm)>执行脚本</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/global/auditlog/auditlog.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><h5>查询条件</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">时间：</label><input type=text class=form-control ng-model=auditlog.time placeholder=\"2021-04-09 11:12\"></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">用户：</label><input type=text class=form-control ng-model=auditlog.user placeholder=用户名></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">标题：</label><input type=text class=form-control ng-model=auditlog.title placeholder=标题></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"float: left;line-height: 34px;min-width: 90px;text-align: right\">内容：</label><input type=text class=form-control ng-model=auditlog.content placeholder=内容></div></div></div></form><hr class=\"mv20 clear\" style=\"margin-top: 30px!important\"><div class=col-md-10><button class=\"btn btn-primary\" ng-click=auditlog.reload()><i class=\"fa fa-search fa-fw\"></i>查询</button> <button class=\"btn btn-success\" ng-click=auditlog.Reset()><i class=\"fa fa-refresh fa-fw\"></i>重置</button></div></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=auditlog.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!auditlog.loadover}\"></i></button></span><h5>审计日志</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=auditlog.auditlogTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td data-title=\"\'时间\'\" filter=\"{ time: \'text\'}\" sortable>{{d.time}}</td><td data-title=\"\'用户\'\" filter=\"{ user: \'text\'}\" sortable>{{d.user}}</td><td data-title=\"\'标题\'\" filter=\"{ title: \'text\'}\" sortable>{{d.title}}</td><td data-title=\"\'具体内容\'\" filter=\"{ content: \'text\'}\" sortable>{{d.content}}</td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/images/createImages.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=createimages.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{createimages.title}}</h5></div><div class=panel-body><div class=pt20><div><div class=\"form-group admin-form\"><form class=form-horizontal name=myForm novalidate><div class=row ng-show=\"createimages.title==\'编辑镜像\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">编号</label><div class=col-sm-9><input type=text disabled class=form-control name=addGroup ng-minlength=2 ng-model=createimages.postData.id></div></div></div><div class=row ng-show=!createimages.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createimages.postData.name required></div></div></div><div class=row ng-show=!createimages.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">描述</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createimages.postData.describe required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">授权</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=createimages.postData.share value=false> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>私人</label><label class=\"option option-primary\"><input type=radio ng-model=createimages.postData.share value=true> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>共享给我的组织</label></div></div></div></div></div><div ng-if=createimages.imagesid class=row><hr><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">镜像文件信息</label><label ng-if=\"createimages.uploadstatus.status==\'1\'\" class=\"col-sm-9 control-label\" style=\"text-align: left\">上传时间:{{createimages.uploadstatus.time}} 镜像大小:{{createimages.bytesToSize(createimages.uploadstatus.size)}}</label><div ng-if=\"createimages.uploadstatus.status==\'0\'\" class=col-sm-9><div class=admin-form><div class=\"option-group field\"><div><input type=file class=newFile id=choicefilesx style=\"display: none\" onchange=angular.element(this).scope().upForm() multiple> <input type=hidden name=newFileMsg data-name=\"\"> <button class=\"btn btn-primary\" ng-click=createimages.clickImport()><span class=\"glyphicon glyphicon-upload\" style=\"padding: 0 3px\"></span>上传镜像</button> <a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/我的镜像/ uib-tooltip=看镜像生成方式 aria-hidden=true style=\"padding-top: 11px;font-size: larger\">查看镜像生成方式</a></div><div style=\"display: none\" id=upload_progressBar_Module><div class=progress><div class=progress-bar id=upload_progressBar role=progressbar aria-valuemin=0 aria-valuemax=100 aria-valuenow=0 style=width:0></div></div><span id=percentage></span><span id=time></span></div></div></div></div></div></div><div ng-if=createimages.imagesid class=row><hr><div class=panel-body><div style=\"padding: 10px\"><span style=\"font-size: 14px;font-weight: bold; color: #626262\">1. 安装AGENT:</span> <span style=\"color: red\">curl -L http://{{createimages.siteaddr}}/api/scripts/installAgent.sh |sudo OPEN_C3_ADDR={{createimages.siteaddr}} bash</span></div></div><div class=panel-body><div style=\"padding: 10px\"><span style=\"font-size: 14px;font-weight: bold; color: #626262\">2. 添加公钥:</span> <span style=\"color: red\">wget http://{{createimages.siteaddr}}/api/ci/images/{{createimages.imagesid}}/sshkey.pub -O /opt/mydan/etc/agent/auth/c3_ci_{{createimages.imagesid}}.pub</span></div></div></div><div class=row ng-show=\"createimages.type!=\'show\'\"><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=\"!( createimages.postData.describe && createimages.postData.name )\" ng-click=createimages.saveImages()>保存镜像</button></div></div></form></div></div></div></div></div></div>");
+$templateCache.put("app/pages/global/images/images.html","<div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=images.createImages()><i class=\"fa fa-cube fa-lg\" aria-hidden=true></i>新建镜像</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=images.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!images.loadover}\"></i></button></span><h5>镜像</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=images.group_Table class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'镜像名称\'\" filter=\"{ name: \'text\'}\" sortable>{{d.name}}</td><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ edit_time: \'text\'}\" sortable>{{d.edit_time}}</td><td style=\"width: 10%\" data-title=\"\'最后编辑人\'\" filter=\"{ edit_user: \'text\'}\" sortable>{{d.edit_user}}</td><td style=\"width: 10%\" data-title=\"\'备注\'\" filter=\"{ describe: \'text\'}\" sortable>{{d.describe}}</td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-primary btn-sm\" ng-disabled=\"d.self==0\" ng-click=images.editImages(d.id)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-disabled=\"d.self==0\" ng-click=images.deleteImages(d.id)>删除</button></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/monitor/monitor.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=monitor.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!monitor.loadover}\"></i></button></span><h5>系统监控信息</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=monitor.monitorTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td data-title=\"\'时间\'\" filter=\"{ time: \'text\'}\" sortable>{{d.time}}</td><td data-title=\"\'监控对象\'\" filter=\"{ host: \'text\'}\" sortable>{{d.host}}</td><td data-title=\"\'状态\'\" filter=\"{ stat: \'text\'}\" sortable><span ng-if=\"d.stat==\'ok\' || d.stat==\'healthy\'\" style=\"color: green\">{{d.stat}}</span> <span ng-if=\"d.stat!=\'ok\' && d.stat!=\'healthy\'\">{{d.stat}}</span></td><td data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\" sortable>{{d.type}}</td><td data-title=\"\'监控指标\'\" filter=\"{ key: \'text\'}\" sortable>{{d.key}}</td><td data-title=\"\'值\'\" filter=\"{ val: \'text\'}\" sortable>{{d.val}}</td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/notify/notify.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=notify.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=notify.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!notify.loadover}\"></i></button></span><h5>通知出口开关设置</h5></div><div class=panel-body><div class=form-horizontal><!-- tag 匹配规则 --><div class=container-fluid><div class=row><table class=\"table table-bordered\" style=\"text-align: center\"><thead><tr class=notice-bg><th colspan=2 class=right-bor style=\"text-align: center\">分类</th><th class=right-bor style=\"text-align: center\"><label for=email class=\"notice-top allmes\">邮件<input type=checkbox ng-model=emailall id=email ng-click=notify.checkAllEmail()></label></th><th class=right-bor style=\"text-align: center\"><label for=sms class=\"notice-top allout\" style=\"text-align: center\">短信<input type=checkbox ng-model=smsall id=sms ng-click=notify.checkAllSms()></label></th></tr></thead><tbody><tr><td rowspan=3 class=\"right-bor line\">页面执行作业</td><td class=right-bor>执行成功</td><td class=right-bor><input type=checkbox check-class=email ng-model=isPageSuccessEmail name=isPageSuccessEmail></td><td class=right-bor><input type=checkbox check-class=sms ng-model=isPageSuccessSms name=isPageSuccessSms></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isPageFailEmail name=isPageFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isPageFailSms name=isPageFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isPageWaitingEmail name=isPageWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isPageWaitingSms name=isPageWaitingSms></label></td></tr><tr><td rowspan=3 class=\"right-bor line\">分组启动作业</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiSuccessEmail name=isApiSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiSuccessSms name=isApiSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiFailEmail name=isApiFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiFailSms name=isApiFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApiWaitingEmail name=isApiWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApiWaitingSms name=isApiWaitingSms></label></td></tr><tr><td rowspan=3 class=\"right-bor line\">定时启动作业</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabSuccessEmail name=isCrontabSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabSuccessSms name=isCrontabSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabFailEmail name=isCrontabFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabFailSms name=isCrontabFailSms></label></td></tr><tr><td class=right-bor>等待用户</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCrontabWaitingEmail name=isCrontabWaitingEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCrontabWaitingSms name=isCrontabWaitingSms></label></td></tr><tr><td rowspan=2 class=\"right-bor line\">构建任务</td><td class=right-bor>执行成功</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCiSuccessEmail name=isCiSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCiSuccessSms name=isCiSuccessSms></label></td></tr><tr><td class=right-bor>执行失败</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isCiFailEmail name=isCiFailEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isCiFailSms name=isCiFailSms></label></td></tr><tr><td rowspan=1 class=\"right-bor line\">审批</td><td class=right-bor>审批事件</td><td class=right-bor><label class=notice-top><input type=checkbox check-class=email ng-model=isApprovalSuccessEmail name=isApprovalSuccessEmail></label></td><td class=right-bor><label class=notice-top><input type=checkbox check-class=sms ng-model=isApprovalSuccessSms name=isApprovalSuccessSms></label></td></tr></tbody></table></div></div></div></div></div></div>");
+$templateCache.put("app/pages/global/private/create.html","<div class=modal-header><h4 class=modal-title>添加用户</h4></div><div class=modal-body><form class=form-horizontal name=myForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">用户</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=用户 ng-model=privatecreate.postdata.user required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=privatecreate.add()>确认</button> <button class=\"btn btn-warning\" ng-click=privatecreate.cancel()>取消</button></div></div></form></div>");
+$templateCache.put("app/pages/global/private/private.html","<div class=\"row block\"><h2>私有节点管理</h2><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=private.createPrivate()><i class=\"fa fa-plusecircle fa-lg\" aria-hidden=true></i> 添加用户</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=private.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!private.loadover}\"></i></button></span><h5>用户</h5></div><div class=panel-body><div class=pt20 style=\"overflow: auto\"><table ng-table=private.dataTable class=\"table table-scroll table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td width=60 class=textcenter data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td data-title=\"\'用户\'\" width=80 filter=\"{ user: \'text\'}\" sortable>{{m.user}}</td><td data-title=\"\'添加操作人\'\" width=80 filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'添加时间\'\" width=80 filter=\"{ edit_time: \'text\'}\" sortable>{{m.edit_time}}</td><td data-title=\"\'操作\'\" width=80><i class=\"fa fa-edit fa-2x\" aria-hidden=true ui-sref=\"home.business.machine({treeid: {{m.id}}})\" uib-tooltip=机器管理 style=cursor:pointer>管理机器</i></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/template/template.html","<div><uib-tabset><uib-tab><uib-tab-heading>作业任务通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.emailSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.notifyTemplateEmailTitle></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.notifyTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.smsSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.notifyTemplateSmsContent></textarea></div></div></div></form></div></div></uib-tab><uib-tab><uib-tab-heading>构建通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.emailCiSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailCiSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.ciTemplateEmailTitle></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.ciTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.smsCiSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsCiSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.ciTemplateSmsContent></textarea></div></div></div></form></div></div></uib-tab><uib-tab><uib-tab-heading>审批通知模版</uib-tab-heading><br><br><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.emailApprovalSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.emailApprovalSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">邮件模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件标题：</label><div class=col-sm-9><input type=text class=form-control ng-model=template.environment.approvalTemplateEmailTitle></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">邮件内容：</label><div class=col-sm-9><textarea style=\"height: 250px\" class=fluid-width ng-model=template.environment.approvalTemplateEmailContent id=emailDetail></textarea></div></div></div></form></div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=复制模版 ng-click=template.smsApprovalSet()><i class=\"fa fa-clone\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=template.smsApprovalSave()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=template.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!template.loadover}\"></i></button></span><h5 style=\"font-weight: bold\">短信模板</h5></div><div class=panel-body><form class=form-horizontal name=templateForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-2 control-label\">短信内容：</label><div class=col-sm-9><textarea style=\"height: 150px\" class=fluid-width ng-model=template.environment.approvalTemplateSmsContent></textarea></div></div></div></form></div></div></uib-tab></uib-tabset></div>");
+$templateCache.put("app/pages/global/ticket/createTicket.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=createticket.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{createticket.title}}</h5></div><div class=panel-body><div class=pt20><div><div class=\"form-group admin-form\"><form class=form-horizontal name=myForm novalidate><div class=row ng-if=!createticket.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">名称</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createticket.postData.name required></div></div></div><div class=row ng-if=!createticket.ciid><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">描述</label><div class=col-sm-9><input type=text class=form-control name=addGroup ng-minlength=2 ng-model=createticket.postData.describe required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">授权</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.share value=false> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>私人</label><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.share value=true> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>共享给我的组织</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">类型</label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.type value=SSHKey> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>SSH Key</label><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.type value=UsernamePassword> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>用户名密码</label><label class=\"option option-primary\"><input type=radio ng-model=createticket.postData.type value=JobBuildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>插件</label></div></div></div></div></div><div ng-switch=createticket.postData.type class=row><div ng-if=\"createticket.postData.type==\'SSHKey\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">SSH Key</label><div class=col-sm-9><textarea ng-model=createticket.postData.ticket.SSHKey style=\"width: 100%; height: 110px\"></textarea><span>SSH Key 适用于git</span></div></div></div><div ng-if=\"createticket.postData.type==\'UsernamePassword\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">用户名</label><div class=col-sm-3><input ng-model=createticket.postData.ticket.Username></div><label class=\"col-sm-3 control-label\">密码</label><div class=col-sm-3><input ng-model=createticket.postData.ticket.Password></div></div></div></div><div ng-if=\"createticket.postData.type==\'JobBuildin\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">内容</label><div class=col-sm-9><textarea ng-model=createticket.postData.ticket.JobBuildin style=\"width: 100%; height: 110px\"></textarea><span>适用于作业内建插件或者构建触发脚本</span></div></div></div></form></div><div class=row ng-show=\"createticket.type!=\'show\'\"><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=createticket.saveTicket()>保存票据</button></div></div></div></div></div></div></div>");
+$templateCache.put("app/pages/global/ticket/ticket.html","<div><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit ng-disabled=myForm.$invalid class=\"btn btn-primary\" ng-click=ticket.createTicket()><i class=\"fa fa-key fa-lg\" aria-hidden=true></i>新建票据</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=ticket.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!ticket.loadover}\"></i></button></span><h5>票据</h5></div><div class=panel-body><div class=panel-tabs><table ng-table=ticket.group_Table class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td style=\"width: 10%\" data-title=\"\'票据名称\'\" filter=\"{ name: \'text\'}\" sortable>{{d.name}}</td><td style=\"width: 10%\" data-title=\"\'创建时间\'\" filter=\"{ edit_time: \'text\'}\" sortable>{{d.edit_time}}</td><td style=\"width: 10%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\" sortable>{{d.type}}</td><td style=\"width: 10%\" data-title=\"\'最后编辑人\'\" filter=\"{ edit_user: \'text\'}\" sortable>{{d.edit_user}}</td><td style=\"width: 10%\" data-title=\"\'备注\'\" filter=\"{ describe: \'text\'}\" sortable>{{d.describe}}</td><td style=\"width: 10%\" data-title=\"\'操作\'\"><button class=\"btn btn-info btn-sm\" ng-click=ticket.showTicket(d.id)>查看</button> <button class=\"btn btn-primary btn-sm\" ng-disabled=\"d.self==0\" ng-click=ticket.editTicket(d.id)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-disabled=\"d.self==0\" ng-click=ticket.deleteTicket(d.id)>删除</button></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/useraddr/create.html","<div class=modal-header><h4 class=modal-title>添加用户地址簿</h4></div><div class=modal-body><form class=form-horizontal name=myForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">用户</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=用户 ng-model=useraddrcreate.postdata.user required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">邮箱地址</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=邮箱地址 ng-model=useraddrcreate.postdata.email required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">手机号</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=手机号 ng-model=useraddrcreate.postdata.phone required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=useraddrcreate.add()>确认</button> <button class=\"btn btn-warning\" ng-click=useraddrcreate.cancel()>取消</button></div></div></form></div>");
+$templateCache.put("app/pages/global/useraddr/useraddr.html","<div class=\"row block\"><h2>用户地址簿管理</h2><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=useraddr.createUseraddr()><i class=\"fa fa-plusecircle fa-lg\" aria-hidden=true></i> 添加通信地址</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=useraddr.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!useraddr.loadover}\"></i></button></span><h5>地址簿</h5></div><div class=panel-body><div class=pt20 style=\"overflow: auto\"><table ng-table=useraddr.dataTable class=\"table table-scroll table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td width=60 class=textcenter data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td data-title=\"\'用户\'\" width=80 filter=\"{ user: \'text\'}\" sortable>{{m.user}}</td><td data-title=\"\'邮箱地址\'\" width=80 filter=\"{ email: \'text\'}\" sortable>{{m.email}}</td><td data-title=\"\'手机号\'\" width=80 filter=\"{ phone: \'text\'}\" sortable>{{m.phone}}</td><td data-title=\"\'最后编辑人\'\" width=80 filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'更新时间\'\" width=80 filter=\"{ edit_time: \'text\'}\" sortable>{{m.edit_time}}</td><td data-title=\"\'操作\'\" width=80><i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=useraddr.deleteUseraddr(m.id) uib-tooltip=删除 style=\"cursor:pointer;color: red\"></i></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/global/versionlog/versionlog.html","<div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=versionlog.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!versionlog.loadover}\"></i></button></span><h5>系统代码更新</h5></div><div class=panel-body>版本：{{versionlog.versionname}}<div class=panel-tabs><table ng-table=versionlog.versionlogTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"d in $data\"><td data-title=\"\'时间\'\">{{d.time}}</td><td style=text-align:left data-title=\"\'更新内容\'\">{{d.mesg}}</td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/cmd/cmd.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=scriptForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=quick.s_name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=scriptForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=quick.from value=manual ng-click=quick.scriptManual() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=quick.from value=clone ng-click=quick.scriptClone() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label><label class=\"option option-primary\"><input type=radio name=src ng-model=quick.from value=local ng-click=quick.scriptLocal() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>本地脚本</label></div><div ng-hide=quick.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=quick.inputScript() ng-options=\"s.name for s in allScript\"></select></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorSh() ng-disabled=unClick value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPy() ng-disabled=unClick value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPerl() ng-disabled=unClick value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorPhp() ng-disabled=unClick value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorBuildin() ng-disabled=unClick value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=quick.editorAuto() ng-disabled=unClick value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div ng-show=\"scriptType==\'buildin\' && quick.from == \'manual\'\" class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\" style=cursor:default>内建插件:</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'kubectl\' )\">kubectl</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'terraform\' )\">terraform</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'kubestar\' )\">kubestar</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'awsecs\' )\">awsecs</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'sendemail\' )\">sendemail</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'sendmesg\' )\">sendmesg</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'flowcaller\' )\">flowcaller</label><label class=\"option option-primary\" ng-click=\"quick.buildinSet( \'cdnrefresh\' )\">cdnrefresh</label></div></div><div class=form-horizontal><!-- shell --><div style=height:400px class=form-group id=editor ng-mouseleave=quick.leaveeditor()></div><!-- python --><!--<div style=\"height:400px;\" class=\"form-group\" ng-switch-when=\"python\" id=\"editorPython\"></div>--></div></div></div></div></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/客户端内置命令/ uib-tooltip=查看客户端内置命令帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row ng-show=\"scriptType!=\'buildin\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=selectedUser><option ng-repeat=\"x in allProUsers\" value={{x.username}}>{{x.username}}</option></select></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=quick.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row ng-show=\"scriptType==\'buildin\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">使用票据 &nbsp&nbsp</label><div class=col-sm-7><select class=form-control ng-model=selectedUser><option ng-repeat=\"x in quick.ticketinfo\" value={{x.id}}>{{x.name}}</option></select></div></div></div><div ng-show=quick.showmachinelist class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=quick.choiceServer() required>选择服务器</button><table ng-table=choice.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"nodeType==\'group\'\">{{ss.name}}</td><td ng-if=\"nodeType==\'builtin\'\">{{ss}}</td><td>{{choiceType}}</td><td><button ng-if=\"nodeType==\'group\'\" ng-click=\"quick.delChoice($index, ss.name)\">删除</button> <button ng-if=\"nodeType==\'builtin\'\" ng-click=\"quick.delChoice($index, ss)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本参数</label><div class=col-sm-9><input type=text class=form-control ng-model=s_argv></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=s_timeout></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=quick.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quick.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quick.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=quick.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quick.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quick.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=quick.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=quick.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=quick.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=scriptForm.$invalid ng-click=quick.run(scriptForm)>执行脚本</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/quickentry/approval/approval.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=myForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=quickentryapproval.postdata.name ng-model=quickentryapproval.postdata.name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=myForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批内容<span style=\"color: red\">*</span></label><div class=col-sm-9><textarea type=textarea class=form-control ng-model=quickentryapproval.postdata.cont required></textarea></div></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/发起审批/ uib-tooltip=查看审批内容使用变量帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批人<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=quickentryapproval.postdata.approver required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=quickentryapproval.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quickentryapproval.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=quickentryapproval.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=quickentryapproval.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quickentryapproval.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=quickentryapproval.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=quickentryapproval.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=quickentryapproval.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=quickentryapproval.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">所有审批人都要审批<span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=quickentryapproval.postdata.everyone value=on> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>是</label><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=quickentryapproval.postdata.everyone value=off> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>只要一个人审批</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=quickentryapproval.postdata.timeout required></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=quickentryapproval.runapproval()>执行</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/quickentry/runtask/runtask.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\" style=\"width: 100%\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=runtaskForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业: &nbsp;</label><div class=col-sm-6><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=choiceJob ng-options=\"s.alias for s in allJobs\" required></select></div></div></div><div class=row ng-if=\"runtask.showjobxgroup == 1\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分组: &nbsp;</label><div class=col-sm-6><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=taskData.group ng-options=\"s.name as s.alias for s in allGroups\" required></select></div></div></div><div class=row ng-repeat=\"ss in jobVar\"><div class=\"col-sm-10 form-group\"><div><label class=\"col-sm-3 control-label\">{{ss.name}}: &nbsp;</label><div class=col-sm-6><input type=text class=form-control ng-model=ss.value placeholder=填写任务变量 required></div><label class=col-sm-3 style=\"color: gray\">{{ss.describe}}</label></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=runtaskForm.$invalid ng-click=runtask.runTask()>确认</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/quickentry/scp/scp.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><form class=form-horizontal name=dstForm role=form novalidate><div style=\"width: 70%;margin-left: 10%;margin-bottom: 15px\"><div class=row><div class=col-sm-10><label class=\"col-sm-2 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=dstDate.name required></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 80%;margin-left: 10%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-5 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-hdd\" style=\"padding: 0 3px\"></span>源文件 <span style=\"margin-left:15px;font-weight: normal;font-size: 12px\">注意：本地文件上传会用同名文件覆盖危险</span></label><div class=col-sm-7><button class=\"btn btn-primary\" ng-click=distribute.choiceShareFiles()><span class=\"glyphicon glyphicon-cloud\" style=\"padding: 0 3px\"></span>选择共享文件</button> <button class=\"btn btn-primary\" ng-click=distribute.choiceSourceFile()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择源服务器文件</button> <button class=\"btn btn-primary\" ng-click=distribute.choiceVariable()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择构建文件</button><div id=upresult class=form-inline style=\"font-weight: bold\"><span>{{distribute.up_re}}</span></div></div></div></div><div class=\"row row col-sm-11\"><div class=col-sm-11 style=\"margin-left: 1%\"><table ng-table=choice.shareResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr ng-if=!varShow><th style=\"text-align: left;width: 27%\">文件列表</th><th style=\"text-align: left;width: 29%\">服务器地址</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr><tr ng-if=varShow><th style=\"text-align: left;width: 27%\">环境</th><th style=\"text-align: left;width: 29%\">版本</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr></thead><tbody id=srcbody><tr ng-repeat=\"ss in shareResult\"><td>{{ss.name}}</td><td>默认空</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username for s in allProUsers\"></select></td></tr><tr ng-show=varShow><td>{{varData.ci}}</td><td>{{varData.version}}</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><tr ng-show=srcShow><td><textarea ng-model=copySrcdata.sp style=\"min-height: 40px;min-width: 200px\" placeholder=输入文件地址 required></textarea></td><td><div><div><span>{{srouceServerResult}}</span></div><div><button ng-hide=true id=click123 class=\"btn btn-default btn-xs\" style=\"margin-left: 73%\" ng-click=distribute.choiceSourceServer($event) required>添加</button> <span style=\"color: red\" ng-show=srcServerShow>必选源服务器</span></div></div></td><td ng-hide=true><select class=form-control style=\"font-size: 15px\" disabled ng-model=dstUser ng-options=\"s.username for s in allProUsers\"></select></td></tr></tbody></table></div></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 80%;margin-left: 10%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-6 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-folder-open\" style=\"padding: 0 3px\"></span>目标文件</label></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标路径 <span style=\"color: red\">*</span></label><div class=col-sm-8><input type=text class=form-control ng-model=dstDate.dp name=dstpath placeholder=请填写分发路径 required></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=\"目标路径以\'/\'结尾代表一个目录，不以‘/’结尾表示一个文件。如：/tmp/表示将文件保存到此目录下，/tmp/test.txt表示将文件保存到此目录下，文件名为test.txt\" aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row ng-show=scp_dir><div class=\"col-sm-10 form-group\"><label class=\"col-md-3 control-label\">同步delete</label><div class=\"col-md-2 admin-form\"><label class=\"switch switch-system mt5\"><input type=checkbox id=scp_delete ng-model=dstDate.scp_delete><label for=scp_delete data-on=ON data-off=OFF></label></label></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=开启后，同步文件夹时删除DEST中SRC没有的文件 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=dstUser ng-options=\"s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=userShow>必选执行用户</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=distribute.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=distribute.choiceServer() required>选择服务器</button> <span style=\"color: red\" ng-show=dstServerShow>必须目标服务器</span><table ng-table=distribute.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"dstDate.dst_type ==\'group\'\">{{ss.name}}</td><td ng-if=\"dstDate.dst_type ==\'builtin\'\">{{ss}}</td><td>{{choiceType}}</td><td><button ng-if=\"dstDate.dst_type ==\'group\'\" ng-click=\"distribute.delChoice($index, ss.name)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'builtin\'\" ng-click=\"distribute.delChoice($index, ss)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件归属者 &nbsp;</label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=fileChown ng-options=\"s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=chownShow>必选文件所有者</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=distribute.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件权限 &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.chmod name=dstchmod required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.timeout name=timeout required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=distribute.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=distribute.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=distribute.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=distribute.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=distribute.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=distribute.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=distribute.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=distribute.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=distribute.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-success\" ng-disabled=\"\" ng-click=distribute.postData()>开始执行</button></div></div></div></div></div></form>");
+$templateCache.put("app/pages/quickentry/sendfile/sendfile.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=row><div class=\"col-sm-8 form-group\"><label class=control-label style=\"padding-top: 8px;padding-right: 0;width: 11%;float: left;position: relative;min-height: 1px;padding-left: 15px\">执行账户</label><div class=col-sm-4><form action=\"\"><select class=form-control style=\"font-size: 15px;height: 35px;padding: 3px 12px\" ng-model=selectedUser ng-options=\"s.username as s.username for s in allProUsers\" required></select></form></div></div></div><div ng-if=!sendfile.filepath class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=sendfile.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!sendfile.loadover}\"></i></button></span><h5>请点击选择节点</h5></div><div class=panel-body><div><table ng-table=sendfile.machine_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td style=\"width: 15%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\"><a id={{ss.name}} type=checkbox name=selected ng-checked=isSelected(ss.name) ng-click=\"nameUpdateSelection($event, ss.id, ss.name)\" style=\"zoom: 125%\"><a style=\"cursor: pointer\" title=打开终端 ng-click=sendfile.openOne(ss.name)>{{ss.name}}</a></td><td style=\"width: 5%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\">{{ss.type}}</td><td style=\"width: 15%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\"><a id={{ss.inip}} ng-if=ss.inip type=checkbox name=selected ng-checked=isSelected(ss.inip) ng-click=\"inipUpdateSelection($event, ss.id, ss.inip)\" style=\"zoom: 125%\"><a style=\"cursor: pointer\" title=打开终端 ng-click=sendfile.openOne(ss.inip)>{{ss.inip}}</a> <i ng-if=\"ss.inip && ! ss.inips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 15%\" data-title=\"\'外网ip\'\" filter=\"{ exip: \'text\'}\"><a ng-if=ss.exip id={{ss.exip}} type=checkbox name=selected ng-checked=isSelected(ss.exip) ng-click=\"exipUpdateSelection($event, ss.id, ss.exip)\" style=\"zoom: 125%\"><a style=\"cursor: pointer\" title=打开终端 ng-click=sendfile.openOne(ss.exip)>{{ss.exip}}</a> <i ng-if=\"ss.exip && ! ss.exips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 5%\" data-title=\"\'客户端版本\'\"><a ng-if=ss.inip>{{ss.inips.version}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.version}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端上一次检测时间\'\"><a ng-if=ss.inip>{{ss.inips.edit_time}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.edit_time}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端错误原因\'\"><a ng-if=\"ss.inip && ss.inips.status==\'fail\'\">failcount:{{ss.inips.fail}}; {{ss.inips.reason}}</a> <a ng-if=\"ss.exip && ! ss.inip && ss.exips.status==\'fail\'\">failcount:{{ss.exips.fail}}; {{ss.exips.reason}}</a></td></tr></table></div></div></div><div ng-if=sendfile.filepath class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=sendfile.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!sendfile.loadover}\"></i></button></span><h5>文件管理</h5></div><form class=form-horizontal name=cForm role=form><div class=row><div class=\"col-sm-8 form-group\"><label class=\"col-sm-1 control-label\">地址</label><div class=col-sm-7><input type=text class=form-control name=tpath placeholder=路径 ng-minlength=2 ng-model=sendfile.filepath required> <span style=color:red ng-show=cForm.tpath.$error.minlength>不少于2字符</span></div></div><div class=\"col-sm-4 form-group\"><button class=\"btn btn-primary\" ng-click=sendfile.reload()>手动输入查询</button> <button class=\"btn btn-primary\" ng-click=sendfile.reset()>重置</button> <button class=\"btn btn-primary\" ng-click=sendfile.openOneTab()>打开主机终端</button></div></div></form><hr><div class=panel-body><div style=\"float: left;width: 60%\"><table ng-table=sendfile.dir_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td data-title=\"\'主机\'\">{{ss.host}}</td><td data-title=\"\'信息\'\">{{ss.info}}</td><td data-title=\"\'类型\'\">{{ss.type}}</td><td data-title=\"\'路径\'\">{{ss.path}}</td><td class=textcenter width=75 data-title=\"\'操作\'\"><nobr><i ng-if=\"ss.type==\'parent\'\" class=\"fa fa-chevron-circle-left fa-2x\" aria-hidden=true ng-click=sendfile.backdir() uib-tooltip=返回上一层 style=\"cursor:pointer;color: red\"></i> <i ng-if=\"ss.type==\'dir\'\" class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ng-click=\"sendfile.intodir( ss.path )\" uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i> <i ng-if=\"ss.type==\'file\'\" class=\"fa fa-download fa-2x\" aria-hidden=true ng-click=sendfile.startDownloadTask(ss.path) uib-tooltip=下载 style=\"cursor:pointer;color: green\"></i> <i ng-if=\"ss.type==\'file\'\" class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=sendfile.unlinkfile(ss.path) uib-tooltip=删除文件 style=\"cursor:pointer;color: red\"></i></nobr></td></tr></table></div><div style=\"float: right;width: 37%\"><input type=file id=choicefiles style=\"display: none\" onchange=angular.element(this).scope().upForm() multiple> <button class=\"btn btn-primary\" ng-click=sendfile.clickImport()><span class=\"glyphicon glyphicon-upload\" style=\"padding: 0 3px\"></span>上传文件</button><table ng-table=sendfile.fileserver_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td data-title=\"\'ID\'\">{{ss.id}}</td><td data-title=\"\'文件名\'\">{{ss.name}}</td><td data-title=\"\'大小\'\">{{sendfile.bytesToSize(ss.size)}}</td><td class=textcenter width=75 data-title=\"\'操作\'\"><nobr><i class=\"fa fa-upload fa-2x\" aria-hidden=true ng-click=\"sendfile.startUoloadTask( ss.name )\" uib-tooltip=上传 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-download fa-2x\" aria-hidden=true ng-click=sendfile.downloadfile(ss.name) uib-tooltip=下载 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=sendfile.deleteFile(ss.id) uib-tooltip=删除 style=\"cursor:pointer;color: red\"></i></nobr></td></tr></table><table ng-table=sendfile.sendfiletask_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td data-title=\"\'今日任务\'\">{{ss.name}}</td><td data-title=\"\'操作人\'\">{{ss.user}}</td><td data-title=\"\'耗时(秒)\'\">{{ss.runtime}}</td><td data-title=\"\'状态\'\">{{ss.status}}</td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/smallapplication/create.html","<div class=modal-header><h4 class=modal-title>添加轻应用</h4></div><div class=modal-body><form class=form-horizontal name=myForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业: &nbsp;</label><div class=col-sm-9><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=choiceJob ng-options=\"s.alias for s in allJobs\" required></select></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">标题</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=标题 ng-model=smallapplicationcreate.postdata.title required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">类型</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=类型 ng-model=smallapplicationcreate.postdata.type required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">描述</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=描述 ng-model=smallapplicationcreate.postdata.describe required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=smallapplicationcreate.add()>确认</button> <button class=\"btn btn-warning\" ng-click=smallapplicationcreate.cancel()>取消</button></div></div></form></div>");
+$templateCache.put("app/pages/quickentry/smallapplication/edit.html","<div class=\"row block\"><h2>全局轻应用编辑</h2><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=smallapplicationedit.createSmallApplication()><i class=\"fa fa-plusecircle fa-lg\" aria-hidden=true></i> 添加轻应用</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=smallapplicationedit.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!smallapplicationedit.loadover}\"></i></button></span><h5>轻应用</h5></div><div class=panel-body><div class=pt20 style=\"overflow: auto\"><table ng-table=smallapplicationedit.dataTable class=\"table table-scroll table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td width=60 class=textcenter data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td data-title=\"\'类型\'\" width=80 filter=\"{ type: \'text\'}\" sortable>{{m.type}}</td><td data-title=\"\'名称\'\" width=80 filter=\"{ title: \'text\'}\" sortable>{{m.title}}</td><td data-title=\"\'描述\'\" width=80 filter=\"{ describe: \'text\'}\" sortable>{{m.describe}}</td><td data-title=\"\'创建人\'\" width=80 filter=\"{ create_user: \'text\'}\" sortable>{{m.create_user}}</td><td data-title=\"\'最后编辑人\'\" width=80 filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'创建时间\'\" width=80 filter=\"{ create_time: \'text\'}\" sortable>{{m.create_time}}</td><td data-title=\"\'最后更新时间\'\" width=80 filter=\"{ edit_time: \'text\'}\" sortable>{{m.edit_time}}</td><td data-title=\"\'操作\'\" width=80><i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=smallapplicationedit.deleteSmallApplication(m.id) uib-tooltip=删除 style=\"cursor:pointer;color: red\"></i></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/smallapplication/smallapplication.html","<div class=\"row block\"><h2>全局轻应用</h2><hr class=\"mv20 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=smallapplication.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!smallapplication.loadover}\"></i></button></span><h5>轻应用</h5></div><div class=panel-body><div class=pt20 style=\"overflow: auto\"><table ng-table=smallapplication.dataTable class=\"table table-scroll table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td width=60 class=textcenter data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td data-title=\"\'类型\'\" width=80 filter=\"{ type: \'text\'}\" sortable>{{m.type}}</td><td data-title=\"\'名称\'\" width=80 filter=\"{ title: \'text\'}\" sortable>{{m.title}}</td><td data-title=\"\'描述\'\" width=80 filter=\"{ describe: \'text\'}\" sortable>{{m.describe}}</td><td data-title=\"\'创建人\'\" width=80 filter=\"{ create_user: \'text\'}\" sortable>{{m.create_user}}</td><td data-title=\"\'最后编辑人\'\" width=80 filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'创建时间\'\" width=80 filter=\"{ create_time: \'text\'}\" sortable>{{m.create_time}}</td><td data-title=\"\'最后更新时间\'\" width=80 filter=\"{ edit_time: \'text\'}\" sortable>{{m.edit_time}}</td><td data-title=\"\'操作\'\" width=80><i class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ui-sref=\"home.quickentry.runtasksa({treeid: {{m.projectid}}, jobid: {{m.jobid}}})\" uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/terminal/terminal.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=row><div class=\"col-sm-8 form-group\"><label class=control-label style=\"padding-top: 8px;padding-right: 0;width: 11%;float: left;position: relative;min-height: 1px;padding-left: 15px\">执行账户</label><div class=col-sm-4><form action=\"\"><select class=form-control style=\"font-size: 15px;height: 35px;padding: 3px 12px\" ng-model=selectedUser ng-options=\"s.username as s.username for s in allProUsers\" required></select></form></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=templatecmd.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!templatecmd.loadover}\"></i></button></span><h5>选择操作节点</h5></div><div class=panel-body><div style=\"float: left;width: 60%\"><table ng-table=templatecmd.machine_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td style=\"width: 15%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\"><input id={{ss.name}} type=checkbox name=selected ng-checked=isSelected(ss.name) ng-click=\"nameUpdateSelection($event, ss.id, ss.name)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.name)>{{ss.name}}</a></td><td style=\"width: 5%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\">{{ss.type}}</td><td style=\"width: 15%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\"><input id={{ss.inip}} ng-if=ss.inip type=checkbox name=selected ng-checked=isSelected(ss.inip) ng-click=\"inipUpdateSelection($event, ss.id, ss.inip)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.inip)>{{ss.inip}}</a> <i ng-if=\"ss.inip && ! ss.inips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 15%\" data-title=\"\'外网ip\'\" filter=\"{ exip: \'text\'}\"><input ng-if=ss.exip id={{ss.exip}} type=checkbox name=selected ng-checked=isSelected(ss.exip) ng-click=\"exipUpdateSelection($event, ss.id, ss.exip)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.exip)>{{ss.exip}}</a> <i ng-if=\"ss.exip && ! ss.exips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 5%\" data-title=\"\'客户端版本\'\"><a ng-if=ss.inip>{{ss.inips.version}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.version}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端上一次检测时间\'\"><a ng-if=ss.inip>{{ss.inips.edit_time}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.edit_time}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端错误原因\'\"><a ng-if=\"ss.inip && ss.inips.status==\'fail\'\">failcount:{{ss.inips.fail}}; {{ss.inips.reason}}</a> <a ng-if=\"ss.exip && ! ss.inip && ss.exips.status==\'fail\'\">failcount:{{ss.exips.fail}}; {{ss.exips.reason}}</a></td></tr></table></div><div style=\"float: right;width: 37%\"><table ng-table=choice.choiceResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">地址</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in selectedData\"><td>{{ss}}</td><td><button ng-click=templatecmd.delChoice($index)>删除</button></td></tr></tbody></table><div><!--\n                    <button class=\"btn btn-info\" style=\"margin-left: 42%\" ng-click=\"templatecmd.openTailLog()\">\n                        实时日志\n                    </button>\n                    --> <button class=\"btn btn-success\" ng-click=templatecmd.openNewTab()>开始操作</button> <button class=\"btn btn-danger\" ng-click=templatecmd.delAllData()>清除</button></div></div></div></div></div>");
 $templateCache.put("app/pages/quickentry/flowline/addToFavorites.html","<div class=modal-header><h4 class=modal-title>添加到收藏夹</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">我给该流水线的别名</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=流水线别名 ng-model=projectname required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=addToFavorites.add()>确认</button> <button class=\"btn btn-warning\" ng-click=addToFavorites.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/quickentry/flowline/copyProject.html","<div class=modal-header><h4 class=modal-title>复制流水线</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">流水线名称</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=流水线名 ng-model=projectname required></div></div></div><div class=\"form-group admin-form\"><label class=\"col-md-2 control-label fwbold\">开关:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_status ng-model=copyProject.status><label for=check_status data-on=ON data-off=OFF></label></label></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=copyProject.add()>确认</button> <button class=\"btn btn-warning\" ng-click=copyProject.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/quickentry/flowline/copyProjectByTemplate.html","<div class=modal-header><h4 class=modal-title>复制流水线</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">流水线名称</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=流水线名 ng-model=projectname required></div></div></div><div class=\"form-group admin-form\"><label class=\"col-md-2 control-label fwbold\">开关:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_status ng-model=copyProjectByTemplate.status><label for=check_status data-on=ON data-off=OFF></label></label></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=copyProjectByTemplate.add()>确认</button> <button class=\"btn btn-warning\" ng-click=copyProjectByTemplate.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/quickentry/flowline/copyProjectToTemplate.html","<div class=modal-header><h4 class=modal-title>另存为模版</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">流水线名称</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=流水线名 ng-model=projectname required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=copyProjectToTemplate.add()>确认</button> <button class=\"btn btn-warning\" ng-click=copyProjectToTemplate.cancel()>取消</button></div></div></form></div>");
-$templateCache.put("app/pages/quickentry/flowline/flowline.html","<div class=\"row block\"><nodestr></nodestr><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=cigroup.createProject()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 新建空白流水线</button> <button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=cigroup.createProjectByTemplate()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 通过模版建流水线</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=cigroup.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!cigroup.loadover}\"></i></button></span><h5>流水线</h5></div><div class=panel-body><div class=pt20><table ng-table=cigroup.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 10%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable><i class=\"fa fa-star-o fa-1x\" aria-hidden=true ng-if=!m.favorites ng-click=cigroup.addToFavorites(m.id,m.name) uib-tooltip=收藏 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=cigroup.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094\"></i> {{m.id}}</td><td style=\"width: 10%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 10%\" data-title=\"\'别名\'\" filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td style=\"width: 10%\" data-title=\"\'构建状态\'\"><div class=\"panel panel-info\" ng-if=m.lastbuild.status style=\"cursor:pointer;background-color: {{panelcolor[m.lastbuild.status]}};margin: 0 0 0\" ng-click=\"cigroup.showlog(m.lastbuild.uuid, m.lastbuild.slave)\"><i class=\"fa fa-cloud\" ng-if=\"m.lastbuild.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.lastbuild.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.lastbuild.status==\'success\'\" aria-hidden=true></i> {{m.lastbuild.name}}<br>{{cigroup.time2date(m.lastbuild.starttime)}}</div></td><td style=\"width: 15%\" data-title=\"\'测试环境状态\'\"><div class=\"panel panel-info\" ng-if=cigroup.taskInfoTest[m.id] style=\"cursor:pointer;background-color: {{panelcolor[cigroup.taskInfoTest[m.id].status]}};margin: 0 0 0\" ng-click=cigroup.deployDetail(cigroup.taskInfoTest[m.id].uuid)><i class=\"fa fa-cloud\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'success\'\" aria-hidden=true></i> {{cigroup.taskInfoTest[m.id].version}}<br>{{cigroup.time2date(cigroup.taskInfoTest[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoTestRunning[m.id] && cigroup.taskInfoTest[m.id].status!=\'running\' \" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 15%\" data-title=\"\'线上环境状态\'\"><div class=\"panel panel-info\" ng-if=cigroup.taskInfoOnline[m.id] style=\"cursor:pointer;background-color: {{panelcolor[cigroup.taskInfoOnline[m.id].status]}};margin: 0 0 0\" ng-click=cigroup.deployDetail(cigroup.taskInfoOnline[m.id].uuid)>{{cigroup.deployType(cigroup.taskInfoOnline[m.id].uuid)}} <i class=\"fa fa-cloud\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'success\'\" aria-hidden=true></i> {{cigroup.taskInfoOnline[m.id].version}}<br>{{cigroup.time2date(cigroup.taskInfoOnline[m.id].starttime)}} <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoOnlineRunning[m.id] && cigroup.taskInfoOnline[m.id].status!=\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td style=\"width: 8%\" data-title=\"\'编辑者\'\" filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td style=\"width: 15%\" data-title=\"\'操作\'\"><nobr><i class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ng-click=cigroup.versiondetail(m.id) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-cog fa-2x\" aria-hidden=true ng-click=cigroup.editconfig(m.id,m.name) uib-tooltip=编辑 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-clone fa-2x\" aria-hidden=true ng-click=cigroup.copyProject(m.id,m.name) uib-tooltip=复制为 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-bookmark fa-2x\" aria-hidden=true ng-click=cigroup.copyProjectToTemplate(m.id,m.name) uib-tooltip=另存为模版 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=cigroup.deleteProject(m.id) uib-tooltip=删除 style=\"cursor:pointer;color: red\"></i></nobr></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/runTask2Ci.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr><h4>({{runtask2ci.projectname}})</h4></div><div class=\"panel panel-primary\" style=\"width: 100%\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=runtask2ciForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"></div></div><h3>机器列表</h3><div class=row ng-repeat=\"group in runtask2ci.showIPstr\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-3 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr><h3>发布步骤</h3><div class=row ng-repeat=\"step in runtask2ci.jobStep\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-3 control-label\">第{{$index+1}}步:</label><div class=col-sm-9 style=\"padding-top: 10px\"><p>{{step}}</p></div></div></div><hr><div class=row ng-if=\"runtask2ci.jobtype==\'online\'\"><div ng-repeat=\"version in runtask2ci.versions\" class=\"col-lg-12 col-xs-12 ml0 pl0\"><h3>线上版本</h3><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-body style=\"margin-top: 20px\"><div id=task{{version}} style=height:150px></div></div></div></div></div><h3>版本:{{runtask2ci.version}}</h3><div class=row ng-if=\"runtask2ci.jobtype==\'online\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">回滚版本: &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=taskData.variable._rollbackVersion_ placeholder=回滚版本 required></div></div></div></form></div><div class=row ng-repeat=\"ss in jobVar\"><div class=\"col-sm-10 form-group\"><div ng-if=\"ss.name != \'ip\' && ss.name != \'version\'\"><label class=\"col-sm-3 control-label\">{{ss.name}}: &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=taskData.variable[ss.name] placeholder=填写任务变量 required></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=runtask2ciForm.$invalid ng-click=runtask2ci.runTask()>确认</button> <button class=\"btn btn-primary\" ng-click=runtask2ci.cancel()>取消</button></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/showlog.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>{{ showlog.nodeStr }}</h5></div><div class=panel-body><textarea class=fluid-width id=logDetail style=\"height:400px;background:#000; color:#FFF\" readonly ng-model=showlog.logDetail></textarea></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=showlog.cancel()>关闭</button></div></div></div>");
-$templateCache.put("app/pages/quickentry/runtask/runtask.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><div class=\"panel panel-primary\" style=\"width: 100%\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=runtaskForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业: &nbsp;</label><div class=col-sm-6><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=choiceJob ng-options=\"s.alias for s in allJobs\" required></select></div></div></div><div class=row ng-repeat=\"ss in jobVar\"><div class=\"col-sm-10 form-group\"><div ng-if=\"ss.name == \'ip\'\"><label class=\"col-sm-3 control-label\">分组: &nbsp;</label><div class=col-sm-6><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=taskData.group ng-options=\"s.name as s.alias for s in allGroups\" required></select></div></div><div ng-if=\"ss.name != \'ip\'\"><label class=\"col-sm-3 control-label\">{{ss.name}}: &nbsp;</label><div class=col-sm-6><input type=text class=form-control ng-model=ss.value placeholder=填写任务变量 required></div><label class=col-sm-3 style=\"color: gray\">{{ss.describe}}</label></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=runtaskForm.$invalid ng-click=runtask.runTask()>确认</button></div></div></form></div></div></div>");
-$templateCache.put("app/pages/quickentry/scp/scp.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr></div><form class=form-horizontal name=dstForm role=form novalidate><div style=\"width: 70%;margin-left: 10%;margin-bottom: 15px\"><div class=row><div class=col-sm-10><label class=\"col-sm-2 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=dstDate.name required></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 80%;margin-left: 10%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-5 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-hdd\" style=\"padding: 0 3px\"></span>源文件 <span style=\"margin-left:15px;font-weight: normal;font-size: 12px\">注意：本地文件上传会用同名文件覆盖危险</span></label><div class=col-sm-7><button class=\"btn btn-primary\" ng-click=distribute.choiceShareFiles()><span class=\"glyphicon glyphicon-cloud\" style=\"padding: 0 3px\"></span>选择共享文件</button> <button class=\"btn btn-primary\" ng-click=distribute.choiceSourceFile()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择源服务器文件</button> <button class=\"btn btn-primary\" ng-click=distribute.choiceVariable()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择构建文件</button><div id=upresult class=form-inline style=\"font-weight: bold\"><span>{{distribute.up_re}}</span></div></div></div></div><div class=\"row row col-sm-11\"><div class=col-sm-11 style=\"margin-left: 1%\"><table ng-table=choice.shareResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr ng-if=!varShow><th style=\"text-align: left;width: 27%\">文件列表</th><th style=\"text-align: left;width: 29%\">服务器地址</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr><tr ng-if=varShow><th style=\"text-align: left;width: 27%\">环境</th><th style=\"text-align: left;width: 29%\">版本</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr></thead><tbody id=srcbody><tr ng-repeat=\"ss in shareResult\"><td>{{ss.name}}</td><td>默认空</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username for s in allProUsers\"></select></td></tr><tr ng-show=varShow><td>{{varData.ci}}</td><td>{{varData.version}}</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><tr ng-show=srcShow><td><textarea ng-model=copySrcdata.sp style=\"min-height: 40px;min-width: 200px\" placeholder=输入文件地址 required></textarea></td><td><div><div><span>{{srouceServerResult}}</span></div><div><button ng-hide=true id=click123 class=\"btn btn-default btn-xs\" style=\"margin-left: 73%\" ng-click=distribute.choiceSourceServer($event) required>添加</button> <span style=\"color: red\" ng-show=srcServerShow>必选源服务器</span></div></div></td><td ng-hide=true><select class=form-control style=\"font-size: 15px\" disabled ng-model=dstUser ng-options=\"s.username for s in allProUsers\"></select></td></tr></tbody></table></div></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 80%;margin-left: 10%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-6 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-folder-open\" style=\"padding: 0 3px\"></span>目标文件</label></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标路径 <span style=\"color: red\">*</span></label><div class=col-sm-8><input type=text class=form-control ng-model=dstDate.dp name=dstpath placeholder=请填写分发路径 required></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=\"目标路径以\'/\'结尾代表一个目录，不以‘/’结尾表示一个文件。如：/tmp/表示将文件保存到此目录下，/tmp/test.txt表示将文件保存到此目录下，文件名为test.txt\" aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row ng-show=scp_dir><div class=\"col-sm-10 form-group\"><label class=\"col-md-3 control-label\">同步delete</label><div class=\"col-md-2 admin-form\"><label class=\"switch switch-system mt5\"><input type=checkbox id=scp_delete ng-model=dstDate.scp_delete><label for=scp_delete data-on=ON data-off=OFF></label></label></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=开启后，同步文件夹时删除DEST中SRC没有的文件 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=dstUser ng-options=\"s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=userShow>必选执行用户</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=distribute.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=distribute.choiceServer() required>选择服务器</button> <span style=\"color: red\" ng-show=dstServerShow>必须目标服务器</span><table ng-table=distribute.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"dstDate.dst_type ==\'group\'\">{{ss.name}}</td><td ng-if=\"dstDate.dst_type ==\'builtin\'\">{{ss}}</td><td>{{choiceType}}</td><td><button ng-if=\"dstDate.dst_type ==\'group\'\" ng-click=\"distribute.delChoice($index, ss.name)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'builtin\'\" ng-click=\"distribute.delChoice($index, ss)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件归属者 &nbsp;</label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=fileChown ng-options=\"s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=chownShow>必选文件所有者</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=distribute.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件权限 &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.chmod name=dstchmod required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.timeout name=timeout required></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-success\" ng-disabled=\"\" ng-click=distribute.postData()>开始执行</button></div></div></div></div></div></form>");
-$templateCache.put("app/pages/quickentry/terminal/terminal.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=row><div class=\"col-sm-8 form-group\"><label class=control-label style=\"padding-top: 8px;padding-right: 0;width: 11%;float: left;position: relative;min-height: 1px;padding-left: 15px\">执行账户</label><div class=col-sm-4><form action=\"\"><select class=form-control style=\"font-size: 15px;height: 35px;padding: 3px 12px\" ng-model=selectedUser ng-options=\"s.username as s.username for s in allProUsers\" required></select></form></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=templatecmd.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!templatecmd.loadover}\"></i></button></span><h5>选择操作节点</h5></div><div class=panel-body><div style=\"float: left;width: 60%\"><table ng-table=templatecmd.machine_Table class=\"table table-hover text-center table-condensed\" show-filter=true style=\"border: 1px solid #ddd\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td style=\"width: 15%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\"><input id={{ss.name}} type=checkbox name=selected ng-checked=isSelected(ss.name) ng-click=\"nameUpdateSelection($event, ss.id, ss.name)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.name)>{{ss.name}}</a></td><td style=\"width: 5%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\">{{ss.type}}</td><td style=\"width: 15%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\"><input id={{ss.inip}} ng-if=ss.inip type=checkbox name=selected ng-checked=isSelected(ss.inip) ng-click=\"inipUpdateSelection($event, ss.id, ss.inip)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.inip)>{{ss.inip}}</a> <i ng-if=\"ss.inip && ! ss.inips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 15%\" data-title=\"\'外网ip\'\" filter=\"{ exip: \'text\'}\"><input ng-if=ss.exip id={{ss.exip}} type=checkbox name=selected ng-checked=isSelected(ss.exip) ng-click=\"exipUpdateSelection($event, ss.id, ss.exip)\" style=\"zoom: 125%\"> <a style=\"cursor: pointer\" title=打开终端 ng-click=openOneTab(ss.exip)>{{ss.exip}}</a> <i ng-if=\"ss.exip && ! ss.exips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i></td><td style=\"width: 5%\" data-title=\"\'客户端版本\'\"><a ng-if=ss.inip>{{ss.inips.version}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.version}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端上一次检测时间\'\"><a ng-if=ss.inip>{{ss.inips.edit_time}}</a> <a ng-if=\"ss.exip && ! ss.inip\">{{ss.exips.edit_time}}</a></td><td style=\"width: 20%\" data-title=\"\'客户端错误原因\'\"><a ng-if=\"ss.inip && ss.inips.status==\'fail\'\">failcount:{{ss.inips.fail}}; {{ss.inips.reason}}</a> <a ng-if=\"ss.exip && ! ss.inip && ss.exips.status==\'fail\'\">failcount:{{ss.exips.fail}}; {{ss.exips.reason}}</a></td></tr></table></div><div style=\"float: right;width: 37%\"><table ng-table=choice.choiceResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">地址</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in selectedData\"><td>{{ss}}</td><td><button ng-click=templatecmd.delChoice($index)>删除</button></td></tr></tbody></table><div><!--\n                    <button class=\"btn btn-info\" style=\"margin-left: 42%\" ng-click=\"templatecmd.openTailLog()\">\n                        实时日志\n                    </button>\n                    --> <button class=\"btn btn-success\" ng-click=templatecmd.openNewTab()>开始操作</button> <button class=\"btn btn-danger\" ng-click=templatecmd.delAllData()>清除</button></div></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/flowline.html","<div class=\"row block\"><nodestr></nodestr><hr class=\"mv20 clear\"><div><div style=\"float: right\"><form class=form-inline name=myForm novalidate><button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=cigroup.createProject()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 新建空白流水线</button> <button type=submit class=\"btn btn-primary\" style=\"padding: 10px 25px\" ng-click=cigroup.createProjectByTemplate()><i class=\"fa fa-plus-circle fa-lg\" aria-hidden=true></i> 通过模版建流水线</button></form></div><div style=\"clear: both\">&nbsp;</div></div><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=cigroup.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!cigroup.loadover}\"></i></button></span><h5>本节点流水线数量:{{cigroup.flowlinecount}}</h5></div><div class=\"panel-body flowline\"><div class=pt20 style=\"overflow: auto\"><table ng-table=cigroup.activeRegionTable class=\"table table-scroll table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td width=60 data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable><i class=\"fa fa-star-o fa-1x\" aria-hidden=true ng-if=!m.favorites ng-click=cigroup.addToFavorites(m.id,m.name) uib-tooltip=收藏 style=\"cursor:pointer;color: #339094;font-size: 18px\"></i> <i class=\"fa fa-star fa-1x\" aria-hidden=true ng-if=m.favorites ng-click=cigroup.delToFavorites(m.id,m.name) uib-tooltip=取消收藏 style=\"cursor:pointer;color: #339094;font-size: 18px\"></i> {{m.name}}</td><td data-title=\"\'别名\'\" width=80 filter=\"{ alias: \'text\'}\" sortable>{{m.alias}}</td><td data-title=\"\'构建状态\'\"><div class=\"panel panel-info\" ng-if=m.lastbuild.status style=\"cursor:pointer;margin: 0 0 0\" ng-click=\"cigroup.showlog(m.lastbuild.uuid, m.lastbuild.slave)\"><span class=bold style=\"cursor:pointer;color: {{panelcolor[m.lastbuild.status]}};margin: 0 0 0\"><i class=\"fa fa-cloud\" ng-if=\"m.lastbuild.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.lastbuild.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.lastbuild.status==\'success\'\" aria-hidden=true></i> {{m.lastbuild.name}}</span><br>{{m.lastbuild.starttime}}</div></td><td data-title=\"\'测试环境状态\'\"><div class=\"panel panel-info\" ng-if=cigroup.taskInfoTest[m.id] style=\"cursor:pointer;margin: 0 0 0\" ng-click=cigroup.deployDetail(cigroup.taskInfoTest[m.id].uuid)><span class=bold style=\"cursor:pointer;color: {{panelcolor[cigroup.taskInfoTest[m.id].status]}};margin: 0 0 0\"><i class=\"fa fa-cloud\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"cigroup.taskInfoTest[m.id].status==\'success\'\" aria-hidden=true></i> {{cigroup.taskInfoTest[m.id].version}}</span><br>{{cigroup.taskInfoTest[m.id].starttime}} <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoTestRunning[m.id] && cigroup.taskInfoTest[m.id].status!=\'running\' \" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td data-title=\"\'线上环境状态\'\"><div class=\"panel panel-info\" ng-if=cigroup.taskInfoOnline[m.id] style=\"cursor:pointer;margin: 0 0 0\" ng-click=cigroup.deployDetail(cigroup.taskInfoOnline[m.id].uuid)><span class=bold style=\"cursor:pointer;color: {{panelcolor[cigroup.taskInfoOnline[m.id].status]}};margin: 0 0 0\">{{cigroup.deployType(cigroup.taskInfoOnline[m.id].uuid)}} <i class=\"fa fa-cloud\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"cigroup.taskInfoOnline[m.id].status==\'success\'\" aria-hidden=true></i> {{cigroup.taskInfoOnline[m.id].version}}</span><br>{{cigroup.taskInfoOnline[m.id].starttime}} <i class=\"fa fa-spinner\" ng-if=\"cigroup.taskInfoOnlineRunning[m.id] && cigroup.taskInfoOnline[m.id].status!=\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i></div></td><td data-title=\"\'编辑者\'\" width=80 filter=\"{ edit_user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'编号\'\" width=30 filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td class=textcenter width=175 data-title=\"\'操作\'\"><nobr><i class=\"fa fa-chevron-circle-right fa-2x\" aria-hidden=true ng-click=cigroup.versiondetail(m.id) uib-tooltip=进入 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-cog fa-2x\" aria-hidden=true ng-click=cigroup.editconfig(m.id,m.name) uib-tooltip=编辑 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-clone fa-2x\" aria-hidden=true ng-click=cigroup.copyProject(m.id,m.name) uib-tooltip=复制为 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-bookmark fa-2x\" aria-hidden=true ng-click=cigroup.copyProjectToTemplate(m.id,m.name) uib-tooltip=另存为模版 style=\"cursor:pointer;color: #339094\"></i> <i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=cigroup.deleteProject(m.id) uib-tooltip=删除 style=\"cursor:pointer;color: red\"></i></nobr></td></tr></table></div><style>.flowline .bold {\n                    font-weight: 700;\n                    font-size: 14px;\n                }\n                .flowline .panel {\n                    background: none;\n                }\n                .flowline table tbody {\n                    text-align: left;\n                }\n                .flowline table tbody .textcenter {\n                    text-align: center;\n                }\n                /* ======== */</style></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/runTask2Ci.html","<div class=row style=\"padding: 10px 20px 0px\"><nodestr></nodestr><h4>({{runtask2ci.projectname}})</h4></div><div class=\"panel panel-primary\" style=\"width: 100%\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=runtask2ciForm role=form novalidate><h3 style=\"margin: 0px\">机器列表</h3><div class=row ng-repeat=\"group in runtask2ci.showIPstr\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-3 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr style=\"margin: 5px\"><h3 style=\"margin: 0px\">发布步骤</h3><div class=row ng-repeat=\"step in runtask2ci.jobStep\" style=\"margin: 0px\"><div class=\"col-sm-12 form-group\" style=\"margin-bottom: 0px\"><label class=\"col-sm-3 control-label\">第{{$index+1}}步:</label><div class=col-sm-9 style=\"padding-top: 10px\"><p>{{step}}</p></div></div></div><hr style=\"margin: 5px\"><h3>当前发布版本:{{runtask2ci.version}}</h3><div class=row ng-if=\"runtask2ci.jobtype==\'online\'\"><div ng-if=runtask2ci.lastversion.version><label class=\"col-sm-9 control-label\" style=\"padding: 1px\">最后一次成功发布的版本:{{runtask2ci.lastversion.version}} 时间: {{runtask2ci.lastversion.create_time}} 发布的任务 {{runtask2ci.lastversion.jobxuuid}}</label><div class=col-sm-3><button class=\"btn btn-danger\" style=\"padding: 0px\" ng-disabled=runtask2ci.rollbacknoneeded ng-click=runtask2ci.setRollbackVersion(runtask2ci.lastversion.version)>点击使用</button></div></div><div ng-if=!runtask2ci.lastversion.version><label class=\"col-sm-9 control-label\" style=\"padding: 1px\">没有发现可回滚版本，请手动填写回滚版本</label></div><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">回滚版本: &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-disabled=runtask2ci.rollbacknoneeded ng-model=taskData.variable._rollbackVersion_ placeholder=回滚版本 required></div></div><div class=\"col-sm-10 form-group admin-form\"><label class=\"col-sm-3 control-label fwbold\">无需回滚: &nbsp;</label><div class=col-sm-9><label class=\"switch switch-system mt5\"><input type=checkbox id=set_rollbacknoneeded ng-model=runtask2ci.rollbacknoneeded ng-click=runtask2ci.cleanRollbackVersion()><label for=set_rollbacknoneeded data-on=ON data-off=OFF></label></label></div></div></div><div class=row ng-repeat=\"ss in jobVar\"><div class=\"col-sm-10 form-group\"><div ng-if=\"ss.name != \'ip\' && ss.name != \'version\'\"><label class=\"col-sm-3 control-label\">{{ss.name}}: &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=taskData.variable[ss.name] placeholder=填写任务变量 required></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=\"runtask2ciForm.$invalid && !runtask2ci.rollbacknoneeded\" ng-click=runtask2ci.runTask()>确认</button> <button class=\"btn btn-primary\" ng-click=runtask2ci.cancel()>取消</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/showlog.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>{{ showlog.nodeStr }}</h5></div><div class=panel-body><pre class=fluid-width id=logDetail style=\"height:600px;background:#000; color:#FFF\" readonly ng-bind-html=uCanTrust(showlog.logDetail)></pre></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=showlog.cancel()>关闭</button></div></div></div>");
+$templateCache.put("app/pages/business/job/edit/cloneJob.html","<div style=\"width: 100%\"><div id=sidebar_left class=affix style=\"padding-top: 0;min-height: 540px\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel style=\"margin: 0\"><div class=panel-heading><span class=panel-title>TREE</span> <span class=panel-controls><a href=javascript:void(0) ng-click=clonejob.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) ng-click=clonejob.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) ng-click=clonejob.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) ng-click=clonejob.refresh()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\" style=\";padding: 0\"><perfect-scrollbar class=scroller><ul class=ztree id=openc3treeclone></ul></perfect-scrollbar></div></div></div></div></div><div id=content_wrapper style=\"min-height: 540px\"><div class=panel-heading><span class=panel-title>目标节点</span> <span class=panel-controls><a href=javascript:void(0) ng-click=clonejob.cancel()><i class=\"fa fa-close\"></i></a></span></div><div class=panel-body style=\"padding: 10px;height: 540px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">节点ID</th><th style=\"text-align: center\">节点名称</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr ng-repeat=\"(k, node) in clonejob.cloneNodes \"><td>{{node.id}}</td><td>{{node.name}}</td><td><button class=\"btn btn-danger btn-sm\" ng-click=clonejob.delNode(k)>删除</button></td></tr></tbody></table></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=dstForm.$invalid ng-click=clonejob.saveNode()>保存</button> <button class=\"btn btn-warning\" ng-click=clonejob.cancel()>取消</button></div></div></div></div>");
+$templateCache.put("app/pages/business/job/edit/postClone.html","<div style=\"width: 100%\"><div class=panel-heading><span class=panel-title>目标节点</span> <span class=panel-controls><a href=javascript:void(0) ng-click=postclone.cancel()><i class=\"fa fa-close\"></i></a></span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center;width: 18%\">节点ID</th><th style=\"text-align: center;width: 18%\">节点名称</th><th style=\"text-align: center;width: 18%\">状态</th><th style=\"text-align: center\">结果</th></tr></thead><tbody><tr ng-repeat=\"(k, node) in postclone.cloneNodes \"><td>{{node.id}}</td><td>{{node.name}}</td><td ng-if=node.status style=\"color: green;font-weight: bold\">成功</td><td ng-if=!node.status style=\"color: red;font-weight: bold\">失败</td><td>{{node.msg}}</td></tr></tbody></table></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 45%\"><button class=\"btn btn-primary\" ng-click=postclone.closeTab()>确定</button></div></div></div>");
 $templateCache.put("app/pages/business/agent/detail/agent.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=agent.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!agent.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=agent.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ agent.nodeStr }} 区域:{{agent.regionname}}</h5></div><div class=panel-body><div class=pt20><table ng-table=agent.agentlistTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'ID\'\">{{m.id}}</td><td data-title=\"\'网段\'\">{{m.ip}}</td><td data-title=\"\'删除\'\"><button class=\"btn btn-effect-ripple btn-xs btn-danger ng-scope\" uib-tooltip=删除网段 ng-click=\"agent.deleteAgent( m.id )\"><i class=\"fa fa-trash\"></i></button></td></tr></table><hr><div><div class=col-md-8><input class=form-control ng-model=agent.install.ip placeholder=\"ip网段，如: 10.10.10.10/24 ,多个用逗号或者空格分开\"></div><button class=\"btn btn-primary\" ng-click=\"agent.addSubNet( )\">添加网段</button></div></div></div></div></div>");
 $templateCache.put("app/pages/business/agent/detail/host.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=host.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!host.loadover}\"></i></button></span><h5>{{ host.nodeStr }} : regionid:{{host.regionid}}</h5></div><div class=panel-body><div class=pt20><table ng-table=host.hostlistTable class=\"table table-hover text-center table-condensed\"><thead><tr><th>ID</th><th><input type=checkbox ng-model=all_name ng-click=host.check_name(all_name)> 机器名</th><th>类型</th><th><input type=checkbox ng-model=all_inip ng-click=host.check_inip(all_inip)>内外IP</th><th><input type=checkbox ng-model=all_exip ng-click=host.check_exip(all_exip)>外网IP</th></tr></thead><tbody><tr ng-repeat=\"m in $data\"><td>{{m.id}}</td><td><input type=checkbox ng-model=m.selected_name ng-checked=s_name> {{m.name}}</td><td>{{m.type}}</td><td><input ng-if=m.inip type=checkbox ng-model=m.selected_inip ng-checked=s_inip>{{m.inip}}</td><td><input ng-if=m.exip type=checkbox ng-model=m.selected_exip ng-checked=s_exip>{{m.exip}}</td></tr></tbody></table></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-primary\" ng-click=host.save()>选中</button> <button class=\"btn btn-warning\" ng-click=host.cancel()>取消</button></div></div></div>");
 $templateCache.put("app/pages/business/agent/detail/log.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=agentctrlLog.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!agentctrlLog.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=agentctrlLog.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ agentctrlLog.nodeStr }}</h5></div><div class=panel-body><div class=pt20><table ng-table=agentctrlLog.activeRegionTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'编号\'\">{{m.id}}</td><td data-title=\"\'操作人\'\">{{m.user}}</td><td data-title=\"\'日志内容\'\">{{m.info}}</td><td data-title=\"\'操作时间\'\">{{m.create_time}}</td></tr></table></div></div></div></div>");
 $templateCache.put("app/pages/business/agent/detail/proxy.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=proxy.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!proxy.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=proxy.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ proxy.nodeStr }} 区域:{{proxy.regionname}}</h5></div><div class=panel-body ng-init=\"s = { \'fail\': \'失败\', \'success\': \'成功\'}\"><div class=pt20><table ng-table=proxy.proxylistTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'ID\'\">{{m.id}}</td><td data-title=\"\'ip\'\">{{m.ip}}</td><td data-title=\"\'状态\'\">{{s[m.status]}}</td><td data-title=\"\'版本\'\">{{m.version||\'未知\'}}</td><td data-title=\"\'失败次数\'\">{{m.fail}}</td><td data-title=\"\'理由\'\">{{m.reason}}</td><td data-title=\"\'删除\'\"><button class=\"btn btn-effect-ripple btn-xs btn-danger ng-scope\" uib-tooltip=删除区域 ng-click=\"proxy.deleteProxy( m.id )\"><i class=\"fa fa-trash\"></i></button></td></tr></table><hr><div><div class=col-md-1><a class=\"fwbold label label-info\" href=javascript:void(0) uib-tooltip=点击从服务树选择机器 ng-click=proxy.selectIpFromTree()>服务树</a></div><div class=col-md-8><input class=form-control ng-model=proxy.install.ip placeholder=ip列表,用逗号或者空格分开></div><button class=\"btn btn-primary\" ng-click=\"proxy.installProxy( \'import\' )\">导入代理</button></div></div></div></div></div>");
 $templateCache.put("app/pages/business/agent/detail/region.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=region.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!region.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=region.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=region.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ region.nodeStr }}</h5></div><div class=panel-body><div class=pt20><table ng-table=region.proxylistTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'ID\'\">{{m.id}}</td><td data-title=\"\'选择\'\"><input type=checkbox ng-model=m.selected></td><td data-title=\"\'区域\'\"><font size=5>{{m.name}}</font></td><td data-title=\"\'删除\'\"><button class=\"btn btn-effect-ripple btn-xs btn-danger ng-scope\" ng-if=\"m.projectid == region.treeid\" uib-tooltip=删除区域 ng-click=\"region.deleteRegion( m.id )\"><i class=\"fa fa-trash\"></i></button></td></tr><tr><td colspan=5 style=text-align:left><a ng-if=!region.showRegionBool ng-click=region.showRegion(1)><font size=5>+自定义一个区域</font></a><div ng-if=region.showRegionBool><div class=col-md-8><input class=form-control ng-model=region.regionText placeholder=新区域></div><button class=\"btn btn-primary\" ng-if=region.regionText uib-tooltip=保存 ng-click=region.createRegion()>保存</button> <button class=\"btn btn-warning\" uib-tooltip=取消 ng-click=region.showRegion(0)>取消</button></div></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/business/job/edit/cloneJob.html","<div style=\"width: 100%\"><div id=sidebar_left class=affix style=\"padding-top: 0;min-height: 540px\"><div id=\"sidebar-scroll nav sidebar-menu\"><div class=sidebar-content><div class=panel style=\"margin: 0\"><div class=panel-heading><span class=panel-title>TREE</span> <span class=panel-controls><a href=javascript:void(0) ng-click=clonejob.focusCurrent()><i class=\"fa fa-map-marker\"></i></a> <a href=javascript:void(0) ng-click=clonejob.expandAll(true)><i class=\"fa fa-plus\"></i></a> <a href=javascript:void(0) ng-click=clonejob.expandAll(false)><i class=\"fa fa-minus\"></i></a> <a href=javascript:void(0) ng-click=clonejob.refresh()><i class=\"treeFresh fa fa-refresh\"></i></a></span></div><div class=\"panel-body prn\" style=\";padding: 0\"><perfect-scrollbar class=scroller><ul class=ztree id=openc3treeclone></ul></perfect-scrollbar></div></div></div></div></div><div id=content_wrapper style=\"min-height: 540px\"><div class=panel-heading><span class=panel-title>目标节点</span> <span class=panel-controls><a href=javascript:void(0) ng-click=clonejob.cancel()><i class=\"fa fa-close\"></i></a></span></div><div class=panel-body style=\"padding: 10px;height: 540px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">节点ID</th><th style=\"text-align: center\">节点名称</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr ng-repeat=\"(k, node) in clonejob.cloneNodes \"><td>{{node.id}}</td><td>{{node.name}}</td><td><button class=\"btn btn-danger btn-sm\" ng-click=clonejob.delNode(k)>删除</button></td></tr></tbody></table></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=dstForm.$invalid ng-click=clonejob.saveNode()>保存</button> <button class=\"btn btn-warning\" ng-click=clonejob.cancel()>取消</button></div></div></div></div>");
-$templateCache.put("app/pages/business/job/edit/postClone.html","<div style=\"width: 100%\"><div class=panel-heading><span class=panel-title>目标节点</span> <span class=panel-controls><a href=javascript:void(0) ng-click=postclone.cancel()><i class=\"fa fa-close\"></i></a></span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center;width: 18%\">节点ID</th><th style=\"text-align: center;width: 18%\">节点名称</th><th style=\"text-align: center;width: 18%\">状态</th><th style=\"text-align: center\">结果</th></tr></thead><tbody><tr ng-repeat=\"(k, node) in postclone.cloneNodes \"><td>{{node.id}}</td><td>{{node.name}}</td><td ng-if=node.status style=\"color: green;font-weight: bold\">成功</td><td ng-if=!node.status style=\"color: red;font-weight: bold\">失败</td><td>{{node.msg}}</td></tr></tbody></table></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 45%\"><button class=\"btn btn-primary\" ng-click=postclone.closeTab()>确定</button></div></div></div>");
-$templateCache.put("app/pages/business/job/plugin/approval.html","<div class=modal-header><h4 class=modal-title>新建审批步骤</h4></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=myForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=approvaljob.postdata.name required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批内容<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=approvaljob.postdata.cont required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批人<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=approvaljob.postdata.approver required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=approvaljob.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=approvaljob.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">所有审批人都要审批<span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=approvaljob.postdata.everyone value=on> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>是</label><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=approvaljob.postdata.everyone value=off> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>只要一个人审批</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=approvaljob.postdata.timeout></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=approvaljob.returnData()>保存</button> <button class=\"btn btn-warning\" ng-click=approvaljob.cancel()>取消</button></div></div></form></div></div></div>");
-$templateCache.put("app/pages/business/job/plugin/cmd.html","<div class=modal-header><h4 class=modal-title>新建脚本步骤</h4></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=scriptForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=scriptjob.s_name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=scriptForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=selectedUser ng-options=\"s.username as s.username for s in allProUsers\" required></select></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scriptjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=scriptjob.choiceServer() required>选择服务器</button><table ng-table=choice.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"nodeType ==\'group\'\">{{ss.name}}</td><td ng-if=\"nodeType ==\'builtin\'\">{{ss}}</td><td ng-if=\"nodeType ==\'variable\'\">{{ss.variable}}</td><td>{{choiceType}}</td><td><button ng-if=\"nodeType ==\'group\'\" ng-click=\"scriptjob.delChoice($index, ss.name)\">删除</button> <button ng-if=\"nodeType ==\'builtin\'\" ng-click=\"scriptjob.delChoice($index, ss)\">删除</button> <button ng-if=\"nodeType ==\'variable\'\" ng-click=\"scriptjob.delChoice($index, ss.variable)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=scriptjob.from value=manual ng-click=scriptjob.scriptManual() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=scriptjob.from value=clone ng-click=scriptjob.scriptClone() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label><label class=\"option option-primary\"><input type=radio name=src ng-model=scriptjob.from value=local ng-click=scriptjob.scriptLocal() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>本地脚本</label></div><div ng-hide=scriptjob.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=scriptjob.inputScript() ng-options=\"s.name for s in allScript\"></select></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorSh() ng-disabled=scriptUnclick value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPy() ng-disabled=scriptUnclick value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPerl() ng-disabled=scriptUnclick value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPhp() ng-disabled=scriptUnclick value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorBuildin() ng-disabled=scriptUnclick value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorAuto() ng-disabled=scriptUnclick value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div class=form-horizontal><div style=height:400px class=form-group id=editor></div></div></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本参数</label><div class=col-sm-9><input type=text class=form-control ng-model=s_argv></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=s_timeout></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">结束是否暂停</label><div class=col-sm-9><input type=text class=form-control placeholder=任务执行结束后是否暂停，如果不填，则表示不停止。 ng-model=pause></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-success\" ng-disabled=scriptForm.$invalid ng-click=scriptjob.returnSave(scriptForm)>保存</button> <button class=\"btn btn-warning\" ng-click=scriptjob.cancel(scriptForm)>取消</button></div></div></form></div></div></div>");
-$templateCache.put("app/pages/business/job/plugin/scp.html","<div class=modal-header><h4 class=modal-title>新建分发文件步骤</h4></div><form class=form-horizontal name=dstForm role=form novalidate><div style=\"width: 90%;margin-left: 5%;margin-bottom: 15px;margin-top: 10px\"><div class=row><div class=col-sm-10><label class=\"col-sm-2 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=dstDate.name required> <span style=color:red ng-show=\"dstForm.s_name.$dirty && dstForm.s_name.$error.required\">输入作业名称</span></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 90%;margin-left: 5%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-2 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-hdd\" style=\"padding: 0 3px\"></span>源文件</label><label class=col-sm-3 style=\"font-size: 16px;padding-top: 3px\"><span style=\"font-weight: normal;font-size: 12px\">注意：本地文件上传会有同名文件覆盖危险</span></label><div class=col-sm-7><button class=\"btn btn-primary\" ng-click=scpjob.choiceShareFiles()><span class=\"glyphicon glyphicon-cloud\" style=\"padding: 0 3px\"></span>选择共享文件</button> <button class=\"btn btn-primary\" ng-click=scpjob.choiceSourceFile()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择源服务器文件</button> <button class=\"btn btn-primary\" ng-click=scpjob.choiceVariable()>选择构建文件</button></div></div></div><div class=row><div class=col-sm-11 style=\"margin-left: 1%\"><table ng-table=choice.shareResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr ng-if=!varShow><th style=\"text-align: left;width: 27%\">文件列表</th><th style=\"text-align: left;width: 29%\">服务器地址</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr><tr ng-if=varShow><th style=\"text-align: left;width: 27%\">环境</th><th style=\"text-align: left;width: 29%\">版本</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr></thead><tbody id=srcbody><!--共享文件--><tr ng-repeat=\"ss in shareResult\"><td>{{ss.name}}</td><td>默认空</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><!--构建文件--><tr ng-show=varShow><td>{{varData.ci}}</td><td>{{varData.version}}</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><!--原服务器文件--><tr ng-show=srcShow><td><textarea ng-model=copySrcdata.sp style=\"min-height: 40px;min-width: 100%\" placeholder=输入文件地址 required></textarea></td><td><div><div><span>{{srouceServerResult}}</span></div><div><button ng-hide=true id=click123 class=\"btn btn-default btn-xs\" style=\"margin-left: 73%\" ng-click=scpjob.choiceSourceServer($event) required>添加</button> <span style=\"color: red\" ng-show=srcServerShow>必选源服务器</span></div></div></td><td ng-hide=true><select class=form-control style=\"font-size: 15px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr></tbody></table></div></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 90%;margin-left: 5%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-6 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-folder-open\" style=\"padding: 0 3px\"></span>目标文件</label></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标路径 <span style=\"color: red\">*</span></label><div class=col-sm-8><input type=text class=form-control ng-model=dstDate.dp name=dstpath placeholder=请填写分发路径 required> <span style=color:red ng-show=\"dstForm.dstpath.$dirty && dstForm.dstpath.$error.required\">输入目标文件路径</span></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=\"目标路径以\'/\'结尾代表一个目录，不以‘/’结尾表示一个文件。如：/tmp/表示将文件保存到此目录下，/tmp/test.txt表示将文件保存到此目录下，文件名为test.txt\" aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row ng-show=scp_dir><div class=\"col-sm-10 form-group\"><label class=\"col-md-3 control-label\">同步delete</label><div class=\"col-md-2 admin-form\"><label class=\"switch switch-system mt5\"><input type=checkbox id=scp_delete ng-model=dstDate.scp_delete><label for=scp_delete data-on=ON data-off=OFF></label></label></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=开启后，同步文件夹时删除DEST中SRC没有的文件 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=userShow>必选执行用户</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scpjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=scpjob.choiceServer() required>选择服务器</button> <span style=\"color: red\" ng-show=dstServerShow>必须目标服务器</span><table ng-table=scpjob.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"dstDate.dst_type ==\'group\'\">{{ss.name}}</td><td ng-if=\"dstDate.dst_type ==\'builtin\'\">{{ss}}</td><td ng-if=\"dstDate.dst_type ==\'variable\'\">{{ss.variable}}</td><td>{{choiceType}}</td><td><button ng-if=\"dstDate.dst_type ==\'group\'\" ng-click=\"scpjob.delChoice($index, ss.name)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'builtin\'\" ng-click=\"scpjob.delChoice($index, ss)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'variable\'\" ng-click=\"scpjob.delChoice($index, ss.variable)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件归属者 &nbsp;</label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=fileChown ng-options=\"s.username as s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=chownShow>必选文件所有者</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scpjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件权限 &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.chmod name=dstchmod required> <span style=color:red ng-show=\"dstForm.dstchmod.$dirty && dstForm.dstchmod.$error.required\">输入目标文件权限</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.timeout name=timeout required> <span style=color:red ng-show=\"dstForm.timeout.$dirty && dstForm.timeout.$error.required\">超时时间必填</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">结束是否暂停</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.pause name=pause placeholder=任务执行结束后是否暂停，如果不填，则表示不停止。></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=dstForm.$invalid ng-click=scpjob.returnData()>保存</button> <button class=\"btn btn-warning\" ng-click=scpjob.cancel()>取消</button></div></div></div></div></div></form>");
+$templateCache.put("app/pages/business/job/plugin/approval.html","<div class=modal-header><h4 class=modal-title>新建审批步骤</h4></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=myForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=approvaljob.postdata.name required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批内容<span style=\"color: red\">*</span></label><div class=col-sm-9><textarea type=textarea class=form-control ng-model=approvaljob.postdata.cont required></textarea></div></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/发起审批/ uib-tooltip=查看审批内容使用变量帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">审批人<span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=approvaljob.postdata.approver required></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=approvaljob.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=approvaljob.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=approvaljob.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=approvaljob.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=approvaljob.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">所有审批人都要审批<span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=approvaljob.postdata.everyone value=on> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>是</label><label class=\"option option-primary\"><input type=radio name=unClickEveryone ng-model=approvaljob.postdata.everyone value=off> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>只要一个人审批</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=approvaljob.postdata.timeout></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=approvaljob.returnData()>保存</button> <button class=\"btn btn-warning\" ng-click=approvaljob.cancel()>取消</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/business/job/plugin/cmd.html","<div class=modal-header><h4 class=modal-title>新建脚本步骤</h4></div><div class=\"panel panel-primary\"><div class=panel-body><div class=form-horizontal><form class=form-horizontal name=scriptForm role=form novalidate><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=scriptjob.s_name ng-minlength=3 ng-disabled=unClick required> <span style=color:red ng-show=scriptForm.s_name.$error.minlength>不少于2字符</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本来源 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClick><input type=radio name=src ng-model=scriptjob.from value=manual ng-click=scriptjob.scriptManual() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>手工录入</label><label class=\"option option-primary\"><input type=radio name=src ng-model=scriptjob.from value=clone ng-click=scriptjob.scriptClone() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>脚本克隆</label><label class=\"option option-primary\"><input type=radio name=src ng-model=scriptjob.from value=local ng-click=scriptjob.scriptLocal() ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>本地脚本</label></div><div ng-hide=scriptjob.scriptHide style=\"padding-top: 10px; padding-left: 0\"><select class=form-control ng-model=selectedScript ng-change=scriptjob.inputScript() ng-options=\"s.name for s in allScript\"></select></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本内容 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=\"panel panel-primary\"><div style=\"border: 1px solid #e5e5e5;padding: 10px\"><div class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorSh() ng-disabled=scriptUnclick value=shell> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>shell</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPy() ng-disabled=scriptUnclick value=python> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>python</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPerl() ng-disabled=scriptUnclick value=perl> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>perl</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorPhp() ng-disabled=scriptUnclick value=php> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>php</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorBuildin() ng-disabled=scriptUnclick value=buildin> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>内建</label><label class=\"option option-primary\"><input type=radio name=cont ng-model=scriptType ng-click=scriptjob.editorAuto() ng-disabled=scriptUnclick value=auto> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>自动识别</label></div></div><div ng-show=\"scriptType==\'buildin\' && scriptjob.from == \'manual\'\" class=admin-form><div class=\"option-group field\" style=\"padding-bottom: 9px\"><label class=\"option option-primary\" style=cursor:default>内建插件:</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'kubectl\' )\">kubectl</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'terraform\' )\">terraform</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'kubestar\' )\">kubestar</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'awsecs\' )\">awsecs</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'sendemail\' )\">sendemail</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'sendmesg\' )\">sendmesg</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'flowcaller\' )\">flowcaller</label><label class=\"option option-primary\" ng-click=\"scriptjob.buildinSet( \'cdnrefresh\' )\">cdnrefresh</label></div></div><div class=form-horizontal><div style=height:400px class=form-group id=editor ng-mouseleave=scriptjob.leaveeditor()></div></div></div></div></div></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/客户端内置命令/ uib-tooltip=查看客户端内置命令帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row ng-show=\"scriptType!=\'buildin\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 15px;height: 42px\" ng-model=selectedUser><option ng-repeat=\"x in allProUsers\" value={{x.username}}>{{x.username}}</option></select></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scriptjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row ng-show=\"scriptType==\'buildin\'\"><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">使用票据 &nbsp&nbsp</label><div class=col-sm-7><select class=form-control ng-model=selectedUser><option ng-repeat=\"x in scriptjob.ticketinfo\" value={{x.id}}>{{x.name}}</option></select></div></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div ng-show=scriptjob.showmachinelist class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=scriptjob.choiceServer() required>选择服务器</button><table ng-table=choice.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"nodeType ==\'group\'\">{{ss.name}}</td><td ng-if=\"nodeType ==\'builtin\'\">{{ss}}</td><td ng-if=\"nodeType ==\'variable\'\">{{ss.variable}}</td><td>{{choiceType}}</td><td><button ng-if=\"nodeType ==\'group\'\" ng-click=\"scriptjob.delChoice($index, ss.name)\">删除</button> <button ng-if=\"nodeType ==\'builtin\'\" ng-click=\"scriptjob.delChoice($index, ss)\">删除</button> <button ng-if=\"nodeType ==\'variable\'\" ng-click=\"scriptjob.delChoice($index, ss.variable)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">脚本参数</label><div class=col-sm-9><input type=text class=form-control ng-model=s_argv></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间</label><div class=col-sm-9><input type=text class=form-control placeholder=脚本执行超时时间，单位为秒，默认60秒 ng-model=s_timeout></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">结束是否暂停</label><div class=col-sm-9><input type=text class=form-control placeholder=任务执行结束后是否暂停，如果不填，则表示不停止。 ng-model=pause></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=scriptjob.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=scriptjob.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=scriptjob.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=scriptjob.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=scriptjob.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=scriptjob.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=scriptjob.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=scriptjob.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=scriptjob.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-success\" ng-disabled=scriptForm.$invalid ng-click=scriptjob.returnSave(scriptForm)>保存</button> <button class=\"btn btn-warning\" ng-click=scriptjob.cancel(scriptForm)>取消</button></div></div></form></div></div></div>");
+$templateCache.put("app/pages/business/job/plugin/scp.html","<div class=modal-header><h4 class=modal-title>新建分发文件步骤</h4></div><form class=form-horizontal name=dstForm role=form novalidate><div style=\"width: 90%;margin-left: 5%;margin-bottom: 15px;margin-top: 10px\"><div class=row><div class=col-sm-10><label class=\"col-sm-2 control-label\">作业名称 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control name=s_name ng-model=dstDate.name required> <span style=color:red ng-show=\"dstForm.s_name.$dirty && dstForm.s_name.$error.required\">输入作业名称</span></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 90%;margin-left: 5%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-2 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-hdd\" style=\"padding: 0 3px\"></span>源文件</label><label class=col-sm-3 style=\"font-size: 16px;padding-top: 3px\"><span style=\"font-weight: normal;font-size: 12px\">注意：本地文件上传会有同名文件覆盖危险</span></label><div class=col-sm-7><button class=\"btn btn-primary\" ng-click=scpjob.choiceShareFiles()><span class=\"glyphicon glyphicon-cloud\" style=\"padding: 0 3px\"></span>选择共享文件</button> <button class=\"btn btn-primary\" ng-click=scpjob.choiceSourceFile()><span class=\"glyphicon glyphicon-oil\" style=\"padding: 0 3px\"></span>选择源服务器文件</button> <button class=\"btn btn-primary\" ng-click=scpjob.choiceVariable()>选择构建文件</button></div></div></div><div class=row><div class=col-sm-11 style=\"margin-left: 1%\"><table ng-table=choice.shareResult class=\"table table-hover\" style=\"border: 1px solid #ddd\"><thead><tr ng-if=!varShow><th style=\"text-align: left;width: 27%\">文件列表</th><th style=\"text-align: left;width: 29%\">服务器地址</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr><tr ng-if=varShow><th style=\"text-align: left;width: 27%\">构建ID(流水线ID)</th><th style=\"text-align: left;width: 29%\">版本</th><th ng-hide=true style=\"text-align: left;width: 25%\">执行账户</th></tr></thead><tbody id=srcbody><!--共享文件--><tr ng-repeat=\"ss in shareResult\"><td>{{ss.name}}</td><td>默认空</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><!--构建文件--><tr ng-show=varShow><td>{{varData.ci}}</td><td>{{varData.version}}</td><td ng-hide=true><select class=form-control style=\"font-size: 18px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr><!--原服务器文件--><tr ng-show=srcShow><td><textarea ng-model=copySrcdata.sp style=\"min-height: 40px;min-width: 100%\" placeholder=输入文件地址 required></textarea></td><td><div><div><span>{{srouceServerResult}}</span></div><div><button ng-hide=true id=click123 class=\"btn btn-default btn-xs\" style=\"margin-left: 73%\" ng-click=scpjob.choiceSourceServer($event) required>添加</button> <span style=\"color: red\" ng-show=srcServerShow>必选源服务器</span></div></div></td><td ng-hide=true><select class=form-control style=\"font-size: 15px\" disabled ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\"></select></td></tr></tbody></table></div></div></div></div></div><div class=\"panel panel-primary\" style=\"width: 90%;margin-left: 5%\"><div class=panel-body><div class=form-horizontal><div class=row><div class=\"col-sm-12 form-group\"><label class=col-sm-6 style=\"font-size: 16px;padding-top: 10px\"><span class=\"glyphicon glyphicon-folder-open\" style=\"padding: 0 3px\"></span>目标文件</label></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标路径 <span style=\"color: red\">*</span></label><div class=col-sm-8><input type=text class=form-control ng-model=dstDate.dp name=dstpath placeholder=请填写分发路径 required> <span style=color:red ng-show=\"dstForm.dstpath.$dirty && dstForm.dstpath.$error.required\">输入目标文件路径</span></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=\"目标路径以\'/\'结尾代表一个目录，不以‘/’结尾表示一个文件。如：/tmp/表示将文件保存到此目录下，/tmp/test.txt表示将文件保存到此目录下，文件名为test.txt\" aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row ng-show=scp_dir><div class=\"col-sm-10 form-group\"><label class=\"col-md-3 control-label\">同步delete</label><div class=\"col-md-2 admin-form\"><label class=\"switch switch-system mt5\"><input type=checkbox id=scp_delete ng-model=dstDate.scp_delete><label for=scp_delete data-on=ON data-off=OFF></label></label></div><span class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right uib-tooltip=开启后，同步文件夹时删除DEST中SRC没有的文件 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></span></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">执行账户 <span style=\"color: red\">*</span></label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=dstUser ng-options=\"s.username as s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=userShow>必选执行用户</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scpjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\" style=\"margin-top: -23px\"><label class=\"col-sm-3 control-label\"></label><div class=col-sm-7><dataerror ng-hide=dataready errmsg={{dataerror}}></dataerror></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">目标机器 <span style=\"color: red\">*</span></label><div class=col-sm-9><button class=\"btn btn-primary\" ng-click=scpjob.choiceServer() required>选择服务器</button> <span style=\"color: red\" ng-show=dstServerShow>必须目标服务器</span><table ng-table=scpjob.choiceResult class=\"table table-hover\" ng-show=choiceShow style=\"margin-top: 10px;border: 1px solid #ddd\"><thead><tr><th style=\"text-align: left\">编号</th><th style=\"text-align: left\">名称</th><th style=\"text-align: left\">类型</th><th style=\"text-align: left\">操作</th></tr></thead><tbody><tr ng-repeat=\"ss in choiceResult\"><td>{{$index + 1}}</td><td ng-if=\"dstDate.dst_type ==\'group\'\">{{ss.name}}</td><td ng-if=\"dstDate.dst_type ==\'builtin\'\">{{ss}}</td><td ng-if=\"dstDate.dst_type ==\'variable\'\">{{ss.variable}}</td><td>{{choiceType}}</td><td><button ng-if=\"dstDate.dst_type ==\'group\'\" ng-click=\"scpjob.delChoice($index, ss.name)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'builtin\'\" ng-click=\"scpjob.delChoice($index, ss)\">删除</button> <button ng-if=\"dstDate.dst_type ==\'variable\'\" ng-click=\"scpjob.delChoice($index, ss.variable)\">删除</button></td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件归属者 &nbsp;</label><div class=col-sm-7><select class=form-control style=\"font-size: 18px;padding: 0 12px\" ng-model=fileChown ng-options=\"s.username as s.username for s in allProUsers\" required></select><span style=\"color: red\" ng-show=chownShow>必选文件所有者</span></div><button class=\"btn btn-primary col-sm-1\" uib-tooltip=添加 ng-click=scpjob.addProUser()><i class=\"fa fa-plus\"></i></button></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">文件权限 &nbsp;</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.chmod name=dstchmod required> <span style=color:red ng-show=\"dstForm.dstchmod.$dirty && dstForm.dstchmod.$error.required\">输入目标文件权限</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">超时时间 <span style=\"color: red\">*</span></label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.timeout name=timeout required> <span style=color:red ng-show=\"dstForm.timeout.$dirty && dstForm.timeout.$error.required\">超时时间必填</span></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">结束是否暂停</label><div class=col-sm-9><input type=text class=form-control ng-model=dstDate.pause name=pause placeholder=任务执行结束后是否暂停，如果不填，则表示不停止。></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效环境 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickDeployenv><input type=radio name=unClickDeployenv ng-model=scpjob.postdata.deployenv value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=scpjob.postdata.deployenv value=test> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>测试环境</label><label class=\"option option-primary\"><input type=radio name=unClickDeployenv ng-model=scpjob.postdata.deployenv value=online> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>线上环境</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">生效动作 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickAction><input type=radio name=unClickAction ng-model=scpjob.postdata.action value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=scpjob.postdata.action value=deploy> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅发布时执行</label><label class=\"option option-primary\"><input type=radio name=unClickAction ng-model=scpjob.postdata.action value=rollback> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅回滚时执行</label></div></div></div></div></div><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">分批 <span style=\"color: red\">*</span></label><div class=col-sm-9><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\" ng-model=unClickBatches><input type=radio name=unClickBatches ng-model=scpjob.postdata.batches value=always> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>总是执行</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=scpjob.postdata.batches value=firsttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅第一个分组</label><label class=\"option option-primary\"><input type=radio name=unClickBatches ng-model=scpjob.postdata.batches value=thelasttime> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>仅最后一个分组</label></div></div></div></div></div><div class=row><div class=\"col-sm-3 form-group\" style=\"margin-left: 40%\"><button class=\"btn btn-primary\" ng-disabled=dstForm.$invalid ng-click=scpjob.returnData()>保存</button> <button class=\"btn btn-warning\" ng-click=scpjob.cancel()>取消</button></div></div></div></div></div></form>");
 $templateCache.put("app/pages/business/nodegroup/choiceInfo/machineGroup.html","<div class=modal-header><h4 class=modal-title>选择服务器</h4></div><div class=modal-body><div ng-hide=dataready><span style=\"font-weight: bold;color: red\">{{dataerror}}</span></div><form class=form-horizontal name=addForm role=form ng-hide=true><div style=\"height: 40px;border-bottom: 1px solid #ddd\"><div class=admin-form><div class=\"option-group field\"><label class=\"option option-primary\"><input type=radio ng-model=groupInfo.choiceType value=ip ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>通过机器名分组</label><label class=\"option option-primary\"><input type=radio ng-model=groupInfo.choiceType value=group ng-disabled=unClick> <span class=radio style=\"padding-top: 0;min-height: 0\"></span>通过机器类型分组</label></div></div></div></form><div ng-switch=groupInfo.choiceType><div ng-switch-when=ip><div class=panel-tabs><table ng-table=groupInfo.machine_Table show-filter=true class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"ss in $data\" style=\"text-align: left\"><td style=\"width: 30%\" data-title=\"\'机器名称\'\" filter=\"{ name: \'text\'}\"><label for={{ss.name}} style=\"font-weight: normal;height: 100%;width: 100%\"><input id={{ss.name}} type=checkbox name=selected ng-checked=\"isSelected(ss.id, \'name\')\" ng-click=\"nameUpdateSelection($event, ss.id, ss.name)\" style=\"zoom: 125%\">{{ss.name}}</label></td><td style=\"width: 15%\" data-title=\"\'类型\'\" filter=\"{ type: \'text\'}\">{{ss.type}}</td><td style=\"width: 20%\" data-title=\"\'内网IP\'\" filter=\"{ inip: \'text\'}\"><label for={{ss.inip}} style=\"font-weight: normal;height: 100%;width: 100%\"><i ng-if=\"ss.inip && ! ss.inips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.inip && ss.inips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i> <input id={{ss.inip}} ng-if=ss.inip type=checkbox name=selected ng-checked=\"isSelected(ss.id, \'inip\')\" ng-click=\"inipUpdateSelection($event, ss.id, ss.inip)\" style=\"zoom: 125%\">{{ss.inip}}</label></td><td style=\"width: 20%\" data-title=\"\'外网ip\'\" filter=\"{ exip: \'text\'}\"><label for={{ss.exip}} style=\"font-weight: normal;height: 100%;width: 100%\"><i ng-if=\"ss.exip && ! ss.exips.status\" class=\"fa fa-exclamation-circle\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'fail\'\" class=\"fa fa-circle\" style=\"color: red\" aria-hidden=true></i> <i ng-if=\"ss.exip && ss.exips.status==\'success\'\" class=\"fa fa-circle\" style=\"color: green\" aria-hidden=true></i> <input id={{ss.exip}} ng-if=ss.exip type=checkbox name=selected ng-checked=\"isSelected(ss.id, \'exip\')\" ng-click=\"exipUpdateSelection($event, ss.id, ss.exip)\" style=\"zoom: 125%\">{{ss.exip}}</label></td></tr></table></div></div><div ng-switch-when=group><div class=panel-tabs><table ng-table=groupInfo.type_Table class=\"table table-hover text-center table-condensed\"><thead><tr><th>#</th><th>类型</th></tr></thead><tbody><tr ng-repeat=\"ss in $data\"><td><input type=checkbox name=selected ng-checked=isTypeSelected(ss) ng-click=\"updateTypeSelection($event, ss)\" style=\"zoom: 125%\"></td><td>{{ss}}</td></tr></tbody></table></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=addForm.$invalid ng-click=groupInfo.ok()>确认</button> <button class=\"btn btn-warning\" ng-click=groupInfo.ok()>取消</button></div></div></div>");
-$templateCache.put("app/pages/history/job/detail/confirm.html","<div class=modal-header><h4 class=modal-title>确认信息</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div><span>{{historyjobdetailconfirm.runmsg}}</span></div><div style=\"margin: 40px 0 15px 0\"><span>注：任务执行成功返回的确认信息。点击\'确认\'继续执行后面的任务。\'取消\'则不会继续执行以后的任务。</span></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-click=historyjobdetailconfirm.Confirm()>确认,继续执行</button> <button class=\"btn btn-warning\" ng-click=historyjobdetailconfirm.cancel()>取消</button></div></div></form></div>");
-$templateCache.put("app/pages/history/job/detail/detail.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>基本信息</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px\"><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><span style=\"font-size: 15px\">{{taskname}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">执行结果：</label><span style=\"font-size: 15px\">{{historyjobdetail.statuszh[status]}}</span> <i ng-if=\"status != \'success\' && status != \'fail\'\" class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':1}\"></i> <button ng-if=\"status == \'running\' || status == \'waiting\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobdetail.killTask() style=\"border-radius: 10%;padding: 1px 10px\">终止任务</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">启动人：</label><span style=\"font-size: 15px\">{{runuser}}</span></div></div><div class=row style=\"padding: 5px\"><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">开始时间：</label><span style=\"font-size: 15px\">{{starttime}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">结束时间：</label><span style=\"font-size: 15px\">{{finishtime}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">耗时：</label><span style=\"font-size: 15px\">{{historyjobdetail.seftime(starttime,finishtime)}}</span></div></div><div ng-show=historyjobdetail.taskuuid class=row style=\"padding: 5px\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">任务日志：</label><button class=\"btn btn-primary btn-sm\" ng-click=historyjobdetail.taskLogDetail()>执行详情</button> <span ng-show=errreason style=\"color: red;margin-left: 10px\">错误: &nbsp; {{errreason}}</span></div></div><div ng-if=variable ng-show=historyjobdetail.taskuuid class=row style=\"padding: 5px\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">调用变量：</label><span style=\"font-size: 15px\">{{variable}}</span></div></div></div></form></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyjobdetail.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobdetail.loadover}\"></i></button></span><h5>作业步骤</h5></div><div class=panel-body><div ng-repeat=\"item in historyjobdetail.allRuningData\"><div ng-if=\"item.subtask_type == \'cmd\'\" class=\"panel panel-success\"><div class=panel-heading style=\"height: 33px\"><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行主机数</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.nodecount}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=setStatuColor(item.status)>{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">name:</label><span style=\"font-size: 15px\">{{item.extended.name}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">node_type:</label><span style=\"font-size: 15px\">{{item.extended.node_type}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">scripts_type:</label><span style=\"font-size: 15px\">{{item.extended.scripts_type}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">user:</label><span style=\"font-size: 15px\">{{item.extended.user}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">timeout:</label><span style=\"font-size: 15px\">{{item.extended.timeout}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=form-group style=\"display:block;word-break: break-all;word-wrap: break-word\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">node_cont:</label><span style=\"font-size: 15px\">{{item.extended.node_cont}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">scripts_cont:</label><span style=\"font-size: 15px\">{{item.extended.scripts_cont}}</span></div></div></div></form></div></div></div></div></div><div ng-if=\"item.subtask_type == \'scp\'\" class=\"panel panel-primary\"><div class=panel-heading style=\"height: 33px\"><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行主机数</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.nodecount}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=\"setStatuColor(item.status, \'scp\')\">{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=\"$index != historyjobdetail.tasklength  && status != \'fail\'\" class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">下一步</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">name:</label><span style=\"font-size: 15px\">{{item.extended.name}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">user:</label><span style=\"font-size: 15px\">{{item.extended.user}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">timeout:</label><span style=\"font-size: 15px\">{{item.extended.timeout}}</span></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">src:</label><span style=\"font-size: 15px\">{{item.extended.src}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">sp:</label><span style=\"font-size: 15px\">{{item.extended.sp}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">src_type:</label><span style=\"font-size: 15px\">{{item.extended.src_type}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=col-sm-6 style=\"display:block;word-break: break-all;word-wrap: break-word\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dst:</label><span style=\"font-size: 15px\">{{item.extended.dst}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dp:</label><span style=\"font-size: 15px\">{{item.extended.dp}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dst_type:</label><span style=\"font-size: 15px\">{{item.extended.dst_type}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">chmod:</label><span style=\"font-size: 15px\">{{item.extended.chmod}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">chown:</label><span style=\"font-size: 15px\">{{item.extended.chown}}</span></div></div></div></form></div></div></div></div></div><div ng-if=\"item.subtask_type == \'approval\'\" class=\"panel panel-info\"><div class=panel-heading style=\"height: 33px\"><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.extended.approver}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=\"setStatuColor(item.status, \'scp\')\">{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=\"$index != historyjobdetail.tasklength  && status != \'fail\'\" class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">下一步</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">审批内容:</label><span style=\"font-size: 15px\">{{item.extended.cont}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div></div></form></div></div></div></div></div><div ng-if=item.jobtype class=\"panel panel-primary\"><div class=panel-heading style=\"height: 33px\"><h5>作业日志</h5></div><job-subtask-log-area jobuuid=jobuuid loguuid=loguuid jobaddr=salve class=fluid-width></job-subtask-log-area></div></div></div></div></div>");
-$templateCache.put("app/pages/history/job/detail/log.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" ng-click=historyjobdetaillog.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=panel-body style=\"padding: 10px\"><div><h5 class=fwbold>日志详情</h5><job-task-log-area taskuuid=historyjobdetaillog.taskuuid jobaddr=historyjobdetaillog.logaddr class=fluid-width></job-task-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=historyjobdetaillog.cancel()>Cancel</button></div></div></div>");
-$templateCache.put("app/pages/history/job/detail/sublog.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" ng-click=historyjobdetailsublog.init()><i class=\"fa fa-refresh fa-fw\" ng-if=\"historyjobdetailsublog.taskInfo.status==\'running\'\" ng-class=\"{\'fa-spin\':historyjobdetailsublog.taskInfo.status==\'running\'}\"></i></button> <button class=\"btn btn-success\" ng-click=historyjobdetailsublog.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=table-responsive style=\"width: 100%\"><table class=\"table table-bordered\" style=\"font-weight: bold;border: 0px\"><tbody><tr><td>任务名称</td><td>{{historyjobdetailsublog.taskInfo.extended.name}}</td><td>任务类型</td><td>{{historyjobdetailsublog.pluginname[historyjobdetailsublog.taskInfo.subtask_type]}}{{plugin}}</td><td>执行账户</td><td>{{historyjobdetailsublog.taskInfo.extended.user }}{{ historyjobdetailsublog.taskInfo.extended.approver}}</td><td>耗时</td><td>{{historyjobdetailsublog.seftime(historyjobdetailsublog.taskInfo.starttime,historyjobdetailsublog.taskInfo.finishtime)}}</td></tr><tr><td>任务状态</td><td><span style=\"font-weight: \'bold\'\" ng-style=statucolor>{{historyjobdetailsublog.statuszh[historyjobdetailsublog.taskInfo.status]}}</span></td><td>开始时间</td><td>{{historyjobdetailsublog.taskInfo.starttime}}</td><td>结束时间</td><td>{{historyjobdetailsublog.taskInfo.finishtime}}</td><td></td><td></td></tr></tbody></table></div><div class=panel-body><div><h5 class=fwbold>日志详情</h5><job-subtask-log-area jobuuid=historyjobdetailsublog.taskuuid loguuid=historyjobdetailsublog.loguuid jobaddr=historyjobdetailsublog.logaddr class=fluid-width></job-subtask-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=historyjobdetailsublog.cancel()>Cancel</button></div></div></div>");
-$templateCache.put("app/pages/history/jobx/detail/detail.html","<cmloading ng-if=\"!historyjobxdetail.loadoveXr && historyjobxdetail.firstload && historyjobxdetail.rversion\"></cmloading><div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><a aria-hidden=true ng-if=historyjobxdetail.backid ng-click=historyjobxdetail.versiondetail(historyjobxdetail.backid) uib-tooltip=回到流水线页面 style=\"cursor:pointer;color: #339094\">{{historyjobxdetail.backname}}</a> ({{taskDetail.name}})<div class=panel><div class=panel-heading><span class=panel-controls><button class=\"btn btn-null btn-sm\" ng-click=historyjobxdetail.taskLogDetail()>执行详情</button> <button ng-if=\"taskDetail.status == \'running\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobxdetail.killTask(historyjobxdetail.taskuuid)>终止任务</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'running\' && historyjobxdetail.rversion\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'rollback\')\">紧急回滚</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'success\' && historyjobxdetail.rversion\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'rollback\')\">回滚</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'success\' && historyjobxdetail.rversion\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'norollback\')\">不回滚</button> <button class=btn uib-tooltip=刷新 ng-click=historyjobxdetail.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobxdetail.loadover}\"></i></button> <span>{{historyjobxdetail.seftime( taskDetail.starttime, taskDetail.finishtime )}}</span> </span><span><label>发布任务 {{taskDetail.starttime}} 版本:{{historyjobxdetail.dversion}}</label>(<a ng-style=setStatuColor(taskDetail.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[taskDetail.status]}}</a>)<label>启动人：{{taskDetail.user}}</label><span ng-if=taskDetail.reason>错误: &nbsp; {{taskDetail.reason}}</span></span></div><div class=panel-body><div class=\"row block\" style=\"padding: 0px 4px 0px\"><div ng-repeat=\"jobx in subtaskDetail\" style=\"width: 100%\"><div class=\"panel panel-info\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0;margin-top: 5px\"><div class=panel-heading style=\"height: 33px;cursor:pointer\" ng-click=historyjobxdetail.runtaskDetail(jobx.uuid)><span>1-{{$index +1}}(<a ng-style=setStatuColor(jobx.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[jobx.status]}}</a>) <a href=\"\" onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.showNode(jobx.nodelist)>{{jobx.nodelist| shownode}}</a> </span><span class=panel-controls><i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"jobx.confirm == \'WaitConfirm\'\" uib-tooltip=确认忽略 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runConfirm(jobx.uuid) style=cursor:pointer></i> {{historyjobxdetail.seftime(jobx.starttime, jobx.finishtime)}}</span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><div ng-repeat=\"item in historyjobxdetail.jobinfobyuuid[jobx.uuid]\"><div class=\"panel panel-{{panelcolor[item.status]}}\" style=\"width: 100%;cursor:pointer\" ng-click=\"historyjobxdetail.runDetail(item, jobx.uuid)\"><div class=panel-heading style=\"height: 33px\"><span>{{$index +1}}({{historyjobxdetail.statuszh[item.status]}}) {{item.extended.name}} </span><span class=panel-controls><i class=\"fa fa-refresh fa-fw\" ng-if=\"item.status == \'running\' && taskDetail.status == \'running\' && jobx.status == \'running\'\" ng-class=\"{\'fa-spin\':item.status==\'running\'}\"></i> <i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"item.pause && ( item.status==\'fail\' || item.status == \'success\' || item.status==\'ignore\')\" uib-tooltip=执行确认 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runJobConfirm(item,jobx.uuid) style=cursor:pointer></i> <i class=\"fa fa-play-circle-o\" ng-if=\"item.status==\'decision\'\" uib-tooltip=重试任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.Runnigs(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-fast-forward\" ng-if=\"item.status==\'decision\'\" uib-tooltip=忽略错误 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runIgnore(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-stop-circle\" ng-if=\"item.status==\'decision\'\" uib-tooltip=终止任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runShutTask(item, jobx.uuid)\" style=cursor:pointer></i> {{historyjobxdetail.seftime(item.starttime, item.finishtime)}}</span></div></div></div></div></div></div></div></div></div></div></div><div class=panel ng-if=historyjobxdetail.rversion><div class=panel-heading><span class=panel-controls><button class=\"btn btn-null btn-sm\" ng-click=historyjobxdetail.taskLogDetail()>执行详情</button> <button ng-if=\"taskDetaiXl.status == \'running\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobxdetail.killTask(historyjobxdetail.taskuuiXd)>终止任务</button> <button class=btn uib-tooltip=刷新 ng-click=historyjobxdetail.reloaXd()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobxdetail.loadoveXr}\"></i></button> <span>{{historyjobxdetail.seftime(taskDetaiXl.starttime,taskDetaiXl.finishtime)}}</span> </span><span><label>回滚任务 {{taskDetaiXl.starttime}} 版本:{{historyjobxdetail.rversion}}</label>(<a ng-style=setStatuColor(taskDetaiXl.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[taskDetaiXl.status]}}</a>)<label>启动人：{{taskDetaiXl.user}}</label><span ng-if=taskDetaiXl.reason>错误: &nbsp; {{taskDetaiXl.reason}}</span></span></div><div class=panel-body><div class=\"row block\" style=\"padding: 0px 4px 0px\"><div ng-repeat=\"jobx in subtaskDetaiXl\" style=\"width: 100%\"><div class=\"panel panel-info\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0;margin-top: 5px\"><div class=panel-heading style=\"height: 33px;cursor:pointer\" ng-click=historyjobxdetail.runtaskDetail(jobx.uuid)><span>2-{{$index +1}}(<a ng-style=setStatuColor(jobx.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[jobx.status]}}</a>) <a href=\"\" onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.showNode(jobx.nodelist)>{{jobx.nodelist| shownode}}</a> </span><span class=panel-controls><i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"jobx.confirm == \'WaitConfirm\'\" uib-tooltip=确认忽略 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runConfirm(jobx.uuid) style=cursor:pointer></i> {{historyjobxdetail.seftime(jobx.starttime,jobx.finishtime)}}</span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><div ng-repeat=\"item in historyjobxdetail.jobinfobyuuid[jobx.uuid]\"><div class=\"panel panel-{{panelcolor[item.status]}}\" ng-style=setStatuColor(item.status) style=\"width: 100%;cursor:pointer\" ng-click=\"historyjobxdetail.runDetail(item, jobx.uuid)\"><div class=panel-heading style=\"height: 33px\"><span>{{$index +1}}({{historyjobxdetail.statuszh[item.status]}}) {{item.extended.name}} </span><span class=panel-controls><i class=\"fa fa-refresh fa-fw\" ng-if=\"item.status == \'running\' && taskDetaiXl.status == \'running\' && jobx.status ==\'running\'\" ng-class=\"{\'fa-spin\':item.status==\'running\'}\"></i> <i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"item.pause && ( item.status==\'fail\' || item.status == \'success\' || item.status==\'ignore\')\" uib-tooltip=执行确认 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runJobConfirm(item,jobx.uuid) style=cursor:pointer></i> <i class=\"fa fa-play-circle-o\" ng-if=\"item.status==\'decision\'\" uib-tooltip=重试任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.Runnigs(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-fast-forward\" ng-if=\"item.status==\'decision\'\" uib-tooltip=忽略错误 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runIgnore(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-stop-circle\" ng-if=\"item.status==\'decision\'\" uib-tooltip=终止任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runShutTask(item, jobx.uuid)\" style=cursor:pointer></i> {{historyjobxdetail.seftime(item.starttime, item.finishtime)}}</span></div></div></div></div></div></div></div></div></div></div></div></div>");
+$templateCache.put("app/pages/history/jobx/detail/detail.html","<cmloading ng-if=\"!historyjobxdetail.loadoveXr && historyjobxdetail.firstload && historyjobxdetail.rversion\"></cmloading><div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><a aria-hidden=true ng-if=historyjobxdetail.backid ng-click=historyjobxdetail.versiondetail(historyjobxdetail.backid) uib-tooltip=回到流水线页面 style=\"cursor:pointer;color: #339094\">点击返回流水线:{{historyjobxdetail.backname}}</a> ({{taskDetail.name}})<div class=panel><div class=panel-heading><span class=panel-controls><button class=\"btn btn-null btn-sm\" ng-click=historyjobxdetail.taskLogDetail()>执行详情</button> <button ng-if=\"taskDetail.status == \'running\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobxdetail.killTask(historyjobxdetail.taskuuid)>终止任务</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'running\' && historyjobxdetail.rversion && ! historyjobxdetail.rollbackexpire( taskDetail.starttimems )\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'rollback\')\">紧急回滚</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'success\' && historyjobxdetail.rversion && ! historyjobxdetail.rollbackexpire( taskDetail.starttimems )\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'rollback\')\">回滚</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'success\' && historyjobxdetail.rversion && ! historyjobxdetail.rollbackexpire( taskDetail.starttimems )\" class=\"btn btn-primary btn-sm\" ng-click=\"historyjobxdetail.rollbackJudge(\'norollback\')\">不回滚</button> <button ng-if=\"historyjobxdetail.rollbackShow && taskDetail.status == \'success\' && historyjobxdetail.rversion && historyjobxdetail.rollbackexpire( taskDetail.starttimems )\" class=\"btn btn-primary btn-sm\">已过期不可回滚</button> <button class=btn uib-tooltip=刷新 ng-click=historyjobxdetail.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobxdetail.loadover}\"></i></button> <span>{{historyjobxdetail.seftime( taskDetail.starttime, taskDetail.finishtime )}}</span> </span><span><label>发布任务 {{taskDetail.starttime}} 版本:{{historyjobxdetail.dversion}}</label>(<a ng-style=setStatuColor(taskDetail.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[taskDetail.status]}}</a>)<label>启动人：{{taskDetail.user}}</label><span ng-if=taskDetail.reason>错误: &nbsp; {{taskDetail.reason}}</span></span></div><div class=panel-body><div class=\"row block\" style=\"padding: 0px 4px 0px\"><div ng-repeat=\"jobx in subtaskDetail\" style=\"width: 100%\"><div class=\"panel panel-info\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0;margin-top: 5px\"><div class=panel-heading style=\"height: 33px;cursor:pointer\" ng-click=historyjobxdetail.runtaskDetail(jobx.uuid)><span>1-{{$index +1}}(<a ng-style=setStatuColor(jobx.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[jobx.status]}}</a>) <a href=\"\" onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.showNode(jobx.nodelist)>{{jobx.nodelist| shownode}}</a> </span><span class=panel-controls><i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"jobx.confirm == \'WaitConfirm\'\" uib-tooltip=确认忽略 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runConfirm(jobx.uuid) style=cursor:pointer></i> {{historyjobxdetail.seftime(jobx.starttime, jobx.finishtime)}}</span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><div ng-repeat=\"item in historyjobxdetail.jobinfobyuuid[jobx.uuid]\"><div class=\"panel panel-{{panelcolor[item.status]}}\" style=\"width: 100%;cursor:pointer\" ng-click=\"historyjobxdetail.runDetail(item, jobx.uuid)\"><div class=panel-heading style=\"height: 33px\"><span>{{$index +1}}({{historyjobxdetail.statuszh[item.status]}}) {{item.extended.name}} </span><span class=panel-controls><i class=\"fa fa-refresh fa-fw\" ng-if=\"item.status == \'running\' && taskDetail.status == \'running\' && jobx.status == \'running\'\" ng-class=\"{\'fa-spin\':item.status==\'running\'}\"></i> <i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"item.pause && ( item.status==\'fail\' || item.status == \'success\' || item.status==\'ignore\')\" uib-tooltip=执行确认 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runJobConfirm(item,jobx.uuid) style=cursor:pointer></i> <i class=\"fa fa-play-circle-o\" ng-if=\"item.status==\'decision\'\" uib-tooltip=重试任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.Runnigs(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-fast-forward\" ng-if=\"item.status==\'decision\'\" uib-tooltip=忽略错误 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runIgnore(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-stop-circle\" ng-if=\"item.status==\'decision\'\" uib-tooltip=终止任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runShutTask(item, jobx.uuid)\" style=cursor:pointer></i> {{historyjobxdetail.seftime(item.starttime, item.finishtime)}}</span></div></div></div></div></div></div></div></div></div></div></div><div class=panel ng-if=historyjobxdetail.rversion><div class=panel-heading><span class=panel-controls><button class=\"btn btn-null btn-sm\" ng-click=historyjobxdetail.taskLogDetail()>执行详情</button> <button ng-if=\"taskDetaiXl.status == \'running\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobxdetail.killTask(historyjobxdetail.taskuuiXd)>终止任务</button> <button class=btn uib-tooltip=刷新 ng-click=historyjobxdetail.reloaXd()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobxdetail.loadoveXr}\"></i></button> <span>{{historyjobxdetail.seftime(taskDetaiXl.starttime,taskDetaiXl.finishtime)}}</span> </span><span><label>回滚任务 {{taskDetaiXl.starttime}} 版本:{{historyjobxdetail.rversion}}</label>(<a ng-style=setStatuColor(taskDetaiXl.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[taskDetaiXl.status]}}</a>)<label>启动人：{{taskDetaiXl.user}}</label><span ng-if=taskDetaiXl.reason>错误: &nbsp; {{taskDetaiXl.reason}}</span></span></div><div class=panel-body><div class=\"row block\" style=\"padding: 0px 4px 0px\"><div ng-repeat=\"jobx in subtaskDetaiXl\" style=\"width: 100%\"><div class=\"panel panel-info\"><div class=\"col-lg-3 col-xs-12 ml0 pl0\" style=\"padding-left: 0;margin-top: 5px\"><div class=panel-heading style=\"height: 33px;cursor:pointer\" ng-click=historyjobxdetail.runtaskDetail(jobx.uuid)><span>2-{{$index +1}}(<a ng-style=setStatuColor(jobx.status) style=\"pointer-events: none\">{{historyjobxdetail.statuszh[jobx.status]}}</a>) <a href=\"\" onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.showNode(jobx.nodelist)>{{jobx.nodelist| shownode}}</a> </span><span class=panel-controls><i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"jobx.confirm == \'WaitConfirm\'\" uib-tooltip=确认忽略 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runConfirm(jobx.uuid) style=cursor:pointer></i> {{historyjobxdetail.seftime(jobx.starttime,jobx.finishtime)}}</span></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><div ng-repeat=\"item in historyjobxdetail.jobinfobyuuid[jobx.uuid]\"><div class=\"panel panel-{{panelcolor[item.status]}}\" ng-style=setStatuColor(item.status) style=\"width: 100%;cursor:pointer\" ng-click=\"historyjobxdetail.runDetail(item, jobx.uuid)\"><div class=panel-heading style=\"height: 33px\"><span>{{$index +1}}({{historyjobxdetail.statuszh[item.status]}}) {{item.extended.name}} </span><span class=panel-controls><i class=\"fa fa-refresh fa-fw\" ng-if=\"item.status == \'running\' && taskDetaiXl.status == \'running\' && jobx.status ==\'running\'\" ng-class=\"{\'fa-spin\':item.status==\'running\'}\"></i> <i class=\"fa fa-exclamation-circle fa-fw\" ng-if=\"item.pause && ( item.status==\'fail\' || item.status == \'success\' || item.status==\'ignore\')\" uib-tooltip=执行确认 onclick=\"event.cancelBubble=true\" ng-click=historyjobxdetail.runJobConfirm(item,jobx.uuid) style=cursor:pointer></i> <i class=\"fa fa-play-circle-o\" ng-if=\"item.status==\'decision\'\" uib-tooltip=重试任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.Runnigs(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-fast-forward\" ng-if=\"item.status==\'decision\'\" uib-tooltip=忽略错误 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runIgnore(item, jobx.uuid)\" style=cursor:pointer></i> <i class=\"fa fa-stop-circle\" ng-if=\"item.status==\'decision\'\" uib-tooltip=终止任务 onclick=\"event.cancelBubble=true\" ng-click=\"historyjobxdetail.runShutTask(item, jobx.uuid)\" style=cursor:pointer></i> {{historyjobxdetail.seftime(item.starttime, item.finishtime)}}</span></div></div></div></div></div></div></div></div></div></div></div></div>");
 $templateCache.put("app/pages/history/jobx/detail/log.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" ng-click=historyjobxdetaillog.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=panel-body style=\"padding: 10px\"><div><h5 class=fwbold>日志详情</h5><jobx-task-log-area taskuuid=historyjobxdetaillog.taskuuid jobxaddr=historyjobxdetaillog.logaddr class=fluid-width></jobx-task-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=historyjobxdetaillog.cancel()>Cancel</button></div></div></div>");
 $templateCache.put("app/pages/history/jobx/detail/shownode.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-body style=\"padding: 10px\">{{shownode.nodes}}</div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=shownode.cancel()>Cancel</button></div></div></div>");
+$templateCache.put("app/pages/history/job/detail/confirm.html","<div class=modal-header><h4 class=modal-title>确认信息</h4></div><div class=modal-body><form class=form-horizontal name=addForm role=form><div><span>{{historyjobdetailconfirm.runmsg}}</span></div><div style=\"margin: 40px 0 15px 0\"><span>注：任务执行成功返回的确认信息。点击\'确认\'继续执行后面的任务。\'取消\'则不会继续执行以后的任务。</span></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-click=historyjobdetailconfirm.Confirm()>确认,继续执行</button> <button class=\"btn btn-warning\" ng-click=historyjobdetailconfirm.cancel()>取消</button></div></div></form></div>");
+$templateCache.put("app/pages/history/job/detail/detail.html","<div><div class=row style=\"padding: 0 20px 0\"><nodestr></nodestr></div><hr class=\"mv10 clear\"><div class=\"panel panel-primary\"><div class=panel-heading><h5>基本信息</h5></div><div class=panel-body><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px\"><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">作业名称：</label><span style=\"font-size: 15px\">{{taskname}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">执行结果：</label><span style=\"font-size: 15px\">{{historyjobdetail.statuszh[status]}}</span> <i ng-if=\"status != \'success\' && status != \'fail\' && status != \'refuse\'\" class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':1}\"></i> <button ng-if=\"status == \'running\' || status == \'waiting\'\" class=\"btn btn-danger btn-sm\" ng-click=historyjobdetail.killTask() style=\"border-radius: 10%;padding: 1px 10px\">终止任务</button></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">启动人：</label><span style=\"font-size: 15px\">{{runuser}}</span></div></div><div class=row style=\"padding: 5px\"><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">开始时间：</label><span style=\"font-size: 15px\">{{starttime}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">结束时间：</label><span style=\"font-size: 15px\">{{finishtime}}</span></div><div class=\"form-group col-sm-4\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">耗时：</label><span style=\"font-size: 15px\">{{historyjobdetail.seftime(starttime,finishtime)}}</span></div></div><div ng-show=historyjobdetail.taskuuid class=row style=\"padding: 5px\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">任务日志：</label><button class=\"btn btn-primary btn-sm\" ng-click=historyjobdetail.taskLogDetail()>执行详情</button> <span ng-show=errreason style=\"color: red;margin-left: 10px\">错误: &nbsp; {{errreason}}</span></div></div><div ng-if=variable ng-show=historyjobdetail.taskuuid class=row style=\"padding: 5px\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">调用变量：</label><span style=\"font-size: 15px\">{{variable}}</span></div></div></div></form></div></div></div><div class=\"panel panel-dark\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-dark\" uib-tooltip=刷新 ng-click=historyjobdetail.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!historyjobdetail.loadover}\"></i></button></span><h5>作业步骤</h5></div><div class=panel-body><div ng-repeat=\"item in historyjobdetail.allRuningData\"><div ng-if=\"item.subtask_type == \'cmd\'\" class=\"panel panel-success\"><div class=panel-heading style=\"height: 33px\"><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行主机数</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.nodecount}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=setStatuColor(item.status)>{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">name:</label><span style=\"font-size: 15px\">{{item.extended.name}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">node_type:</label><span style=\"font-size: 15px\">{{item.extended.node_type}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">scripts_type:</label><span style=\"font-size: 15px\">{{item.extended.scripts_type}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">user:</label><span style=\"font-size: 15px\">{{item.extended.user}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">timeout:</label><span style=\"font-size: 15px\">{{item.extended.timeout}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=form-group style=\"display:block;word-break: break-all;word-wrap: break-word\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">node_cont:</label><span style=\"font-size: 15px\">{{item.extended.node_cont}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=form-group style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">scripts_cont:</label><span style=\"font-size: 15px\">{{item.extended.scripts_cont}}</span></div></div></div></form></div></div></div></div></div><div ng-if=\"item.subtask_type == \'scp\'\" class=\"panel panel-primary\"><div class=panel-heading style=\"height: 33px\"><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行主机数</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.nodecount}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=\"setStatuColor(item.status, \'scp\')\">{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=\"$index != historyjobdetail.tasklength  && status != \'fail\'\" class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">下一步</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">name:</label><span style=\"font-size: 15px\">{{item.extended.name}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">user:</label><span style=\"font-size: 15px\">{{item.extended.user}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">timeout:</label><span style=\"font-size: 15px\">{{item.extended.timeout}}</span></div><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">src:</label><span style=\"font-size: 15px\">{{item.extended.src}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">sp:</label><span style=\"font-size: 15px\">{{item.extended.sp}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">src_type:</label><span style=\"font-size: 15px\">{{item.extended.src_type}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=col-sm-6 style=\"display:block;word-break: break-all;word-wrap: break-word\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dst:</label><span style=\"font-size: 15px\">{{item.extended.dst}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dp:</label><span style=\"font-size: 15px\">{{item.extended.dp}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">dst_type:</label><span style=\"font-size: 15px\">{{item.extended.dst_type}}</span></div></div><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">chmod:</label><span style=\"font-size: 15px\">{{item.extended.chmod}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">chown:</label><span style=\"font-size: 15px\">{{item.extended.chown}}</span></div></div></div></form></div></div></div></div></div><div ng-if=\"item.subtask_type == \'approval\'\" class=\"panel panel-info\"><div class=panel-heading style=\"height: 33px\"><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center\">开始时间</th><th style=\"text-align: center\">结束时间</th><th style=\"text-align: center\">耗时</th><th style=\"text-align: center\">状态</th><th style=\"text-align: center\">操作</th></tr></thead><!--<table class=\"table table-hover text-center table-condensed\">--><tbody><tr ng-click=historyjobdetail.HideMsg($index) style=\"cursor: pointer\"><td>{{item.extended.name}}</td><td>{{item.extended.approver}}</td><td>{{item.starttime}}</td><td>{{item.finishtime}}</td><td>{{historyjobdetail.seftime(item.starttime,item.finishtime)}}</td><td ng-style=\"setStatuColor(item.status, \'scp\')\">{{historyjobdetail.statuszh[item.status]}}</td><td ng-if=\"item.status == \'success\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'decision\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.Runnigs($index, item)\">重试</button> <button class=\"btn btn-danger btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runIgnore($index, item)\">忽略错误</button> <button class=\"btn btn-dark btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runShutTask($index, item)\">终止任务</button></td><td ng-if=\"item.status==\'fail\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=\"$index != historyjobdetail.tasklength  && status != \'fail\'\" class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">下一步</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'ignore\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button> <button ng-if=item.pause class=\"btn btn-success btn-sm\" ng-click=\"historyjobdetail.runConfirm($index, item,item.pause)\">执行确认</button></td><td ng-if=\"item.status==\'running\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=\"item.status==\'refuse\'\"><button class=\"btn btn-warning btn-sm\" onclick=\"event.cancelBubble=true\" ng-click=historyjobdetail.runDetail($index)>执行详情</button></td><td ng-if=!item.status></td></tr></tbody></table><div ng-if=historyjobdetail.show[$index] style=\"border-top: 1px solid #ddd\"><div class=form-horizontal><form class=form-inline name=searchForm novalidate><div class=container-fluid><div class=row style=\"padding: 5px;margin-left: 1%\"><div class=\"form-group col-sm-6\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">审批内容:</label><span style=\"font-size: 15px\">{{item.extended.cont}}</span></div><div class=\"form-group col-sm-3\" style=\"padding: 0\"><label style=\"line-height: 34px;min-width: 90px;text-align: right\">pause:</label><span style=\"font-size: 15px\">{{item.extended.pause}}</span></div></div></div></form></div></div></div></div></div><div ng-if=item.jobtype class=\"panel panel-primary\"><div class=panel-heading style=\"height: 33px\"><h5>作业日志</h5></div><job-subtask-log-area jobuuid=jobuuid loguuid=loguuid jobaddr=salve class=fluid-width></job-subtask-log-area></div></div></div></div></div>");
+$templateCache.put("app/pages/history/job/detail/log.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" ng-click=historyjobdetaillog.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=panel-body style=\"padding: 10px\"><div><h5 class=fwbold>日志详情</h5><job-task-log-area taskuuid=historyjobdetaillog.taskuuid jobaddr=historyjobdetaillog.logaddr class=fluid-width></job-task-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=historyjobdetaillog.cancel()>Cancel</button></div></div></div>");
+$templateCache.put("app/pages/history/job/detail/sublog.html","<div class=\"row block\" id=changewidth><div class=\"panel panel-success\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-success\" ng-click=historyjobdetailsublog.init()><i class=\"fa fa-refresh fa-fw\" ng-if=\"historyjobdetailsublog.taskInfo.status==\'running\'\" ng-class=\"{\'fa-spin\':historyjobdetailsublog.taskInfo.status==\'running\'}\"></i></button> <button class=\"btn btn-success\" ng-click=historyjobdetailsublog.cancel() uib-tooltip=关闭><i class=\"fa fa-times fa-fw\"></i></button></span><h5>任务执行日志</h5></div><div class=table-responsive style=\"width: 100%\"><table class=\"table table-bordered\" style=\"font-weight: bold;border: 0px\"><tbody><tr><td>任务名称</td><td>{{historyjobdetailsublog.taskInfo.extended.name}}</td><td>任务类型</td><td>{{historyjobdetailsublog.pluginname[historyjobdetailsublog.taskInfo.subtask_type]}}{{plugin}}</td><td>执行账户</td><td>{{historyjobdetailsublog.taskInfo.extended.user }}{{ historyjobdetailsublog.taskInfo.extended.approver}}</td><td>耗时</td><td>{{historyjobdetailsublog.seftime(historyjobdetailsublog.taskInfo.starttime,historyjobdetailsublog.taskInfo.finishtime)}}</td></tr><tr><td>任务状态</td><td><span style=\"font-weight: \'bold\'\" ng-style=statucolor>{{historyjobdetailsublog.statuszh[historyjobdetailsublog.taskInfo.status]}}</span></td><td>开始时间</td><td>{{historyjobdetailsublog.taskInfo.starttime}}</td><td>结束时间</td><td>{{historyjobdetailsublog.taskInfo.finishtime}}</td><td></td><td></td></tr></tbody></table></div><div class=panel-body><div><h5 class=fwbold>日志详情</h5><job-subtask-log-area jobuuid=historyjobdetailsublog.taskuuid loguuid=historyjobdetailsublog.loguuid jobaddr=historyjobdetailsublog.logaddr class=fluid-width></job-subtask-log-area></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-warning\" ng-click=historyjobdetailsublog.cancel()>Cancel</button></div></div></div>");
 $templateCache.put("app/pages/quickentry/flowline/create/blank.html","<div class=modal-header><h4 class=modal-title>创建空白流水线</h4></div><div class=modal-body><form class=form-horizontal name=myForm role=form><div class=row><div class=\"col-sm-10 form-group\"><label class=\"col-sm-3 control-label\">流水线名称</label><div class=col-sm-9><input type=text class=form-control name=adduser placeholder=流水线名 ng-model=projectname required></div></div></div><div class=row><div class=\"col-sm-5 form-group pull-right\"><button class=\"btn btn-primary\" ng-disabled=myForm.$invalid ng-click=createProject.add()>确认</button> <button class=\"btn btn-warning\" ng-click=createProject.cancel()>取消</button></div></div></form></div>");
 $templateCache.put("app/pages/quickentry/flowline/create/bytemplate.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=createProjectByTemplate.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!createProjectByTemplate.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=createProjectByTemplate.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>通过模版创建流水线</h5></div><div class=modal-body><div class=panel-body><div class=pt20><table ng-table=createProjectByTemplate.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 30%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td style=\"width: 30%\" data-title=\"\'名称\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 30%\" data-title=\"\'编辑者\'\" filter=\"{ user: \'text\'}\" sortable>{{m.edit_user}}</td><td data-title=\"\'操作\'\"><i class=\"fa fa-clone fa-2x\" aria-hidden=true ng-click=createProjectByTemplate.copyProjectByTemplate(m.id,m.name) uib-tooltip=复制为 style=\"cursor:pointer;color: #339094\"></i></td></tr></table></div></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/detail/config.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=config.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!config.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=config.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=config.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ config.nodeStr }} => {{ config.name }}</h5></div><div class=panel-body><div class=pt20><div><div class=\"form-group admin-form\"><div class=row><label class=\"col-md-2 control-label fwbold\">开关:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_status ng-model=config.status><label for=check_status data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">定时发现tags:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_autofindtags ng-model=config.autofindtags><label for=check_autofindtags data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">自动构建:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_autobuild ng-model=config.autobuild><label for=check_autobuild data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">代码地址:</label><div class=col-md-6><input class=form-control ng-model=config.project.addr ng-change=config.changeaddr() placeholder=\"git或者svn地址,如:git@git.liebaopay.com:ops/test.git ; 如果使用rsync上传方式，请写rsync\"></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">tag正则:</label><div class=col-md-4><input class=form-control ng-model=config.project.tag_regex placeholder=tag的正则表达式,只接受release开头></div></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">票据</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=config.project.ticketid><option ng-repeat=\"x in config.ticketinfo\" value={{x.id}}>{{x.name}}</option></select></div></div><div class=\"form-group admin-form row\"><label class=\"col-md-2 control-label fwbold\">依赖:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_rely ng-model=config.rely><label for=check_rely data-on=ON data-off=OFF></label></label></div><div class=col-md-3><a ng-if=config.rely href=javascript:void(0) ng-click=\"config.editrely( \'\' )\">编辑依赖</a></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">build镜像:</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=config.project.buildimage ng-options=\"g for g in config.dockerimage\"></select><a ng-show=config.project.buildimage class=\"btn btn-system\" target=_blank ng-href=\"/api/ci/dockershell?image={{config.project.buildimage}}&projectid={{config.projectid}}\">调试</a><!--<a class=\"glyphicon glyphicon-question-sign\" data-toggle=\"tooltip\" data-placement=\"right\" ng-click=\"config.show_help()\" uib-tooltip=\"添加镜像的方法\" aria-hidden=\"true\" style=\"padding-top: 11px;font-size: larger;\"></a> --></div></div><div class=row ng-if=config.project.buildimage class=form-group><label class=\"col-md-2 control-label fwbold\">构建脚本</label><div class=col-md-10><pre style=\"min-height: 100px\" ng-dblclick=\"dataEdit=true\" ng-show=!dataEdit class=text-left ng-bind-html=\"config.project.buildscripts| highlight\"></pre><textarea style=\"min-height: 100px\" ng-blur=\"dataEdit=false\" ng-show=dataEdit class=form-control rows=3 cols=20 ng-model=config.project.buildscripts> </textarea><span class=help-block>构建时候执行的脚本.将构建成功后的文件移动到打包目录内.脚本运行结束后dist目录存在即算构建成功</span> <span class=help-block>当前脚本:/build/run.项目路径:/build/data.打包目录:/build/dist</span></div></div><hr><div class=row><label class=\"col-md-12 control-label fwbold\">发布配置:</label></div><div class=\"form-group admin-form row\"><label class=\"col-md-3 control-label fwbold\">自动触发线上发布:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_online ng-model=config.callonlineenv><label for=check_online data-on=ON data-off=OFF></label></label></div><label class=\"col-md-3 control-label fwbold\">自动触发测试发布:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_test ng-model=config.calltestenv><label for=check_test data-on=ON data-off=OFF></label></label></div></div><hr class=\"mv20 clear\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑测试分组 ng-click=\"config.editgroup(\'test\')\" style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">测试分组</i></button></div><div class=row ng-repeat=\"group in showIPstr.test\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-2 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr class=\"mv20 clear\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑线上分组 ng-click=\"config.editgroup(\'online\')\" style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">线上分组</i></button></div><div class=row ng-repeat=\"group in showIPstr.online\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-2 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr class=\"mv20 clear\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑作业 ng-click=config.editjob() style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">作业步骤</i></button></div><div class=row ng-repeat=\"step in config.jobStep\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-12 control-label\">第{{$index+1}}步:({{step}})</label></div></div></div></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/detail/detail.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" ng-disabled=\"ci.project.status!=1\" uib-tooltip=查看Tag的发现情况 ng-click=ci.showTagFind()>TAG发现</button><!--<button class=\"btn btn-primary\" uib-tooltip=\"查看记录\" ng-click=\"ci.showEditLog()\" >记录</button> --> <button class=\"btn btn-primary\" uib-tooltip=停止所有未进行的构建 ng-click=ci.stop()><i class=\"fa fa-stop fa-fw\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=编辑配置 ng-click=ci.editconfig()><i class=\"fa fa-cogs\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=ci.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!ci.loadover}\"></i></button></span><h5>{{ ci.nodeStr }} => {{ ci.project.name }}</h5></div><div ng-repeat=\"version in ci.versions\" class=\"col-lg-12 col-xs-12 ml0 pl0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-body style=\"margin-top: 20px\"><div id={{version}} style=height:150px></div></div></div></div><div class=panel-body><div class=pt20><table ng-table=ci.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 4%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td style=\"width: 10%\" data-title=\"\'tag发现时间\'\" filter=\"{ create_time: \'text\'}\" sortable>{{m.create_time}}</td><td style=\"width: 9%\" data-title=\"\'版本\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 12%\" data-title=\"\'触发人\'\" filter=\"{ user: \'text\'}\" sortable>{{m.user}}</td><td style=\"width: 10%\" data-title=\"\'构建状态\'\" filter=\"{ status: \'text\'}\" sortable><div class=\"panel panel-info\" ng-if=m.starttime style=\"cursor:pointer;background-color: {{panelcolor[m.status]}}\" ng-click=\"ci.showlog(m.uuid, m.slave)\"><i class=\"fa fa-cloud\" ng-if=\"m.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.status==\'success\'\" aria-hidden=true></i> 耗时{{ci.seftime(m.starttime, m.finishtime)}}<br>{{m.starttime}}</div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status!=\'running\'\" aria-hidden=true ng-click=ci.build(m.uuid) uib-tooltip=构建 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-stop-circle-o fa-2x\" ng-if=\"m.status==\'running\'\" aria-hidden=true ng-click=\"ci.killbuild(m.uuid, m.slave)\" uib-tooltip=停止 style=\"cursor:pointer;color: red\"></i> <a ng-if=ci.project.buildimage aria-hidden=true target=_blank ng-href=\"/api/ci/dockershell?image={{ci.project.buildimage}}&projectid={{ci.projectid}}&tag={{m.name}}\" uib-tooltip=调试 style=\"cursor:pointer;color: green\"><i class=\"fa fa-arrow-circle-right fa-2x\"></i></a> <a ng-if=!ci.project.buildimage aria-hidden=true uib-tooltip=未配置><i class=\"fa fa-arrow-circle-right fa-2x\"></i></a></td><td style=\"width: 10%\" data-title=\"\'发布测试环境\'\"><div ng-repeat=\"deploy in ci.taskInfoTest[m.name]\"><div class=\"panel panel-info\" style=\"cursor:pointer;background-color: {{panelcolor[deploy.status]}};margin-bottom: 5px\" ng-click=ci.deployDetail(deploy.uuid)><i class=\"fa fa-cloud\" ng-if=\"deploy.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"deploy.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"deploy.status==\'success\'\" aria-hidden=true></i> #{{$index+1}} | 耗时{{ci.seftime(deploy.starttime, deploy.finishtime)}}<br>{{deploy.starttime}}</div></div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"ci.jobStepLen && showIPstrLen.test\" aria-hidden=true ng-click=\"ci.runJob(m.name, \'test\')\" uib-tooltip=测试 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"!ci.jobStepLen || ! showIPstrLen.test\" aria-hidden=true uib-tooltip=没有配置 style=\"color: dimgray\"></i></td><td style=\"width: 10%\" data-title=\"\'机器(发布中/线上)\'\">( {{ci.shownum(ci.projectvvversioncount[\"Do_\"+m.name]) }} / {{ci.shownum(ci.projectvvversioncount[m.name]) }} )</td><td style=\"width: 10%\" data-title=\"\'发布线上环境\'\"><div ng-repeat=\"deploy in ci.taskInfoOnline[m.name]\"><div class=\"panel panel-info\" style=\"margin-bottom: 5px\"><div class=\"panel panel-info\" style=\"margin-bottom: initial;cursor:pointer;background-color: {{panelcolor[deploy.status]}}\" ng-click=ci.deployDetail(deploy.uuid)>发布<i class=\"fa fa-cloud\" ng-if=\"deploy.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"deploy.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"deploy.status==\'success\'\" aria-hidden=true></i> #{{$index+1}} |耗时{{ci.seftime(deploy.starttime, deploy.finishtime)}}<br>{{deploy.starttime}}</div><div class=\"panel panel-info\" ng-if=!ci.taskInfoRollback[deploy.uuid].status style=\"background-color: #BBB;margin-bottom: 5px\"><div ng-if=!deploy.rollbackversion>回滚 #未配置</div><div ng-if=deploy.rollbackversion>回滚 #未进行 {{deploy.rollbackversion}}</div></div><div class=\"panel panel-info\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status && ci.taskInfoRollback[deploy.uuid].slave == \'_null_\'\" style=\"cursor:pointer;background-color: #98b266;margin-bottom: 5px\">回滚 # 不回滚</div><div class=\"panel panel-info\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status && ci.taskInfoRollback[deploy.uuid].slave != \'_null_\'\" style=\"cursor:pointer;background-color: {{panelcolor[ci.taskInfoRollback[deploy.uuid].status]}};margin-bottom: 5px\" ng-click=ci.deployDetail(ci.taskInfoRollback[deploy.uuid].uuid)>回滚<i class=\"fa fa-cloud\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'success\'\" aria-hidden=true></i> #{{ci.taskInfoRollback[deploy.uuid].version}}| 耗时{{ci.seftime( ci.taskInfoRollback[deploy.uuid].starttime,ci.taskInfoRollback[deploy.uuid].finishtime)}}<br>{{ci.taskInfoRollback[deploy.uuid].starttime}}</div></div></div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"ci.jobStepLen && showIPstrLen.online\" aria-hidden=true ng-click=\"ci.runJob(m.name, \'online\')\" uib-tooltip=发布 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"!ci.jobStepLen || ! showIPstrLen.online\" aria-hidden=true uib-tooltip=没有配置 style=\"color: dimgray\"></i></td></tr></table></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/detail/editjob.html","<div><div class=\"panel panel-default\"><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in editjob2ci.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name ng-readonly=ss.id></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=\"editjob2ci.delVar($index, ss)\">删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=editjob2ci.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div class=\"panel panel-default\"><div class=panel-heading><h5>作业步骤</h5></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=editjob2ci.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=editjob2ci.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=editjob2ci.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in editjob2ci.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center;max-width:600px\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td style=max-width:600px>{{item.dst}}</td><td>{{item.dp}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center;max-width:600px\">审批内容</th><th style=\"text-align: center\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td style=max-width:600px>{{item.cont}}</td><td><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button></td></tr></tbody></table></div></div></div></div></div><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button ng-if=!editjob2ci.copyjob class=\"btn btn-primary\" ng-hide=saveHide ng-click=editjob2ci.saveCreateData()>保存</button> <button class=\"btn btn-warning\" ng-click=editjob2ci.cancel()>关闭</button></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/detail/config.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=config.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!config.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=保存 ng-click=config.save()><i class=\"fa fa-floppy-o\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=config.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ config.nodeStr }} => {{ config.name }}</h5></div><div class=panel-body><div class=pt20><div><div class=\"form-group admin-form\"><div class=row><label class=\"col-md-2 control-label fwbold\">开关:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_status ng-model=config.status><label for=check_status data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">定时发现tags:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_autofindtags ng-model=config.autofindtags><label for=check_autofindtags data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">自动构建:</label><div class=col-md-10><label class=\"switch switch-system mt5\"><input type=checkbox id=check_autobuild ng-model=config.autobuild><label for=check_autobuild data-on=ON data-off=OFF></label></label></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">代码地址:</label><div class=col-md-8><input class=form-control ng-model=config.project.addr ng-change=config.changeaddr() placeholder=\"git或者svn地址,如:git@git.liebaopay.com:ops/test.git ; 如果使用文件上传方式，请写openc3://*\"></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/流水线多种代码来源/ uib-tooltip=查看代码地址帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><label class=\"col-md-2 control-label fwbold\">tag正则:</label><div class=col-md-4><input class=form-control ng-model=config.project.tag_regex placeholder=tag的正则表达式,只接受release开头></div></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">代码仓库票据</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=config.project.ticketid><option ng-repeat=\"x in config.ticketinfo\" value={{x.id}}>{{x.name}}</option></select></div></div><div class=\"form-group admin-form row\"><label class=\"col-md-2 control-label fwbold\">依赖:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_rely ng-model=config.rely><label for=check_rely data-on=ON data-off=OFF></label></label></div><div class=col-md-3><a ng-if=config.rely href=javascript:void(0) ng-click=\"config.editrely( \'\' )\">编辑依赖</a></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">build镜像:</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=config.project.buildimage><option ng-repeat=\"x in config.dockerimage\" value={{x.id}}>{{x.name}}</option></select><a ng-show=config.project.buildimage class=\"btn btn-system\" target=_blank ng-href=\"/api/ci/dockershell?image={{config.project.buildimage}}&projectid={{config.projectid}}\">调试</a> <a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/我的镜像/ uib-tooltip=查看镜像生成方式 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div></div><div class=row ng-if=config.project.buildimage class=form-group><label class=\"col-md-2 control-label fwbold\">构建脚本</label><div class=col-md-10><pre style=\"min-height: 100px\" ng-dblclick=\"dataEdit=true\" ng-show=!dataEdit class=text-left ng-bind-html=\"config.project.buildscripts| highlight\"></pre><textarea style=\"min-height: 100px\" ng-blur=\"dataEdit=false\" ng-show=dataEdit class=form-control rows=3 cols=20 ng-model=config.project.buildscripts> </textarea><span class=help-block>构建时候执行的脚本.将构建成功后的文件移动到打包目录内.脚本运行结束后dist目录存在即算构建成功</span> <span class=help-block>当前脚本:/build/run.项目路径:/build/data.打包目录:/build/dist</span></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">触发脚本:</label><div class=col-md-8><input class=form-control ng-model=config.project.follow_up placeholder=构建完成后触发脚本></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/构建触发脚本/ uib-tooltip=查看脚本帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><label class=\"col-md-2 control-label fwbold\">脚本票据</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=config.project.follow_up_ticketid><option ng-repeat=\"x in config.ticketinfo\" value={{x.id}}>{{x.name}}</option></select></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=left target=_blank ng-href=/book/票据/ uib-tooltip=查看票据帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><label class=\"col-md-2 control-label fwbold\">消息通知人:</label><div class=col-md-8><input class=form-control ng-model=config.project.notify placeholder=构建情况通知人，多个人用逗号分隔></div></div><hr style=\"margin: 5px\"><div class=row><label class=\"col-md-12 control-label fwbold\">发布配置:</label></div><div class=\"form-group admin-form row\"><label class=\"col-md-3 control-label fwbold\">自动触发线上发布:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_online ng-model=config.callonlineenv><label for=check_online data-on=ON data-off=OFF></label></label></div><label class=\"col-md-3 control-label fwbold\">自动触发测试发布:</label><div class=col-md-2><label class=\"switch switch-system mt5\"><input type=checkbox id=check_test ng-model=config.calltestenv><label for=check_test data-on=ON data-off=OFF></label></label></div></div><hr style=\"margin: 5px\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑测试分组 ng-click=\"config.editgroup(\'test\')\" style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">测试分组</i></button></div><div class=row ng-repeat=\"group in showIPstr.test\"><div class=\"col-sm-12 form-group\"><label class=\"col-sm-2 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr style=\"margin: 5px\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑线上分组 ng-click=\"config.editgroup(\'online\')\" style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">线上分组</i></button></div><div class=row ng-repeat=\"group in showIPstr.online\"><div class=\"col-sm-12 form-group\" style=\"margin: 0px\"><label class=\"col-sm-2 control-label\">分组{{$index+1}}: ({{group.num}}台机器)</label><div class=col-sm-9 style=\"padding-top: 10px\"><p ng-repeat=\"ip in group.infos\">{{ip}}</p></div></div></div><hr style=\"margin: 5px\"><div class=row><button class=\"btn btn-primary\" uib-tooltip=编辑作业 ng-click=config.editjob() style=\"float: right\"><i class=\"fa fa-cogs fa-1x\">作业步骤</i></button></div><div class=row ng-repeat=\"step in config.jobStep\"><div class=\"col-sm-12 form-group\" style=\"margin: 0px\"><label class=\"col-sm-12 control-label\">第{{$index+1}}步:({{step}})</label></div></div></div></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/detail/detail.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" ng-disabled=\"ci.project.status!=1\" uib-tooltip=查看Tag的发现情况 ng-click=ci.showTagFind()>TAG发现</button><!--<button class=\"btn btn-primary\" uib-tooltip=\"查看记录\" ng-click=\"ci.showEditLog()\" >记录</button> --> <button class=\"btn btn-primary\" uib-tooltip=停止所有未进行的构建 ng-click=ci.stop()><i class=\"fa fa-stop fa-fw\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=编辑配置 ng-click=ci.editconfig()><i class=\"fa fa-cogs\" aria-hidden=true></i></button> <button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=ci.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!ci.loadover}\"></i></button></span><h5>{{ ci.nodeStr }} => {{ ci.project.name }}</h5></div><div ng-repeat=\"version in ci.versions\" class=\"col-lg-12 col-xs-12 ml0 pl0\"><div class=\"panel panel-default\" style=\"box-shadow: -2px 0 10px 3px rgba(0,0,0,.1)\"><div class=panel-body style=\"margin-top: 20px\"><div id={{version}} style=height:350px></div></div></div></div><h3 ng-if=ci.lastversion.version>最后一次发布成功的版本为:{{ci.lastversion.version}}</h3><div class=panel-body><div class=pt20><table ng-table=ci.activeRegionTable class=\"table table-hover text-center table-condensed\" show-filter=true><tr ng-repeat=\"m in $data\"><td style=\"width: 4%\" data-title=\"\'ID\'\" filter=\"{ id: \'text\'}\" sortable>{{m.id}}</td><td style=\"width: 10%\" data-title=\"\'tag发现时间\'\" filter=\"{ create_time: \'text\'}\" sortable>{{m.create_time}}</td><td style=\"width: 9%\" data-title=\"\'版本\'\" filter=\"{ name: \'text\'}\" sortable>{{m.name}}</td><td style=\"width: 12%\" data-title=\"\'触发人\'\" filter=\"{ user: \'text\'}\" sortable>{{m.user}}</td><td style=\"width: 10%\" data-title=\"\'构建状态\'\" filter=\"{ status: \'text\'}\" sortable><div class=\"panel panel-info\" ng-if=m.starttime style=\"cursor:pointer;background-color: {{panelcolor[m.status]}}\" ng-click=\"ci.showlog(m.uuid, m.slave)\"><i class=\"fa fa-cloud\" ng-if=\"m.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"m.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"m.status==\'success\'\" aria-hidden=true></i> 耗时{{ci.seftime(m.starttime, m.finishtime)}}<br>{{m.starttime}}</div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status!=\'running\'\" aria-hidden=true ng-click=ci.build(m.uuid) uib-tooltip=构建 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-stop-circle-o fa-2x\" ng-if=\"m.status==\'running\'\" aria-hidden=true ng-click=\"ci.killbuild(m.uuid, m.slave)\" uib-tooltip=停止 style=\"cursor:pointer;color: red\"></i> <a ng-if=ci.project.buildimage aria-hidden=true target=_blank ng-href=\"/api/ci/dockershell?image={{ci.project.buildimage}}&projectid={{ci.projectid}}&tag={{m.name}}\" uib-tooltip=调试 style=\"cursor:pointer;color: green\"><i class=\"fa fa-arrow-circle-right fa-2x\"></i></a> <a ng-if=!ci.project.buildimage aria-hidden=true uib-tooltip=未配置><i class=\"fa fa-arrow-circle-right fa-2x\"></i></a></td><td style=\"width: 10%\" data-title=\"\'发布测试环境\'\"><div ng-repeat=\"deploy in ci.taskInfoTest[m.name]\"><div class=\"panel panel-info\" style=\"cursor:pointer;background-color: {{panelcolor[deploy.status]}};margin-bottom: 5px\" ng-click=ci.deployDetail(deploy.uuid)><i class=\"fa fa-cloud\" ng-if=\"deploy.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"deploy.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"deploy.status==\'success\'\" aria-hidden=true></i> #{{$index+1}} | 耗时{{ci.seftime(deploy.starttime, deploy.finishtime)}}<br>{{deploy.starttime}}</div></div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status ==\'success\' && ci.jobStepLen && showIPstrLen.test\" aria-hidden=true ng-click=\"ci.runJob(m.name, \'test\')\" uib-tooltip=测试 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status !=\'success\' && ci.jobStepLen && showIPstrLen.test\" aria-hidden=true uib-tooltip=请先进行构建 style=\"color: orange\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"!ci.jobStepLen || ! showIPstrLen.test\" aria-hidden=true uib-tooltip=没有配置 style=\"color: dimgray\"></i></td><td style=\"width: 10%\" data-title=\"\'机器(发布中/线上)\'\">( {{ci.shownum(ci.projectvvversioncount[\"Do_\"+m.name]) }} / {{ci.shownum(ci.projectvvversioncount[m.name]) }} )</td><td style=\"width: 10%\" data-title=\"\'发布线上环境\'\"><div ng-repeat=\"deploy in ci.taskInfoOnline[m.name]\"><div class=\"panel panel-info\" style=\"margin-bottom: 5px\"><div class=\"panel panel-info\" style=\"margin-bottom: initial;cursor:pointer;background-color: {{panelcolor[deploy.status]}}\" ng-click=ci.deployDetail(deploy.uuid)>发布<i class=\"fa fa-cloud\" ng-if=\"deploy.status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"deploy.status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"deploy.status==\'success\'\" aria-hidden=true></i> #{{$index+1}} |耗时{{ci.seftime(deploy.starttime, deploy.finishtime)}}<br>{{deploy.starttime}}</div><div class=\"panel panel-info\" ng-if=!ci.taskInfoRollback[deploy.uuid].status style=\"background-color: #BBB;margin-bottom: 5px\"><div ng-if=!deploy.rollbackversion>回滚未配置</div><div ng-if=deploy.rollbackversion>未选择是否需要回滚到 {{deploy.rollbackversion}}</div></div><div class=\"panel panel-info\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status && ci.taskInfoRollback[deploy.uuid].slave == \'_null_\'\" style=\"cursor:pointer;background-color: #98b266;margin-bottom: 5px\">已选择不回滚</div><div class=\"panel panel-info\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status && ci.taskInfoRollback[deploy.uuid].slave != \'_null_\'\" style=\"cursor:pointer;background-color: {{panelcolor[ci.taskInfoRollback[deploy.uuid].status]}};margin-bottom: 5px\" ng-click=ci.deployDetail(ci.taskInfoRollback[deploy.uuid].uuid)>回滚<i class=\"fa fa-cloud\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'fail\'\" aria-hidden=true></i> <i class=\"fa fa-spinner\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'running\'\" ng-class=\"{\'fa-spin\':1}\" aria-hidden=true></i> <i class=\"fa fa-sun-o\" ng-if=\"ci.taskInfoRollback[deploy.uuid].status==\'success\'\" aria-hidden=true></i> #{{ci.taskInfoRollback[deploy.uuid].version}}| 耗时{{ci.seftime( ci.taskInfoRollback[deploy.uuid].starttime,ci.taskInfoRollback[deploy.uuid].finishtime)}}<br>{{ci.taskInfoRollback[deploy.uuid].starttime}}</div></div></div><i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status ==\'success\' && ci.jobStepLen && showIPstrLen.online\" aria-hidden=true ng-click=\"ci.runJob(m.name, \'online\')\" uib-tooltip=发布 style=\"cursor:pointer;color: green\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"m.status != \'success\' && ci.jobStepLen && showIPstrLen.online\" aria-hidden=true uib-tooltip=请先进行构建 style=\"color: orange\"></i> <i class=\"fa fa-play-circle-o fa-2x\" ng-if=\"!ci.jobStepLen || ! showIPstrLen.online\" aria-hidden=true uib-tooltip=没有配置 style=\"color: dimgray\"></i></td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/quickentry/flowline/detail/editjob.html","<div><div class=\"panel panel-default\"><div class=panel-heading><h5>全局变量参数</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\"><thead><tr><th style=\"text-align: center\">变量名称</th><th style=\"text-align: center\">变量默认值</th><th style=\"text-align: center\">变量描述</th><th style=\"text-align: center\">操作</th></tr></thead><tr ng-repeat=\"ss in editjob2ci.allVar\"><td><input type=text class=\"form-control input-global\" ng-model=ss.name ng-readonly=ss.id></td><td><input type=text class=\"form-control input-global\" ng-model=ss.value></td><td><input type=text class=\"form-control input-global\" ng-model=ss.describe></td><td><button class=\"btn btn-danger btn-sm\" ng-click=\"editjob2ci.delVar($index, ss)\">删除</button></td></tr></table><button class=\"btn btn-primary col-sm-1\" style=\"width: 5%;padding: 6px 12px\" uib-tooltip=添加变量 ng-click=editjob2ci.addVar()><i class=\"fa fa-plus\"></i></button></div></div></div><div class=\"panel panel-default\"><div class=panel-heading><h5>作业步骤</h5></div><div style=\"margin-bottom: 15px\" ng-hide=saveHide><button class=\"btn btn-success\" ng-click=editjob2ci.createScriptJob()><i class=\"glyphicon glyphicon-copy\"></i> 添加脚本步骤</button> <button class=\"btn btn-primary\" ng-click=editjob2ci.createScpJob()><i class=\"glyphicon glyphicon-file\"></i> 添加分发文件步骤</button> <button class=\"btn btn-primary\" ng-click=editjob2ci.createApprovalJob()><i class=\"fa fa-id-card\"></i> 添加审批步骤</button></div><div ng-repeat=\"item in editjob2ci.allNewJob\"><div ng-if=\"item.plugin_type == \'cmd\'\" class=\"panel panel-success\"><div style=\"padding: 2px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>脚本作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center\">服务器类型</th><th style=\"text-align: center\">脚本参数</th><th style=\"text-align: center;width: 25%\">操作</th></tr></thead><tr><td>{{item.name}}</td><td>{{item.user}}</td><td>{{item.node_type}}</td><td>{{item.scripts_argv}}</td><td style=\"width: 25%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editScript($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></table></div></div></div><div ng-if=\"item.plugin_type == \'scp\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>文件作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">执行账户</th><th style=\"text-align: center;max-width:600px\">目标服务器</th><th style=\"text-align: center\">目标路径</th><th style=\"text-align: center;width: 25%\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.user}}</td><td style=max-width:600px>{{item.dst}}</td><td>{{item.dp}}</td><td style=\"width: 25%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editScp($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div><div ng-if=\"item.plugin_type == \'approval\'\" class=\"panel panel-primary\"><div style=\"padding: 1px\"><strong style=\"font-size: 15px\">步骤.{{$index+1}}</strong> <button class=\"btn btn-success btn-xs\" ng-click=editjob2ci.createScriptJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>脚本</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createScpJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>文件</button> <button class=\"btn btn-primary btn-xs\" ng-click=editjob2ci.createApprovalJob($index) ng-hide=saveHide><i class=\"fa fa-plus\"></i>审批</button></div><div class=panel-heading><h5>审批作业</h5></div><div class=panel-body style=\"padding: 10px\"><div class=panel-tabs><table class=\"table table-hover text-center table-condensed\" style=\"margin-bottom: 0;width: 100%\"><thead><tr><th style=\"text-align: center\">作业名称</th><th style=\"text-align: center\">审批人</th><th style=\"text-align: center;max-width:600px\">审批内容</th><th style=\"text-align: center;width: 25%\">操作</th></tr></thead><tbody><tr><td>{{item.name}}</td><td>{{item.approver}}</td><td style=max-width:600px>{{item.cont}}</td><td style=\"width: 25%\"><button class=\"btn btn-warning btn-sm\" ng-hide=saveHide ng-click=editjob2ci.editApproval($index)>编辑</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.deljobdata($index)>删除</button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.up($index)><i class=\"fa fa-arrow-up\"></i></button> <button class=\"btn btn-danger btn-sm\" ng-hide=saveHide ng-click=editjob2ci.down($index)><i class=\"fa fa-arrow-down\"></i></button></td></tr></tbody></table></div></div></div></div></div><div style=\"margin-bottom: 15px\"><div style=\"margin-left: 40%\"><button ng-if=!editjob2ci.copyjob class=\"btn btn-primary\" ng-hide=saveHide ng-click=editjob2ci.saveCreateData()>保存</button> <button class=\"btn btn-warning\" ng-click=editjob2ci.cancel()>关闭</button></div></div></div>");
 $templateCache.put("app/pages/quickentry/flowline/detail/findtag.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=立马重新检测 ng-click=findtag.findtags_at_once()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!findtag.loadfindtags_at_onceover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=findtag.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ findtag.nodeStr }} => {{ findtag.project.name }}</h5></div><div class=panel-body><textarea class=fluid-width id=logDetail style=\"height:400px;background:#000; color:#FFF\" readonly ng-model=findtag.logDetail></textarea></div></div></div>");
 $templateCache.put("app/pages/quickentry/flowline/detail/log.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=刷新 ng-click=cictrlLog.reload()><i class=\"fa fa-refresh fa-fw\" ng-class=\"{\'fa-spin\':!cictrlLog.loadover}\"></i></button> <button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=cictrlLog.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ cictrlLog.nodeStr }}</h5></div><div class=panel-body><div class=pt20><table ng-table=cictrlLog.activeRegionTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'编号\'\">{{m.id}}</td><td data-title=\"\'操作人\'\">{{m.user}}</td><td data-title=\"\'日志内容\'\">{{m.info}}</td><td data-title=\"\'操作时间\'\">{{m.create_time}}</td></tr></table></div></div></div></div>");
+$templateCache.put("app/pages/history/jobx/detail/log-area/log.html","<div id=messagejobxtask style=\"background:#000; color:#FFF;font-size: 14px;font-weight: bold\"></div>");
 $templateCache.put("app/pages/history/job/detail/log-area/log.html","<div id=messagejobtask style=\"background:#000; color:#FFF;font-size: 14px;font-weight: bold\"></div>");
 $templateCache.put("app/pages/history/job/detail/sublog-area/log.html","<div id=messagejobsubtask style=\"background:#000; color:#FFF;font-size: 14px;font-weight: bold;padding: 6px\"></div>");
-$templateCache.put("app/pages/history/jobx/detail/log-area/log.html","<div id=messagejobxtask style=\"background:#000; color:#FFF;font-size: 14px;font-weight: bold\"></div>");
 $templateCache.put("app/pages/quickentry/flowline/detail/config/add_image.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=add_image.cancel_show()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>添加镜像方法</h5></div><div class=panel-body><div class=pt20><span class=panel-controls>1.修改本地配置，添加镜像仓库地址：<br>&emsp;在/etc/docker/daemon.json添加下面内容 { \"registry-mirrors\": [\"https://registry.docker-cn.com\"], \"insecure-registries\": [\"10.10.10.10:5000\"] }<br><br>2.添加用户名密码：<br>&emsp;到 http://job.open-c3.org/#/work/common/14496 执行”添加docker仓库用户“作业添加用户名密码<br><br>3.docker登录：<br>&emsp;docker login -u 用户名 -p 密码 10.10.10.10:5000<br><br>4.打tag：<br>&emsp;如： docker tag docker.io/centos:6 10.10.10.10:5000/centos:6<br><br>5.上传镜像：<br>&emsp;如： docker push 10.10.10.10:5000/centos:6<br><br>6. 发布镜像到构建系统：<br>&emsp;到 http://job.open-c3.org/#/work/common/14496 执行“从镜像仓库把镜像同步到国内CI”作业，image名就是要发布的名字<br><br>7.登出：<br>&emsp;docker logout</span></div></div></div></div>");
-$templateCache.put("app/pages/quickentry/flowline/detail/config/editrely.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=editrely.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ editrely.nodeStr }}</h5></div><div class=panel-body><div class=pt20><div><table ng-table=editrely.relyTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'仓库地址\'\">{{m.addr}}</td><td data-title=\"\'subdir\'\">{{m.path}}</td><td data-title=\"\'tags\'\">{{m.tags}}</td><td data-title=\"\'票据\'\">{{m.ticketname}}</td><td data-title=\"\'编辑人\'\">{{m.edit_user}}</td><td data-title=\"\'编辑时间\'\">{{m.edit_time}}</td><td data-title=\"\'删除\'\"><i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=editrely.del(m.id) uib-tooltip=删除依赖 style=\"cursor:pointer;color: red\"></i></td></tr></table><hr><div class=row><label class=\"col-md-2 control-label fwbold\">代码地址:</label><div class=col-md-8><input class=form-control ng-model=editrely.newrely.addr ng-change=editrely.changeaddr() placeholder=git或者svn地址,如:git@git.liebaopay.com:ops/test.git></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">subdir:</label><div class=col-md-4><input class=form-control ng-model=editrely.newrely.path placeholder=subdir></div><label class=\"col-md-2 control-label fwbold\">tags:</label><div class=col-md-4><input class=form-control ng-model=editrely.newrely.tags placeholder=tags></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">票据</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=editrely.newrely.ticketid ng-options=\"o.id as o.name for o in editrely.ticketinfo\"></select></div></div></div></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-primary\" ng-click=editrely.add()><i class=\"fa fa-floppy-o\" aria-hidden=true></i> 保存</button></div></div></div>");}]);
+$templateCache.put("app/pages/quickentry/flowline/detail/config/editrely.html","<div class=\"row block\"><div class=\"panel panel-primary\"><div class=panel-heading><span class=panel-controls><button class=\"btn btn-primary\" uib-tooltip=关闭 ng-click=editrely.cancel()><i class=\"fa fa-times\" aria-hidden=true></i></button></span><h5>{{ editrely.nodeStr }}</h5></div><div class=panel-body><div class=pt20><div><table ng-table=editrely.relyTable class=\"table table-hover text-center table-condensed\"><tr ng-repeat=\"m in $data\"><td data-title=\"\'仓库地址\'\">{{m.addr}}</td><td data-title=\"\'subdir\'\">{{m.path}}</td><td data-title=\"\'tags\'\">{{m.tags}}</td><td data-title=\"\'票据\'\">{{m.ticketname}}</td><td data-title=\"\'编辑人\'\">{{m.edit_user}}</td><td data-title=\"\'编辑时间\'\">{{m.edit_time}}</td><td data-title=\"\'删除\'\"><i class=\"fa fa-times-circle fa-2x\" aria-hidden=true ng-click=editrely.del(m.id) uib-tooltip=删除依赖 style=\"cursor:pointer;color: red\"></i></td></tr></table><hr><div class=row><label class=\"col-md-2 control-label fwbold\">代码地址:</label><div class=col-md-8><input class=form-control ng-model=editrely.newrely.addr ng-change=editrely.changeaddr() placeholder=git或者svn地址,如:git@git.liebaopay.com:ops/test.git></div><a class=\"glyphicon glyphicon-question-sign\" data-toggle=tooltip data-placement=right target=_blank ng-href=/book/流水线多种代码来源/ uib-tooltip=查看代码地址帮助 aria-hidden=true style=\"padding-top: 11px;font-size: larger\"></a></div><div class=row><label class=\"col-md-2 control-label fwbold\">subdir:</label><div class=col-md-4><input class=form-control ng-model=editrely.newrely.path placeholder=subdir></div><label class=\"col-md-2 control-label fwbold\">tags:</label><div class=col-md-4><input class=form-control ng-model=editrely.newrely.tags placeholder=tags></div></div><div class=row><label class=\"col-md-2 control-label fwbold\">票据</label><div class=\"col-md-6 form-inline\"><select class=form-control ng-model=editrely.newrely.ticketid ng-options=\"o.id as o.name for o in editrely.ticketinfo\"></select></div></div></div></div></div><div class=\"panel-footer text-right\"><button class=\"btn btn-primary\" ng-click=editrely.add()><i class=\"fa fa-floppy-o\" aria-hidden=true></i> 保存</button></div></div></div>");}]);
