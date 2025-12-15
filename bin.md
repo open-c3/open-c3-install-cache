@@ -21,3 +21,10 @@
 ```
 来自容器中的文件: openc3-alertmanager:/bin/amtool
 ```
+
+## mongosh
+
+```
+yum install -y https://repo.mongodb.org/yum/redhat/8/mongodb-org/6.0/x86_64/RPMS/mongodb-mongosh-1.8.0.x86_64.rpm
+# 在容器中安装后直接提取mongosh
+```
